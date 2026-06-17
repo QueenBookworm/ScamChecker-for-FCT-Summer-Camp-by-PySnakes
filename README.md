@@ -1,4 +1,4 @@
-just so you know i can read
+Just so you know I can read (Please capitalize)
 
 ```
 ├── app.py (run this)
