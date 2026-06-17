@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="vi" >
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" >
+    <link rel="stylesheet" href="../static/result.css">
+    <title>ScamCheck</title>
+    
+</head>
+<body>
+
+<div class="form-container">
+    <h1 style="text-align:center; color:#042615">Result</h1>
+    <form action="/" method="GET" enctype="multipart/form-data">            
+        
+        <div class="response">
+            <h2 style="text-align:center; color:#042615">{{status}}</h2>
+            <div class="circle" style="background: conic-gradient(#E50B31 {{ scam_score }}%, #07B85A {{100 - scam_score }}%);">
+                {{ scam_score }}%
+            </div>
+            <!--how do i do the circle or bar to show the percentage of scam or safe, and the percentage number; 30% is green circle filled -->
+        </div>
+        <div class="response">
+            <p>{{message}}</p>
+        </div>
+        <button type="submit">Return to ScamChecker</button>
+    </form>
+    
+</div>
+
+</body>
+</html>

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="vi" >
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" >
+    <link rel="stylesheet" href="../static/style.css">
+    <title>ScamCheck</title>
+    
+</head>
+<body>
+
+<div class="form-container">
+    <h2 style="text-align:center; color:#042615">Scam Checker</h2>
+    <form action="/" method="POST" enctype="multipart/form-data">            
+        <p class="question">Do you know this number?</p>
+        <div class="radio-group">
+            <label>
+            <input type="radio" name="number" value="Yes"> Yes
+            </label>
+            <label>
+            <input type="radio" name="number" value="No"> No
+            </label>
+            <label>
+            <input type="radio" name="number" value="Forgot"> I don't remember
+            </label>
+        </div>
+        <p class="question">Do you know this agency/company?</p>
+        <div class="radio-group">
+            <label>
+            <input type="radio" name="company" value="Yes"> Yes
+            </label>
+            <label>
+            <input type="radio" name="company" value="No"> No
+            </label>
+            <label>
+            <input type="radio" name="company" value="Forgot"> I'm not sure
+            </label>
+        </div>
+        <p class="question">What platform are you using?</p>
+        <div style="margin-bottom: 20px;">
+            <label>
+            <input type="radio" name="platform" value="Zalo"> Zalo
+            </label>
+            <label>
+            <input type="radio" name="platform" value="WhatsApp"> WhatsApp
+            </label>
+            <label>
+            <input type="radio" name="platform" value="iMessage"> iMessage
+            </label>
+            <label>
+            <input type="radio" name="platform" value="Messenger"> Messenger/Facebook
+            </label>
+            <label>
+            <input type="radio" name="platform" value="Instagram"> Instagram
+            </label>
+            <label>
+            <input type="radio" name="platform" value="other"> Other
+            </label>
+        </div>
+        <div class="input-group">
+            <label for="message" class="question">Dán tin nhắn vào đây</label>
+            <input type="text" id="message" name="message" placeholder="Tin nhắn">
+        </div>
+        <div class="input-group">
+            <label for="image" class="question">Bỏ ảnh vào đây</label>
+            <input type="file" id="image" name="scam_image" accept="image/*">
+        </div>
+        <button type="submit">Submit</button>
+    </form>
+    
+</div>
+
+</body>
+</html>

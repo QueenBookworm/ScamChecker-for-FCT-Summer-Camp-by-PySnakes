@@ -1,0 +1,47 @@
+.circle {
+    width: 30vw;
+    height: 30vw;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+}
+
+.circle::after {
+    width: 10vw;
+    height: 10vw;
+    border-radius: 50%;
+    background-color: white;
+}
+
+.form-container {
+    background: #F2FCF8;
+    padding: 30px;
+    border-radius: 8px;
+    border: 1px solid #F2FCF8;
+    width: 100%;
+    max-width: 400px;
+}
+body {
+    font-family: Arial, sans-serif;
+    background-color: #DAE6E1;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+    margin: 0;
+    padding: 40px 20px 20px;
+    box-sizing: border-box;
+}
+
+button {
+    width: 100%;
+    padding: 10px;
+    background-color: #488260;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+}
