@@ -9,7 +9,16 @@ def index():
     if request.method == 'POST':
         message = request.form.get('message')
         scam_image = request.files.get('scam_image')
+        platform = request.form.get('platform')
+        number = request.form.get('number')
+        agency = request.form.get('company')
         ai_input = []
+        if platform:
+            ai_input.append(types.Part.from_text(text=f"Message was sent using {platform}."))
+        if number:
+            ai_input.append(types.Part.from_text(text=f"The user {number} this number."))
+        if agency:
+            ai_input.append(types.Part.from_text(text=f"The user {agency} this company."))
         if message:
             ai_input.append(types.Part.from_text(text = message))
         if scam_image and scam_image.filename:
@@ -28,7 +37,7 @@ def index():
                         model='gemini-3.1-flash-lite',
                         contents=ai_input,
                         config=types.GenerateContentConfig(
-                            system_instruction="You are evaluating texts that was sent to the user to detect a scam. In 20 - 50 words, tell the user why this message is or isn't a scam, and in under 20 words, tell the user what actions they should take. Return in proper JSON format ONLY: {'scam_score': 0-100 integer, 'reason': '20–50 word explanation', 'action': 'under 20 words advice'}"),
+                            system_instruction="You are an evidence-driven assistant that assesses whether a message or attached image is likely a scam. Consider message content, sender info, platform, and image. Return a balanced integer 'scam_score' from 0 (not a scam) to 100 (definite scam). If uncertain, reflect that with a mid-range score (e.g., 40–60). Provide 'reason' in 20–50 words summarizing the key evidence and uncertainty, and 'action' in under 20 words advising the user. Output ONLY valid JSON with keys: {'scam_score': int, 'reason': str, 'action': str}. Do not include any extra explanation, markup, or backticks. Avoid defaulting to high scam scores; weigh both indicators and counter-indicators carefully."),
                         )
                             
                 clean_txt = response.text.strip().replace("```json", "").replace("```", "")
