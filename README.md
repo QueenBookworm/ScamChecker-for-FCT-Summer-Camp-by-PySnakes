@@ -1,7 +1,8 @@
 just so you know i can read
 
 ```
-├── app.py
+├── app.py (run this)
+├── README.md (nevermind this one)
 ├── static/
 │   └── result.css
 └── templates/
