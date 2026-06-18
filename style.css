@@ -67,7 +67,6 @@ button:hover {
     gap: 6px;
     line-height: 1.2;
     font-weight: normal;
-    white-space: nowrap;
 }
 
 input[type="radio"] {
@@ -76,4 +75,45 @@ input[type="radio"] {
 
 label {
     font-weight: normal;
+    max-width: calc(70%);
+}
+
+.menu-icon {
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    font-size: 30px;
+    cursor: pointer;
+    z-index: 10;
+}
+
+.side-menu {
+    position: fixed;
+    top: 0;
+    left: -260px;
+    width: 240px;
+    height: 100vh;
+    background: white;
+    border-right: 1px solid #ddd;
+    padding: 25px;
+    box-sizing: border-box;
+    transition: left 0.3s ease;
+    z-index: 12;
+}
+
+#menu-toggle:checked ~ .side-menu {
+    left: 0;
+}
+
+.close-btn {
+    font-size: 30px;
+    cursor: pointer;
+    font-weight: normal;
+}
+
+.side-menu a {
+    display: block;
+    margin: 20px 0;
+    color: black;
+    text-decoration: none;
 }
