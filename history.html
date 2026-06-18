@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="vi" >
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" >
+    <link rel="stylesheet" href="../static/history.css">
+    <title>ScamCheck</title>
+    
+</head>
+<body>
+<input type="checkbox" id="menu-toggle" hidden>
+
+<label for="menu-toggle" class="menu-icon">☰</label>
+
+<div class="side-menu">
+    <label for="menu-toggle" class="close-btn">×</label>
+    <h2>Menu</h2>
+    <a href="/">Scam Checker</a>
+    <a href="/history">History</a>
+</div>
+<div class="form-container">
+    <h1 style="text-align:center; color:#042615">History</h1>
+    <form action="/" method="GET" enctype="multipart/form-data">            
+        
+        <div class="past-searches">
+            {% for item in history %}
+
+                <div class="history-item">
+
+                    <h3 style="text-align:center; color:#042615">{{ item.original_message }}</h3>
+
+                    <div class="response">
+                        <h2 style="text-align:center; color:#042615">{{item.status}}</h2>
+                        <div class="circle" style="background: conic-gradient({{item.color}} 0% {{ item.scam_score }}%, #07B85A {{ item.scam_score }}% 100%);">
+                            {{ item.scam_score }}%
+                        </div>
+                        <h3 style="text-align:center; color:#042615">Probability of a scam: {{ item.scam_score }}%</h3>
+                        <p>{{item.message}}</p>
+                    </div>
+
+                </div>
+
+            {% endfor %}
+        </div>
+        <div class="previous_response" style="display:none;">
+            <p></p>
+        </div>
+    </form>
+    
+</div>
+
+</body>
+</html>
