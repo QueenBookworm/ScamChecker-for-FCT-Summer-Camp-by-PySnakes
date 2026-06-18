@@ -8,6 +8,16 @@
     
 </head>
 <body>
+<input type="checkbox" id="menu-toggle" hidden>
+
+<label for="menu-toggle" class="menu-icon">☰</label>
+
+<div class="side-menu">
+    <label for="menu-toggle" class="close-btn">×</label>
+    <h2>Menu</h2>
+    <a href="/">Scam Checker</a>
+    <a href="/history">History</a>
+</div>
 
 <div class="form-container">
     <h1 style="text-align:center; color:#042615">Result</h1>
@@ -20,6 +30,7 @@
             </div>
         </div>
         <div class="response">
+            <p>{{original_message}}</p>
             <p>{{message}}</p>
         </div>
         <button type="submit">Return to ScamChecker</button>
