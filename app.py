@@ -3,7 +3,7 @@ from google import genai
 from google.genai import types
 import json
 app = Flask(__name__)
-
+history_list = []
 @app.route('/', methods=['GET', 'POST'])
 def index():
     if request.method == 'POST':
@@ -12,6 +12,7 @@ def index():
         platform = request.form.get('platform')
         number = request.form.get('number')
         agency = request.form.get('company')
+        # original_message = "Prompt"
         ai_input = []
         if platform:
             ai_input.append(types.Part.from_text(text=f"Message was sent using {platform}."))
@@ -45,24 +46,32 @@ def index():
                 scam_score = int(data["scam_score"])
                 response_text = f"{data['reason']} {data['action']}"
                 status = "You are safe" if scam_score < 50 else "You have been scammed"
-                print(response_text)
+                history_list.append({"status":status,
+                                "scam_score":scam_score,
+                                "message":response_text,
+                                "original_message":request.form.get('message')})
+                if len(history_list) > 10:
+                    history_list.pop(0)
             except Exception as e:
                 response_text = f"An error occurred: {str(e)}"
                 scam_score = 0
                 status = "Error"
-                print(response_text)
         else:
             response_text = "No input provided"
             scam_score = 0
-            status = "Error"
-            print(response_text)
+            status = "Error, please try again."
         return render_template(
             "result.html",
             status=status,
             scam_score=scam_score,
-            message=response_text
+            message=response_text,
+            original_message=request.form.get('message')
         )
     return render_template('index.html')
+
+@app.route("/history")
+def history():
+    return render_template('history.html', history=history_list)
 
 @app.route('/result')
 def result():
