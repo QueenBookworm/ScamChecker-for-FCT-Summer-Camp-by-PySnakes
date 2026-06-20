@@ -1,89 +1,530 @@
-<!DOCTYPE html>
-<html lang="vi" >
+<!doctype html>
+<html lang="vi">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" >
-    <link rel="stylesheet" href="../static/style.css">
-    <title>ScamCheck</title>
-    
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ScamCheck</title>
+  <style>
+    :root {
+      --ink: #172033;
+      --muted: #667085;
+      --red: #ef4444;
+      --orange: #f59e0b;
+      --green: #22c55e;
+      --blue: #0f766e;
+      --coral: #ff5748;
+      --line: #eee2dc;
+      font-family: "Segoe UI", Arial, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    body { margin: 0; min-width: 320px; color: var(--ink); background: linear-gradient(180deg, #fffdfb, #fff7f2 65%, #fff); font-size: 18px; }
+    button, textarea, input { font: inherit; }
+    button { cursor: pointer; }
+    .app { min-height: 100vh; padding-bottom: 124px; }
+    .main { width: min(1180px, calc(100% - 24px)); margin: auto; padding: 18px 0 30px; }
+    .sidebar { display: none; }
+    .mobile-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+    .brand { display: flex; align-items: center; gap: 10px; font-size: 1.55rem; font-weight: 900; }
+    .logo { display: grid; place-items: center; width: 43px; height: 48px; padding-bottom: 5px; clip-path: polygon(50% 0, 94% 15%, 88% 70%, 50% 100%, 12% 70%, 6% 15%); color: white; background: linear-gradient(145deg, #0ea5e9 8%, #0757c8 55%, #12b8a7 100%); font-size: 1.35rem; text-shadow: 0 1px 2px rgba(0,0,0,.15); filter: drop-shadow(0 6px 8px rgba(7,87,200,.2)); }
+    .teal { color: #12b8a7; }
+    .page { display: none; }
+    .page.active { display: block; }
+    .hero { text-align: center; padding: 18px 0 20px; }
+    .hero h1 { max-width: 780px; margin: 0 auto 12px; font-size: clamp(1.9rem, 6vw, 3rem); line-height: 1.12; }
+    .hero p { max-width: 660px; margin: auto; color: var(--muted); line-height: 1.55; }
+    .accent { color: var(--coral); }
+    .card { border: 1px solid var(--line); border-radius: 22px; background: rgba(255,255,255,.96); box-shadow: 0 24px 70px rgba(44,34,28,.12); }
+    .checker { max-width: 900px; margin: auto; padding: 22px; }
+    .tabs { display: grid; grid-template-columns: repeat(2, 1fr); border-bottom: 1px solid var(--line); margin-bottom: 16px; }
+    .tab { min-height: 52px; border: 0; border-bottom: 3px solid transparent; background: transparent; color: #667085; font-weight: 900; }
+    .tab.active { color: var(--coral); border-color: var(--coral); }
+    .panel { display: none; gap: 12px; }
+    .panel.active { display: grid; }
+    textarea, input[type=url] { width: 100%; border: 1px solid #d7dde8; border-radius: 18px; outline: none; line-height: 1.55; }
+    textarea { min-height: 220px; resize: vertical; padding: 18px; }
+    #message { min-height: 340px; }
+    #voiceText { min-height: 260px; }
+    input[type=url] { min-height: 62px; padding: 0 18px; }
+    textarea:focus, input:focus { border-color: #ff8978; box-shadow: 0 0 0 4px rgba(255,90,73,.12); }
+    .upload { display: grid; place-items: center; min-height: 270px; padding: 30px; border: 2px dashed #ff9d8f; border-radius: 22px; background: linear-gradient(180deg, #fffaf7, #fff3ee); color: var(--coral); text-align: center; cursor: pointer; transition: .18s ease; }
+    .upload:hover, .upload.has-file { border-color: var(--coral); background: #fff0ec; box-shadow: 0 0 0 4px rgba(255,87,72,.1); transform: translateY(-1px); }
+    .upload input { display: none; }
+    .upload strong { display: block; margin-top: 8px; color: var(--ink); font-size: 1.15rem; }
+    .hint, .small { color: var(--muted); line-height: 1.55; }
+    .row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .samples { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding-bottom: 2px; }
+    .sample { min-height: 58px; padding: 9px 12px; border: 1px solid #ffe0d8; border-radius: 14px; background: #fff8f4; color: #6b4b45; font-size: 1rem; font-weight: 800; }
+    .primary, .secondary { min-height: 58px; border: 0; border-radius: 17px; background: linear-gradient(135deg, #ff6f5a, #ff392f); color: white; font-weight: 950; box-shadow: 0 18px 36px rgba(255,90,73,.24); }
+    .primary { position: relative; display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; min-height: 66px; border-radius: 20px; font-size: 1.08rem; letter-spacing: 0; background: linear-gradient(135deg, #10b7a6 0%, #0f77d8 52%, #0648c8 100%); box-shadow: 0 18px 42px rgba(15,119,216,.25); }
+    .primary::before { content: "✦"; font-size: 1.25rem; }
+    .primary:hover { filter: brightness(1.04); transform: translateY(-1px); }
+    .primary:disabled { opacity: .72; transform: none; }
+    .secondary { min-height: 56px; padding: 0 16px; }
+    #recordBtn { width: 100%; min-height: 66px; font-size: 1.05rem; }
+    #recordBtn.recording { background: linear-gradient(135deg, #ef4444, #b91c1c); animation: softPulse 1.1s infinite; }
+    .record-icon { display: inline-grid; place-items: center; width: 22px; height: 22px; margin-right: 9px; border-radius: 50%; background: rgba(255,255,255,.18); vertical-align: middle; }
+    .record-icon::before { content: "●"; font-size: 12px; line-height: 1; }
+    .recording .record-icon { background: white; color: #ef4444; box-shadow: 0 0 0 7px rgba(255,255,255,.18); }
+    @keyframes softPulse { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-1px); } }
+    .plain { border: 0; background: transparent; color: var(--coral); font-weight: 900; }
+    .error { display: none; padding: 12px; border: 1px solid #fecaca; border-radius: 14px; background: #fff1f2; color: #9f1239; font-weight: 800; }
+    .error.show { display: block; }
+    .result { max-width: 920px; min-width: 0; margin: auto; padding: 18px; }
+    .topbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+    .result-head { display: grid; gap: 10px; min-width: 0; max-width: 100%; padding: 18px; border: 1px solid var(--line); border-radius: 18px; background: linear-gradient(135deg, #fff7f2, #fff); }
+    .pill { display: inline-flex; width: fit-content; padding: 7px 12px; border-radius: 999px; background: #fff0ec; color: var(--coral); font-weight: 900; }
+    .result-main { display: grid; gap: 18px; align-items: center; min-width: 0; max-width: 100%; margin-top: 14px; padding: 18px; border: 1px solid #f1ddd5; border-radius: 20px; background: #fffaf7; }
+    .ring { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 136px; height: 136px; border-radius: 50%; line-height: 1.05; text-align: center; background: radial-gradient(circle, white 0 57%, transparent 58%), conic-gradient(var(--risk-color) var(--score), #f2e7e1 0); }
+    .ring strong { font-size: 2rem; }
+    .ring small { display: block; margin-top: 4px; color: var(--muted); font-weight: 800; }
+    .grid { display: grid; gap: 12px; min-width: 0; max-width: 100%; margin-top: 14px; }
+    .box { min-width: 0; max-width: 100%; overflow: hidden; padding: 15px; border: 1px solid var(--line); border-radius: 16px; background: white; }
+    .box h3 { margin: 0 0 8px; }
+    .box p, .box li { color: var(--muted); line-height: 1.55; overflow-wrap: anywhere; word-break: break-word; }
+    .evidence { display: grid; gap: 9px; min-width: 0; max-width: 100%; }
+    .evidence div { min-width: 0; max-width: 100%; overflow: hidden; padding: 10px; border-radius: 12px; background: #fff8f4; border: 1px solid #ffe0d8; }
+    .evidence strong,
+    .evidence a,
+    .link-ellipsis {display: block;max-width: 100%;overflow: hidden;text-overflow: ellipsis;white-space: nowrap;}
+    .evidence p {margin: 6px 0 0;}
+    #linkInput:not(:focus) {overflow: hidden;text-overflow: ellipsis;white-space: nowrap;}
+    .original-text { min-width: 0; max-width: 100%; margin-top: 12px; }
+    .original-text p { white-space: pre-wrap; overflow-wrap: anywhere; word-break: break-word; }
+    mark { padding: 1px 4px; border-radius: 6px; background: #fde68a; color: #713f12; font-weight: 800; }
+    .checks { display: grid; gap: 9px; min-width: 0; max-width: 100%; }
+    .action-btn { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; min-width: 0; max-width: 100%; min-height: 58px; padding: 13px 16px; border: 1px solid #ffd6cd; border-radius: 14px; background: #fff7f2; color: #7c2d12; font-weight: 900; text-align: left; }
+    .action-btn:hover, .action-btn.active { border-color: var(--coral); background: #fff0ec; box-shadow: 0 0 0 3px rgba(255,87,72,.12); }
+    .action-btn span:first-child { min-width: 0; overflow-wrap: anywhere; word-break: break-word; }
+    .action-btn span:last-child { color: var(--coral); font-size: 1.25rem; }
+    .secondary:disabled { opacity: .45; cursor: not-allowed; box-shadow: none; }
+    .step-log { display: grid; gap: 8px; }
+    .step-log article { padding: 10px 12px; border-radius: 12px; background: #fffaf7; border: 1px solid #ffe0d8; }
+    .source-note { font-size: .85rem; color: var(--muted); }
+    .simple { max-width: 840px; margin: auto; }
+    .simple-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+    .history-list, .faq-list { display: grid; gap: 12px; }
+    .history-item, details { padding: 15px; border: 1px solid var(--line); border-radius: 16px; background: white; }
+    #history { width: 100%; max-width: 900px; }
+    #history h1 { margin-bottom: 6px; }
+    .history-item { display: grid; gap: 10px; width: 100%; padding: 18px; text-align: left; transition: border-color .15s ease, transform .15s ease; }
+    .history-item:hover { border-color: #ff9d8f; transform: translateY(-1px); }
+    .history-item p { margin: 0; color: var(--muted); line-height: 1.5; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .history-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .history-status { padding: 6px 10px; border-radius: 999px; color: white; font-size: .86rem; font-weight: 900; }
+    .history-score { color: var(--muted); font-size: .9rem; font-weight: 800; }
+    .history-title { font-size: 1.05rem; line-height: 1.4; }
+    #library { width: 100%; max-width: none; min-height: calc(100vh - 78px); }
+    #library h1 { margin: 8px 0 8px; font-size: clamp(2rem, 4vw, 3rem); }
+    .library-tools { display: flex; flex-wrap: wrap; gap: 10px; margin: 22px 0; padding: 10px; border: 1px solid var(--line); border-radius: 14px; background: rgba(255,255,255,.78); }
+    .filter-btn, .choice-btn { min-height: 50px; padding: 0 16px; border: 1px solid #ffd6cd; border-radius: 10px; background: white; color: #7c2d12; font-weight: 900; }
+    .filter-btn { min-width: 120px; }
+    .filter-btn.active, .choice-btn:hover { background: #ff5748; border-color: #ff5748; color: white; box-shadow: 0 10px 24px rgba(255,87,72,.18); }
+    .library-list { display: grid; grid-template-columns: 1fr; align-items: start; gap: 12px; }
+    .library-item { align-self: start; padding: 0; overflow: hidden; border: 1px solid var(--line); border-radius: 12px; background: white; box-shadow: 0 16px 38px rgba(44,34,28,.07); }
+    .library-item summary { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 88px; padding: 20px 24px; list-style: none; cursor: pointer; }
+    .library-item summary::-webkit-details-marker { display: none; }
+    .library-item summary::after { content: "+"; display: grid; place-items: center; flex: 0 0 auto; width: 32px; height: 32px; border-radius: 9px; background: #fff0ec; color: var(--coral); font-weight: 950; }
+    .library-item[open] summary { border-bottom: 1px solid var(--line); }
+    .library-item[open] summary::after { content: "−"; }
+    .library-title { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 14px; min-width: 0; }
+    .library-title strong { overflow: hidden; color: var(--ink); font-size: 1.08rem; text-overflow: ellipsis; white-space: nowrap; }
+    .library-tag, .faq-tag { display: inline-flex; width: fit-content; min-height: 26px; align-items: center; padding: 3px 9px; border-radius: 8px; background: #fff0ec; color: #9f2f22; font-size: .78rem; font-weight: 950; }
+    .library-body { display: grid; gap: 16px; padding: 22px 24px 24px; }
+    .library-body p { margin: 0; color: var(--muted); font-size: 1.05rem; line-height: 1.75; }
+    .library-example { padding: 14px; border: 1px solid #ffe0d8; border-radius: 10px; background: #fff8f4; color: #7c2d12; font-weight: 800; line-height: 1.6; }
+    #training { width: 100%; max-width: none; min-height: calc(100vh - 78px); }
+    #training h1 { margin: 8px 0 18px; font-size: clamp(2rem, 4vw, 3rem); }
+    .training-card { display: grid; grid-template-rows: auto 1fr auto auto; gap: 18px; min-height: calc(100vh - 190px); padding: 30px; border: 1px solid var(--line); border-radius: 16px; background: white; box-shadow: 0 20px 54px rgba(44,34,28,.1); }
+    #trainProgress { display: inline-flex; width: fit-content; padding: 10px 14px; border-radius: 999px; background: #fff0ec; color: var(--coral); font-size: 1rem; }
+    .training-text { display: flex; align-items: center; min-height: 280px; padding: 30px; border: 1px solid #ffe0d8; border-radius: 14px; background: linear-gradient(180deg, #fffaf7, #fff4ee); color: var(--ink); font-size: clamp(1.25rem, 2.3vw, 1.75rem); font-weight: 800; line-height: 1.65; }
+    #training .row { display: grid; grid-template-columns: 1fr 1fr auto; gap: 12px; }
+    #training .choice-btn { min-height: 68px; border-radius: 14px; font-size: 1.08rem; }
+    #training #trainNext { min-height: 68px; padding: 0 18px; border: 1px solid var(--line); border-radius: 14px; background: #fff; }
+    #trainFeedback { min-height: 58px; margin: 0; padding: 16px 18px; border: 1px solid #e7eef5; border-radius: 14px; background: #f8fafc; font-size: 1.04rem; }
+    #trainFeedback.train-ok, #trainFeedback.train-bad { display: flex; align-items: center; gap: 14px; }
+    #trainFeedback.train-ok { border-color: #bbf7d0; background: #f0fdf4; color: #166534; }
+    #trainFeedback.train-bad { border-color: #fecaca; background: #fff1f2; color: #991b1b; }
+    .train-icon { display: grid; place-items: center; flex: 0 0 auto; width: 44px; height: 44px; border-radius: 12px; background: currentColor; color: white; font-size: 1.6rem; font-weight: 950; }
+    .result-action-rail { position: sticky; top: 14px; z-index: 4; display: flex; justify-content: flex-end; gap: 6px; width: fit-content; max-width: 100%; margin: 0 0 16px auto; padding: 7px; border: 1px solid #dbe8ef; border-radius: 14px; background: rgba(255,255,255,.96); box-shadow: 0 12px 30px rgba(20,60,90,.1); backdrop-filter: blur(8px); }
+    .tool-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 0 12px; border: 0; border-radius: 9px; background: transparent; color: #164e73; font-size: 0; font-weight: 900; transition: background .15s ease, color .15s ease, transform .15s ease; }
+    .tool-btn::before, .tool-btn::after { font-size: .9rem; }
+    .tool-btn::before { display: grid; place-items: center; width: 25px; height: 25px; border-radius: 7px; background: #eaf7fb; color: #087f8c; font-size: 1.05rem; line-height: 1; }
+    .tool-btn:hover { background: #eef8fc; color: #075985; transform: translateY(-1px); }
+    #copyResult::before { content: "⧉"; } #copyResult::after { content: "Sao chép"; }
+    #shotResult::before { content: "▣"; } #shotResult::after { content: "Chụp ảnh"; }
+    #shareResult::before { content: "↗"; } #shareResult::after { content: "Chia sẻ"; }
+    #qrResult::before { content: "▦"; } #qrResult::after { content: "Mã QR"; }
+    #downloadCard { background: linear-gradient(135deg, #087f8c, #0f67c7); color: white; }
+    #downloadCard::before { content: "↓"; background: rgba(255,255,255,.18); color: white; } #downloadCard::after { content: "Tải xuống"; }
+    #downloadCard:hover { background: linear-gradient(135deg, #076b76, #0b55a8); color: white; }
+    .rescue-panel { margin-top: 16px; padding: 20px; border: 1px solid #dbe8ef; border-radius: 12px; background: #fbfdff; }
+    .rescue-panel summary { display: flex; align-items: center; justify-content: space-between; gap: 10px; list-style: none; pointer-events: none; }
+    .rescue-panel summary::-webkit-details-marker { display: none; }
+    .rescue-options { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 16px; }
+    .rescue-btn { display: flex; align-items: center; gap: 12px; min-height: 58px; padding: 12px 14px; border: 1px solid #d8e3ea; border-radius: 9px; background: white; color: #334155; font-weight: 900; text-align: left; }
+    .rescue-btn:hover { border-color: #69a7b5; background: #f2fbfc; }
+    .rescue-check { position: relative; flex: 0 0 auto; width: 24px; height: 24px; border: 2px solid #8fa5b3; border-radius: 5px; background: white; }
+    .rescue-btn.selected { border-color: #0f8d98; background: #eafafa; color: #075d65; box-shadow: 0 0 0 3px rgba(15,141,152,.1); }
+    .rescue-btn.selected .rescue-check { border-color: #0f8d98; background: #0f8d98; }
+    .rescue-btn.selected .rescue-check::after { content: "✓"; position: absolute; inset: 0; display: grid; place-items: center; color: white; font-size: .9rem; }
+    .rescue-submit { width: 100%; min-height: 56px; margin-top: 12px; border: 0; border-radius: 9px; background: linear-gradient(135deg, #087f8c, #0f67c7); color: white; font-weight: 950; }
+    .rescue-submit:disabled { opacity: .45; cursor: not-allowed; }
+    .rescue-output { margin-top: 12px; display: grid; gap: 8px; }
+    .rescue-output div { padding: 10px; border-radius: 12px; background: #fffaf7; border: 1px solid #ffe0d8; }
+    #shareCanvas { position: fixed; left: -9999px; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+    .qr-popover { display: none; align-items: center; gap: 12px; width: fit-content; max-width: 100%; margin: 8px 0 12px auto; padding: 12px; border: 1px solid var(--line); border-radius: 16px; background: white; box-shadow: 0 16px 36px rgba(20,27,39,.08); }
+    .qr-popover.show { display: flex; }
+    .qr-img { width: 118px; height: 118px; border: 1px solid var(--line); border-radius: 12px; background: white; }
+    .tool-toast { min-height: 24px; margin-top: 8px; color: #0f766e; font-size: .9rem; font-weight: 800; }
+    summary { cursor: pointer; font-weight: 900; }
+    #faq { width: 100%; max-width: none; min-height: calc(100vh - 56px); padding: 10px 0 28px; }
+    #faq h1 { margin: 8px 0 10px; font-size: clamp(2rem, 4vw, 3rem); }
+    .faq-intro, .faq-ask { display: none; }
+    .faq-note { max-width: 980px; margin: 0 0 24px; font-size: 1.08rem; }
+    .faq-grid { display: grid; grid-template-columns: 1fr; gap: 16px; width: 100%; }
+    .faq-item { width: 100%; padding: 0; overflow: hidden; border: 1px solid var(--line); border-radius: 12px; background: white; box-shadow: 0 16px 38px rgba(44,34,28,.07); }
+    .faq-item summary { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 16px; min-height: 88px; padding: 23px 28px; color: var(--ink); font-size: 1.2rem; line-height: 1.35; list-style: none; }
+    .faq-item summary::-webkit-details-marker { display: none; }
+    .faq-item summary::after { content: "+"; display: grid; place-items: center; flex: 0 0 auto; width: 34px; height: 34px; border-radius: 10px; background: #fff0ec; color: var(--coral); font-size: 1.25rem; font-weight: 950; }
+    .faq-item summary::before { content: "FAQ"; display: inline-flex; align-items: center; min-height: 28px; padding: 3px 9px; border-radius: 8px; background: #effaf8; color: #0f766e; font-size: .78rem; font-weight: 950; }
+    .faq-item:nth-child(2) summary::before { content: "Kết quả"; }
+    .faq-item:nth-child(3) summary::before { content: "Link"; }
+    .faq-item:nth-child(4) summary::before { content: "Tiền"; }
+    .faq-item:nth-child(5) summary::before { content: "OTP"; }
+    .faq-item:nth-child(6) summary::before { content: "Riêng tư"; }
+    .faq-item:nth-child(7) summary::before { content: "Hỗ trợ"; }
+    .faq-item:nth-child(8) summary::before { content: "Lưu ý"; }
+    .faq-item[open] summary { border-bottom: 1px solid var(--line); color: #7c2d12; }
+    .faq-item[open] summary::after { content: "−"; }
+    .faq-item p { margin: 0; min-height: 118px; padding: 26px 30px 30px; color: var(--muted); font-size: 1.12rem; line-height: 1.8; }
+    .dot { display: inline-block; width: 12px; height: 12px; margin-right: 8px; border-radius: 50%; }
+    .safe { background: var(--green); }
+    .suspicious { background: var(--orange); }
+    .danger { background: var(--red); }
+    .pill.safe, .pill.suspicious, .pill.danger { color: white; }
+    .pill.suspicious { background: var(--orange); color: #172033; }
+    .pill.safe { background: var(--green); }
+    .pill.danger { background: var(--red); }
+    .bottom-nav { position: fixed; bottom: 34px; left: 50%; z-index: 10; display: grid; grid-template-columns: repeat(5, 1fr); width: min(100vw, 520px); padding: 8px 4px calc(10px + env(safe-area-inset-bottom)); border-top: 1px solid var(--line); border-radius: 24px 24px 0 0; background: rgba(255,255,255,.96); box-shadow: 0 -20px 50px rgba(20,27,39,.08); transform: translateX(-50%); }
+    .nav { border: 0; border-radius: 14px; background: transparent; min-height: 58px; color: #7b8496; font-weight: 900; }
+    .nav.active { color: var(--coral); }
+    .mobile-book { display: inline-block; width: 23px; height: 20px; margin-bottom: 1px; border-bottom: 2px solid currentColor; background: linear-gradient(currentColor,currentColor) 1px 5px/5px 13px no-repeat, linear-gradient(currentColor,currentColor) 9px 1px/5px 17px no-repeat, linear-gradient(currentColor,currentColor) 17px 7px/5px 11px no-repeat; vertical-align: middle; }
+    .legal-footer { position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; padding: 10px 16px calc(10px + env(safe-area-inset-bottom)); border-top: 1px solid var(--line); background: rgba(255,255,255,.98); color: #667085; text-align: center; font-size: .95rem; line-height: 1.4; }
+    .loading { position: fixed; inset: 0; z-index: 40; display: none; place-items: center; background: rgba(255,255,255,.72); backdrop-filter: blur(6px); }
+    .loading.show { display: grid; }
+    .loader-card { display: grid; gap: 12px; place-items: center; width: min(320px, 86vw); padding: 28px; border: 1px solid var(--line); border-radius: 22px; background: white; box-shadow: 0 24px 70px rgba(20,27,39,.18); text-align: center; }
+    .spinner { width: 54px; height: 54px; border: 6px solid #e5f4f2; border-top-color: #0f77d8; border-radius: 50%; animation: spin .8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .chat-toggle { position: fixed; right: 18px; bottom: 126px; z-index: 21; min-height: 54px; padding: 0 18px; border: 0; border-radius: 999px; background: linear-gradient(135deg, #0f77d8, #10b7a6); color: white; font-weight: 950; box-shadow: 0 18px 38px rgba(15,119,216,.24); }
+    .chat-open .chat-toggle { opacity: 0; pointer-events: none; transform: translateY(8px); }
+    .chat-drawer { position: fixed; inset: 0 0 34px auto; z-index: 20; display: grid; grid-template-rows: auto 1fr auto; width: min(460px, 100vw); padding: 24px; background: rgba(255,255,255,.99); border-left: 1px solid var(--line); box-shadow: -18px 0 50px rgba(20,27,39,.14); transform: translateX(105%); }
+    .chat-drawer.open { transform: translateX(0); }
+    .chat-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--line); }
+    .chat-head h2 { margin: 0; font-size: 1.2rem; }
+    .chat-close { width: 42px; height: 42px; border: 0; border-radius: 14px; background: #fff0ec; color: var(--coral); font-weight: 950; }
+    .chat-log { display: grid; align-content: start; gap: 12px; overflow-y: auto; padding: 18px 2px; }
+    .chat-msg { padding: 16px; border: 1px solid var(--line); border-radius: 15px; background: #fffaf7; line-height: 1.6; }
+    .chat-msg.user { margin-left: 28px; background: #effaf8; border-color: #c9eee8; }
+    .chat-msg.ai { margin-right: 28px; }
+    .chat-msg ul { margin: 8px 0 0; padding-left: 20px; color: var(--muted); }
+    .chat-form { display: grid; gap: 9px; padding-top: 14px; border-top: 1px solid var(--line); }
+    .chat-composer { display: grid; grid-template-columns: 54px minmax(0, 1fr) 58px; align-items: end; gap: 8px; padding: 10px; border: 1px solid #d7dde8; border-radius: 18px; background: white; box-shadow: 0 8px 24px rgba(20,27,39,.07); }
+    #chatQuestion { min-height: 170px; max-height: 310px; padding: 18px 14px; border: 0; border-radius: 12px; resize: vertical; box-shadow: none; }
+    .chat-file { display: grid; place-items: center; min-height: 46px; padding: 0 6px; border: 1px solid #ffd6cd; border-radius: 12px; background: #fff7f2; color: #7c2d12; font-size: .78rem; font-weight: 900; cursor: pointer; text-align: center; }
+    .chat-file input { display: none; }
+    .chat-send { min-height: 46px; padding: 0 8px; border: 0; border-radius: 12px; background: linear-gradient(135deg, #0f77d8, #10b7a6); color: white; font-weight: 950; }
+    .chat-meta { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 0 4px; }
+    #chatFileName { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    #chatTimer { flex: 0 0 auto; color: #0f766e; font-weight: 800; }
+    #chatFileName:empty, #chatTimer:empty { display: none; }
+
+    @media (min-width: 980px) {
+      .app { display: grid; grid-template-columns: 290px minmax(0, 1fr); padding-bottom: 34px; }
+      .app.chat-open { padding-right: 460px; }
+      .sidebar { position: sticky; top: 0; display: grid; grid-template-rows: auto auto 1fr; align-content: start; gap: 22px; height: 100vh; padding: 28px 20px; border-right: 1px solid var(--line); background: rgba(255,255,255,.96); box-shadow: 10px 0 34px rgba(44,34,28,.06); }
+      .sidebar .brand { font-size: 1.35rem; padding: 0 8px; }
+      .sidebar .logo { width: 36px; height: 40px; padding-bottom: 4px; font-size: 1.05rem; }
+      .side-nav { display: flex; flex-direction: column; gap: 8px; padding-bottom: 18px; border-bottom: 1px solid var(--line); }
+      .side-nav .nav { display: flex; align-items: center; gap: 12px; min-height: 52px; padding: 0 14px; border-radius: 12px; text-align: left; font-size: .98rem; color: #334155; }
+      .side-nav .nav::before { display: grid; place-items: center; width: 25px; height: 25px; color: inherit; font-weight: 950; }
+      .side-nav .nav:nth-child(1) { order: 1; }
+      .side-nav .nav:nth-child(2) { order: 2; }
+      .side-nav .nav:nth-child(4) { order: 3; }
+      .side-nav .nav:nth-child(5) { order: 4; }
+      .side-nav .nav:nth-child(3) { order: 5; }
+      .side-nav .nav:nth-child(1)::before { content: "⌂"; }
+      .side-nav .nav:nth-child(2)::before { content: "◴"; }
+      .side-nav .nav:nth-child(3)::before { content: "?"; }
+      .side-nav .nav:nth-child(4)::before { content: ""; width: 23px; height: 20px; border: 0; border-bottom: 2px solid currentColor; border-radius: 0; background: linear-gradient(currentColor,currentColor) 1px 5px/5px 13px no-repeat, linear-gradient(currentColor,currentColor) 9px 1px/5px 17px no-repeat, linear-gradient(currentColor,currentColor) 17px 7px/5px 11px no-repeat; transform: none; }
+      .side-nav .nav:nth-child(5)::before { content: "✓"; }
+      .side-nav .nav.active { background: #fff0ec; color: var(--coral); }
+      .nav-ico { display: grid; place-items: center; width: 25px; height: 25px; color: inherit; font-weight: 950; }
+      .side-history { display: grid; align-content: start; gap: 12px; min-height: 0; }
+      .side-history-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; color: var(--ink); font-weight: 950; }
+      .side-history-head small { color: var(--muted); font-size: .82rem; font-weight: 800; }
+      .side-recent { display: grid; gap: 8px; overflow: auto; padding-right: 2px; }
+      .side-recent-item { display: grid; grid-template-columns: 8px 1fr auto; align-items: center; gap: 8px; width: 100%; min-height: 46px; padding: 8px 6px; border: 0; border-radius: 10px; background: transparent; text-align: left; }
+      .side-recent-item:hover { background: #fff8f4; }
+      .side-dot { width: 6px; height: 6px; border-radius: 50%; background: #cbd5e1; }
+      .side-title { overflow: hidden; color: #334155; font-size: .82rem; font-weight: 900; text-overflow: ellipsis; white-space: nowrap; }
+      .side-badge { padding: 4px 7px; border-radius: 999px; font-size: .72rem; font-weight: 950; white-space: nowrap; }
+      .side-badge.danger { background: #fee2e2; color: #dc2626; }
+      .side-badge.suspicious { background: #fef3c7; color: #b45309; }
+      .side-badge.safe { background: #dcfce7; color: #15803d; }
+      .side-empty { padding: 12px 6px; color: var(--muted); font-size: .9rem; line-height: 1.5; }
+      .side-all { min-height: 44px; border: 1px solid var(--line); border-radius: 10px; background: white; color: #334155; font-size: .86rem; font-weight: 900; }
+      .mobile-head, .bottom-nav { display: none; }
+      .chat-toggle { bottom: 58px; }
+      .chat-drawer { bottom: 34px; }
+      .tabs { grid-template-columns: repeat(4, 1fr); }
+      .result-main { grid-template-columns: auto minmax(0, 1fr); }
+      .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .checks { grid-template-columns: 1fr; }
+      .chat-open .main { width: min(100%, calc(100vw - 730px)); }
+      .chat-open .grid { grid-template-columns: 1fr; }
+      .chat-open .faq-grid { grid-template-columns: 1fr; }
+      .result { max-width: 1080px; padding-right: 150px; }
+      .result-action-rail { position: fixed; top: 50%; right: 20px; flex-direction: column; align-items: stretch; width: 132px; margin: 0; padding: 10px; gap: 8px; transform: translateY(-50%); }
+      .result-action-rail .tool-btn { justify-content: flex-start; width: 100%; min-height: 50px; }
+      .chat-open .result-action-rail { right: 480px; }
+    }
+
+    @media (max-width: 979px) {
+      body { font-size: 18px; }
+      .result { padding: 12px; }
+      #resultCard { padding: 12px !important; }
+      .result-main, .grid { grid-template-columns: 1fr; }
+      .app { padding-bottom: 0; }
+      .main { width: min(100% - 20px, 1180px); padding-bottom: 24px; }
+      .checker { padding: 16px; }
+      .samples { grid-template-columns: 1fr; }
+      .result-action-rail { position: static; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); width: 100%; margin: 0 0 16px; padding: 8px; }
+      .tool-btn { width: 100%; min-height: 50px; padding: 0 10px; }
+      #downloadCard { grid-column: 1 / -1; }
+      .qr-popover { margin-left: 0; width: 100%; }
+      .rescue-options { grid-template-columns: 1fr; }
+      .upload { min-height: 250px; }
+      .chat-drawer { left: 0; right: 0; width: 100vw; max-width: 100vw; padding: 18px; }
+      .chat-composer { grid-template-columns: 48px minmax(0, 1fr) 52px; }
+      #chatQuestion { min-height: 150px; }
+      .faq-grid { grid-template-columns: 1fr; }
+      .library-list { grid-template-columns: 1fr; }
+      .library-tools { display: grid; grid-template-columns: 1fr 1fr; padding: 8px; }
+      .filter-btn { width: 100%; min-width: 0; }
+      .library-item summary { min-height: 72px; padding: 18px; }
+      .library-body { padding: 16px 18px 18px; }
+      #training { min-height: calc(100vh - 150px); }
+      .training-card { min-height: calc(100vh - 270px); padding: 18px; gap: 14px; border-radius: 12px; }
+      .training-text { min-height: 250px; padding: 22px; font-size: 1.18rem; line-height: 1.65; }
+      #training .row { grid-template-columns: 1fr; }
+      #training .choice-btn, #training #trainNext { width: 100%; min-height: 62px; border-radius: 12px; }
+      #trainFeedback { min-height: 74px; padding: 14px; }
+      .bottom-nav { bottom: 0; width: 100%; border-radius: 18px 18px 0 0; }
+      .bottom-nav .nav { min-height: 56px; font-size: .82rem; }
+      .legal-footer { position: static; margin: 8px 12px 92px; padding: 14px 16px; border: 1px solid var(--line); border-radius: 12px; background: #fffaf7; font-size: .88rem; line-height: 1.5; }
+      .chat-toggle { bottom: 92px; }
+      .chat-drawer { bottom: 0; }
+    }
+  </style>
 </head>
 <body>
-<input type="checkbox" id="menu-toggle" hidden>
+  <div class="app">
+    <!-- Desktop navigation. It is hidden on phones by CSS. -->
+    <aside class="sidebar">
+      <div class="brand"><span class="logo">✓</span><span>Scam</span><span class="teal">Check</span></div>
+      <nav class="side-nav">
+        <button class="nav active" data-page="home">Trang chủ</button>
+        <button class="nav" data-page="history">Lịch sử</button>
+        <button class="nav" data-page="faq">Hỏi đáp</button>
+        <button class="nav" data-page="library">Thư viện lừa đảo</button>
+        <button class="nav" data-page="training">Luyện tập</button>
+      </nav>
+      <div class="side-history">
+        <div class="side-history-head"><span>Lịch sử gần đây</span><small>⌃</small></div>
+        <div id="sideHistoryList" class="side-recent"></div>
+        <button class="side-all" data-page="history">Xem tất cả lịch sử</button>
+      </div>
+    </aside>
 
-<label for="menu-toggle" class="menu-icon">☰</label>
+    <main class="main">
+      <!-- Phone header. The desktop sidebar replaces it on large screens. -->
+      <header class="mobile-head">
+        <div class="brand"><span class="logo">✓</span><span>Scam</span><span class="teal">Check</span></div>
+      </header>
 
-<div class="side-menu">
-    <label for="menu-toggle" class="close-btn">×</label>
-    <h2>Menu</h2>
-    <a href="/">Scam Checker</a>
-    <a href="/history">Lịch Sử</a>
-</div>
-<div class="form-container">
-    <h2 style="text-align:center; color:#042615">Scam Checker</h2>
-    <form action="/" method="POST" enctype="multipart/form-data">            
-        <p class="question">Bạn có biết số điện thoại này không?</p>
-        <div class="radio-group">
-            <label>
-            <input type="radio" name="number" value="does"> Có
-            </label>
-            <label>
-            <input type="radio" name="number" value="does not"> Không
-            </label>
-            <label>
-            <input type="radio" name="number" value="doesn't remember if they interacted with"> Tôi không nhớ
-            </label>
+      <!-- Main checker: image, link, text, and voice all use the same AI button. -->
+      <section id="home" class="page active">
+        <div class="hero">
+          <h1>Kiểm tra lừa đảo <span class="accent">an toàn</span> và nhanh chóng</h1>
+          <p>Dán tin nhắn, đường link, ảnh chụp màn hình hoặc nói bằng giọng nói. ScamCheck sẽ phân tích và đưa ra điểm rủi ro dễ hiểu.</p>
         </div>
-        <p class="question">Bạn có biết cơ quan/công ty này không?</p>
-        <div class="radio-group">
-            <label>
-            <input type="radio" name="company" value="has interacted with this"> Có
+
+        <div class="card checker">
+          <div class="tabs">
+            <button class="tab active" data-mode="image">Ảnh chụp</button>
+            <button class="tab" data-mode="link">Đường link</button>
+            <button class="tab" data-mode="text">Văn bản</button>
+            <button class="tab" data-mode="voice">Giọng nói</button>
+          </div>
+
+          <div class="panel active" data-panel="image">
+            <label class="upload" id="uploadBox">
+              <div style="font-size:2.3rem">⇧</div>
+              <strong id="uploadTitle">Bấm vào đây để tải ảnh</strong>
+              <span class="small" id="uploadHint">Ảnh chụp tin nhắn, email, link hoặc màn hình đáng ngờ</span>
+              <input id="imageInput" type="file" accept="image/*" capture="environment">
             </label>
-            <label>
-            <input type="radio" name="company" value="has not interacted with this"> Không
-            </label>
-            <label>
-            <input type="radio" name="company" value="does not remember if they interacted with this"> Tôi không chắc
-            </label>
-            <label>
-            <input type="radio" name="company" value="knows the sender is not affiliated with a company"> Người gửi không thuộc cơ quan/công ty nào mà tôi biết
-            </label>
+          </div>
+
+          <div class="panel" data-panel="link">
+            <input id="linkInput" type="url" placeholder="Dán đường link đáng ngờ vào đây...">
+            <p class="hint">Ví dụ: link nhận thưởng, giao hàng, ngân hàng, tuyển dụng hoặc trang yêu cầu nhập OTP.</p>
+          </div>
+
+          <div class="panel" data-panel="text">
+            <textarea id="message" maxlength="2000" placeholder="Dán tin nhắn, email hoặc nội dung đáng ngờ vào đây..."></textarea>
+            <div class="samples" id="samples">
+              {% for sample in samples %}
+                <button class="sample" data-sample="{{ sample.text }}">{{ sample.label }}</button>
+              {% endfor %}
+            </div>
+          </div>
+
+          <div class="panel" data-panel="voice">
+            <button id="recordBtn" class="secondary"><span class="record-icon"></span>Bắt đầu ghi giọng nói</button>
+            <p id="voiceStatus" class="hint">Bấm để ghi bằng Web Speech API. Nếu trình duyệt không hỗ trợ, hãy nhập nội dung vào ô bên dưới.</p>
+            <textarea id="voiceText" maxlength="2000" placeholder="Nội dung giọng nói sẽ hiện ở đây..."></textarea>
+          </div>
+
+          <div id="error" class="error"></div>
+          <button id="analyzeBtn" class="primary">Phân tích với AI</button>
         </div>
-        <p class="question">Bạn đang sử dụng nền tảng nào?</p>
-        <div style="margin-bottom: 20px;">
-            <label>
-            <input type="radio" name="platform" value="Zalo"> Zalo
-            </label>
-            <label>
-            <input type="radio" name="platform" value="WhatsApp"> WhatsApp
-            </label>
-            <label>
-            <input type="radio" name="platform" value="iMessage"> iMessage
-            </label>
-            <label>
-            <input type="radio" name="platform" value="Messenger"> Messenger/Facebook
-            </label>
-            <label>
-            <input type="radio" name="platform" value="Instagram"> Instagram
-            </label>
-            <label>
-            <input type="radio" name="platform" value="Email"> Email
-            </label>
-            <label>
-            <input type="radio" name="platform" value="some platform other tham Facebook/Messenger, Instagram, iMessage, Whatsapp, or Zalo."> Other
-            </label>
+      </section>
+
+      <!-- Gemini analysis appears here after Python returns a result. -->
+      <section id="analysis" class="page result">
+        <div class="topbar">
+          <button id="backHome" class="plain">← Quay lại kiểm tra</button>
+          <span class="pill">Kết quả phân tích</span>
         </div>
-        <div class="input-group">
-            <label for="message" class="question">Dán tin nhắn vào đây</label>
-            <input type="text" id="message" name="message" placeholder="Tin nhắn">
+        <div id="resultBox" class="card" style="padding:18px"></div>
+      </section>
+
+      <!-- The browser stores and reopens the latest 10 checks locally. -->
+      <section id="history" class="page simple">
+        <div class="simple-head">
+          <h1>Lịch sử kiểm tra</h1>
+          <button id="clearHistory" class="plain">Xóa</button>
         </div>
-        <div class="input-group">
-            <label for="image" class="question">Bỏ ảnh vào đây</label>
-            <input type="file" id="image" name="scam_image" accept="image/*">
+        <p class="hint">10 kết quả gần nhất trên thiết bị này. Bấm vào một kết quả để xem lại đầy đủ.</p>
+        <div id="historyList" class="history-list"></div>
+      </section>
+
+      <!-- Static questions and answers; no Gemini request is needed. -->
+      <section id="faq" class="page simple">
+        <h1>Hỏi đáp</h1>
+        <p class="hint faq-intro">Bác có thể hỏi về tin nhắn vừa kiểm tra, việc đã bấm link, gửi tiền, cung cấp thông tin hoặc bất kỳ điều gì còn lo lắng.</p>
+        <p class="hint faq-note">Những câu hỏi thường gặp khi bác nhận được tin nhắn, đường link, email hoặc ảnh chụp đáng ngờ.</p>
+        <div class="faq-grid">
+          <details class="faq-item"><summary>ScamCheck dùng để làm gì?</summary><p>ScamCheck giúp bác kiểm tra nhanh tin nhắn, đường link, email hoặc ảnh chụp đáng ngờ. Ứng dụng đọc nội dung và đưa ra mức rủi ro, các dấu hiệu cần chú ý cùng ba bước nên làm tiếp. Bác có thể dùng công cụ trước khi bấm đường link, chuyển tiền hoặc trả lời người gửi. Kết quả được giải thích bằng tiếng Việt đơn giản để bác dễ hiểu vì sao nội dung có thể nguy hiểm. ScamCheck không đánh giá bác và cũng không làm bác phải lo sợ thêm. Mục tiêu chính là giúp bác có thêm thời gian kiểm tra kỹ trước khi quyết định.</p></details>
+          <details class="faq-item"><summary>Kết quả An toàn, Nghi ngờ, Nguy hiểm nghĩa là gì?</summary><p>An toàn nghĩa là AI chưa thấy dấu hiệu lừa đảo rõ ràng trong nội dung bác đã gửi. Tuy vậy, bác vẫn nên kiểm tra người gửi nếu tin nhắn liên quan đến tiền, mật khẩu hoặc thông tin cá nhân. Nghi ngờ nghĩa là còn chi tiết chưa thể xác minh, chẳng hạn đường link lạ, lời hứa quá hấp dẫn hoặc yêu cầu làm gấp. Trong trường hợp này, bác nên hỏi người thân và liên hệ tổ chức qua kênh chính thức. Nguy hiểm nghĩa là nội dung có nhiều dấu hiệu lừa đảo đáng tin cậy. Khi thấy mức này, bác không nên bấm link, gửi tiền, trả lời hay cung cấp mã OTP.</p></details>
+          <details class="faq-item"><summary>Nếu bác đã bấm vào link thì sao?</summary><p>Bác hãy đóng trang đó và không nhập thêm bất kỳ thông tin nào. Chỉ bấm vào link chưa chắc đã làm mất tiền, vì vậy bác hãy bình tĩnh và nhớ lại mình đã cung cấp những gì. Nếu đã nhập mật khẩu, bác nên mở ứng dụng hoặc trang web chính thức để đổi mật khẩu ngay. Bác cũng nên đăng xuất các thiết bị lạ và bật xác thực hai bước nếu dịch vụ hỗ trợ. Nếu đã nhập OTP, thông tin thẻ hoặc tài khoản ngân hàng, hãy gọi ngay số hỗ trợ in trên thẻ hoặc trong ứng dụng chính thức. Cuối cùng, bác nên chụp màn hình và giữ lại đường link để cung cấp cho ngân hàng hoặc cơ quan chức năng khi cần.</p></details>
+          <details class="faq-item"><summary>Nếu bác đã chuyển tiền thì làm gì?</summary><p>Bác hãy gọi ngân hàng càng sớm càng tốt để yêu cầu tra soát và hỗ trợ chặn giao dịch. Khi gọi, bác cần chuẩn bị số tiền, thời gian chuyển, số tài khoản nhận và mã giao dịch. Hãy giữ lại ảnh chụp tin nhắn, biên lai, tên tài khoản và mọi cuộc gọi liên quan. Bác không nên xóa cuộc trò chuyện hoặc chặn người gửi trước khi đã lưu đủ bằng chứng. Sau đó, bác nên trình báo cơ quan công an để được hướng dẫn chính thức. Tuyệt đối không chuyển thêm tiền dù người gửi nói đó là phí hoàn tiền, phí mở khóa hoặc cách lấy lại khoản tiền cũ.</p></details>
+          <details class="faq-item"><summary>Có nên cung cấp mã OTP không?</summary><p>Không, bác tuyệt đối không đọc, chụp hoặc gửi mã OTP cho người khác. OTP là mã dùng một lần để xác nhận đăng nhập hoặc giao dịch và có thể cho phép người khác lấy tiền khỏi tài khoản. Mật khẩu, mã PIN, số bảo mật sau thẻ và thông tin đăng nhập cũng phải được giữ kín. Ngân hàng, công an hoặc nhân viên giao hàng thật sẽ không yêu cầu bác đọc OTP qua điện thoại hay tin nhắn. Nếu ai đó thúc giục bác cung cấp mã ngay, bác nên dừng cuộc gọi và tự liên hệ đơn vị đó qua số chính thức. Nếu đã lỡ cung cấp mã, hãy khóa thẻ hoặc tài khoản và gọi ngân hàng ngay lập tức.</p></details>
+          <details class="faq-item"><summary>Lịch sử có bị gửi lên mạng không?</summary><p>Lịch sử kiểm tra được lưu trong trình duyệt trên chính thiết bị bác đang dùng. ScamCheck chỉ giữ tối đa 10 kết quả gần nhất để bác có thể mở lại mà không cần gọi AI lần nữa. Điện thoại hoặc máy tính khác sẽ không tự nhìn thấy lịch sử này. Lịch sử cũng không được dùng để tạo tài khoản vì ScamCheck không có hệ thống đăng nhập. Khi xóa dữ liệu trình duyệt, các kết quả đã lưu có thể biến mất. Bác cũng có thể chủ động xóa toàn bộ lịch sử bất cứ lúc nào tại trang Lịch sử.</p></details>
+          <details class="faq-item"><summary>Khi nào nên hỏi người thân hoặc ngân hàng?</summary><p>Bác nên hỏi ngay khi tin nhắn có đường link lạ, yêu cầu chuyển tiền, xin OTP, dọa khóa tài khoản hoặc thúc giục làm gấp. Một dấu hiệu quan trọng khác là người gửi yêu cầu bác giữ bí mật và không được kể với gia đình. Bác nên gọi người thân trước khi thực hiện bất kỳ hành động tài chính nào mà mình chưa chắc chắn. Khi cần xác minh với ngân hàng, hãy dùng số điện thoại trên thẻ, trong ứng dụng hoặc trên trang web chính thức. Không gọi số được gửi kèm trong tin nhắn đáng ngờ vì số đó có thể thuộc về kẻ lừa đảo. Việc xác minh trước thường chỉ mất vài phút nhưng có thể giúp bác tránh mất tiền và thông tin cá nhân.</p></details>
+          <details class="faq-item"><summary>ScamCheck có thay thế công an hoặc ngân hàng không?</summary><p>Không, ScamCheck là công cụ giáo dục hỗ trợ bác nhận biết dấu hiệu rủi ro. Kết quả AI dựa trên nội dung được cung cấp và không phải kết luận điều tra chính thức. Công cụ cũng không thể khóa tài khoản, thu hồi giao dịch hoặc xác định chắc chắn danh tính người gửi. Khi bị mất tiền, đe dọa hoặc lộ tài khoản, bác cần liên hệ ngay ngân hàng và cơ quan công an. Bác nên làm theo hướng dẫn của các đơn vị chính thức nếu hướng dẫn đó khác với gợi ý của ứng dụng. ScamCheck phù hợp nhất để giúp bác phát hiện sớm, dừng lại và chuẩn bị thông tin trước khi nhờ hỗ trợ.</p></details>
         </div>
-        <button type="submit">Submit</button>
-    </form>
-    
-</div>
+        <div class="faq-ask">
+          <textarea id="faqQuestion" maxlength="1200" placeholder="Ví dụ: Tôi đã bấm vào đường link nhưng chưa nhập mật khẩu. Bây giờ tôi nên làm gì?"></textarea>
+          <div class="faq-actions">
+            <span class="hint">AI sẽ dùng kết quả và lịch sử kiểm tra trên thiết bị này để hiểu câu hỏi.</span>
+            <button id="faqAskBtn" class="primary">Hỏi ScamCheck AI</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Python supplies the scam-library data through /api/library. -->
+      <section id="library" class="page simple">
+        <h1>Thư viện kiểu lừa đảo</h1>
+        <p class="hint">Chọn nhóm để xem những kiểu lừa đảo thường gặp và ví dụ minh họa.</p>
+        <div id="libraryFilters" class="library-tools"></div>
+        <div id="libraryList" class="library-list"></div>
+      </section>
+
+      <!-- Practice questions are loaded from Python and scored in the browser. -->
+      <section id="training" class="page simple">
+        <h1>Chế độ luyện tập</h1>
+        <div class="training-card">
+          <strong id="trainProgress">Câu 1/10</strong>
+          <div id="trainText" class="training-text"></div>
+          <div class="row">
+            <button id="trainScam" class="choice-btn">Lừa đảo</button>
+            <button id="trainSafe" class="choice-btn">An toàn</button>
+            <button id="trainNext" class="plain">Câu tiếp theo</button>
+          </div>
+          <p id="trainFeedback" class="hint"></p>
+        </div>
+      </section>
+    </main>
+
+    <nav class="bottom-nav">
+      <button class="nav active" data-page="home">⌂<br>Trang chủ</button>
+      <button class="nav" data-page="history">◴<br>Lịch sử</button>
+      <button class="nav" data-page="faq">?<br>Hỏi đáp</button>
+      <button class="nav" data-page="library"><span class="mobile-book" aria-hidden="true"></span><br>Thư viện</button>
+      <button class="nav" data-page="training">✓<br>Luyện tập</button>
+    </nav>
+
+    <button id="chatToggle" class="chat-toggle">Hỏi AI</button>
+    <div id="loading" class="loading" aria-live="polite">
+      <div class="loader-card">
+        <div class="spinner"></div>
+        <strong>Đang phân tích với AI...</strong>
+        <span class="hint">Vui lòng chờ trong giây lát.</span>
+      </div>
+    </div>
+    <!-- Optional follow-up conversation using the previous analysis as context. -->
+    <aside id="chatDrawer" class="chat-drawer" aria-label="Hỏi AI thêm">
+      <div class="chat-head">
+        <div>
+          <h2>Hỏi AI thêm</h2>
+          <span class="small">Gửi câu hỏi, ảnh hoặc file mới về vụ việc.</span>
+        </div>
+        <button id="chatClose" class="chat-close">×</button>
+      </div>
+      <div id="chatLog" class="chat-log">
+        <div class="chat-msg ai">Bác có thể hỏi thêm: “Tôi đã bấm link rồi thì làm gì?” hoặc tải ảnh/file mới để AI xem tiếp.</div>
+      </div>
+      <div class="chat-form">
+        <div class="chat-composer">
+          <label class="chat-file" title="Tải tệp để AI xem thêm">
+            <span>Tệp</span>
+            <input id="chatFile" type="file" accept="image/*,.txt,.json,.csv,text/plain,application/json,text/csv">
+          </label>
+          <textarea id="chatQuestion" rows="1" maxlength="1200" placeholder="Nhắn cho ScamCheck AI..."></textarea>
+          <button id="chatSend" class="chat-send">Gửi</button>
+        </div>
+        <div class="chat-meta">
+          <span id="chatFileName" class="small"></span>
+          <span id="chatTimer" class="small" aria-live="polite"></span>
+        </div>
+      </div>
+    </aside>
+    <footer class="legal-footer">
+      ScamCheck là công cụ giáo dục do nhóm học viên phát triển và không thay thế cảnh báo chính thức từ ngân hàng hoặc cơ quan chức năng.
+    </footer>
+  </div>
+  <script src="{{ url_for('static', filename='js/helpers.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/navigation.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/history.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/analyze.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/voice.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/chat.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/extras.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
 
 </body>
 </html>
+
