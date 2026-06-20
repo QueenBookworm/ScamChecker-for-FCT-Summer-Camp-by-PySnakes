@@ -17,6 +17,9 @@
     border-radius: 50%;
     background-color: white;
 }
+.score {
+    z-index: 200;
+}
 
 .form-container {
     background: #F2FCF8;
