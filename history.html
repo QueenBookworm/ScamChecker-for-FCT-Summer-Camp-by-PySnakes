@@ -16,18 +16,18 @@
     <label for="menu-toggle" class="close-btn">×</label>
     <h2>Menu</h2>
     <a href="/">Scam Checker</a>
-    <a href="/history">History</a>
+    <a href="/history">Lịch Sử</a>
 </div>
 <div class="form-container">
-    <h1 style="text-align:center; color:#042615">History</h1>
+    <h1 style="text-align:center; color:#042615">Lịch Sử</h1>
     <form action="/" method="GET" enctype="multipart/form-data">            
         
         <div class="past-searches">
             {% for item in history %}
 
                 <div class="history-item">
-
-                    <h3 style="text-align:center; color:#042615">{{ item.original_message }}</h3>
+                    <input type="checkbox" id="{{ item.original_message }}" hidden>
+                    <h3 style="text-align:center; color:#042615" for {{ item.original_message }}>{{ item.original_message }}</h3>
 
                     <div class="response">
                         <h2 style="text-align:center; color:#042615">{{item.status}}</h2>
