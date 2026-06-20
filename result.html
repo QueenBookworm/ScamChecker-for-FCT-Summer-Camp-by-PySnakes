@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0" >
-    <link rel="stylesheet" href="../static/result.css">
+    <link rel="stylesheet" href="../static/style.css">
     <title>ScamCheck</title>
     
 </head>
@@ -16,24 +16,71 @@
     <label for="menu-toggle" class="close-btn">×</label>
     <h2>Menu</h2>
     <a href="/">Scam Checker</a>
-    <a href="/history">History</a>
+    <a href="/history">Lịch Sử</a>
 </div>
-
 <div class="form-container">
-    <h1 style="text-align:center; color:#042615">Result</h1>
-    <form action="/" method="GET" enctype="multipart/form-data">            
-        
-        <div class="response">
-            <h2 style="text-align:center; color:#042615">{{status}}</h2>
-            <div class="circle" style="background: conic-gradient({{color}} 0% {{ scam_score }}%, #07B85A {{ scam_score }}% 100%);">
-                <span class="score">{{ scam_score }}%</span>
-            </div>
+    <h2 style="text-align:center; color:#042615">Scam Checker</h2>
+    <form action="/" method="POST" enctype="multipart/form-data">            
+        <p class="question">Bạn có biết số điện thoại này không?</p>
+        <div class="radio-group">
+            <label>
+            <input type="radio" name="number" value="does"> Có
+            </label>
+            <label>
+            <input type="radio" name="number" value="does not"> Không
+            </label>
+            <label>
+            <input type="radio" name="number" value="doesn't remember if they interacted with"> Tôi không nhớ
+            </label>
         </div>
-        <div class="response">
-            <p>{{original_message}}</p>
-            <p>{{message}}</p>
+        <p class="question">Bạn có biết cơ quan/công ty này không?</p>
+        <div class="radio-group">
+            <label>
+            <input type="radio" name="company" value="has interacted with this"> Có
+            </label>
+            <label>
+            <input type="radio" name="company" value="has not interacted with this"> Không
+            </label>
+            <label>
+            <input type="radio" name="company" value="does not remember if they interacted with this"> Tôi không chắc
+            </label>
+            <label>
+            <input type="radio" name="company" value="knows the sender is not affiliated with a company"> Người gửi không thuộc cơ quan/công ty nào mà tôi biết
+            </label>
         </div>
-        <button type="submit">Return to ScamChecker</button>
+        <p class="question">Bạn đang sử dụng nền tảng nào?</p>
+        <div style="margin-bottom: 20px;">
+            <label>
+            <input type="radio" name="platform" value="Zalo"> Zalo
+            </label>
+            <label>
+            <input type="radio" name="platform" value="WhatsApp"> WhatsApp
+            </label>
+            <label>
+            <input type="radio" name="platform" value="iMessage"> iMessage
+            </label>
+            <label>
+            <input type="radio" name="platform" value="Messenger"> Messenger/Facebook
+            </label>
+            <label>
+            <input type="radio" name="platform" value="Instagram"> Instagram
+            </label>
+            <label>
+            <input type="radio" name="platform" value="Email"> Email
+            </label>
+            <label>
+            <input type="radio" name="platform" value="some platform other tham Facebook/Messenger, Instagram, iMessage, Whatsapp, or Zalo."> Other
+            </label>
+        </div>
+        <div class="input-group">
+            <label for="message" class="question">Dán tin nhắn vào đây</label>
+            <input type="text" id="message" name="message" placeholder="Tin nhắn">
+        </div>
+        <div class="input-group">
+            <label for="image" class="question">Bỏ ảnh vào đây</label>
+            <input type="file" id="image" name="scam_image" accept="image/*">
+        </div>
+        <button type="submit">Submit</button>
     </form>
     
 </div>
