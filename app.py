@@ -36,35 +36,40 @@ def index():
                 try:
                     client = genai.Client(api_key="")
                     print(ai_input) # We wanna check if this works, how it looks
+                    print("before response")
                     response = client.models.generate_content(
                             model='gemini-3.1-flash-lite',
                             contents=ai_input,
                             config=types.GenerateContentConfig(
-                                system_instruction="You are an evidence-driven assistant that assesses whether a message or attached image is likely a scam. Consider message content, sender info, platform, and image. Return a balanced integer 'scam_score' from 0 (not a scam) to 100 (definite scam). If uncertain, reflect that with a mid-range score (e.g., 40–60). Provide 'reason' in 20–50 words summarizing the key evidence and uncertainty, and 'action' in under 20 words advising the user. Output ONLY valid JSON with keys: {'scam_score': int, 'reason': str, 'action': str}. Do not include any extra explanation, markup, or backticks. Avoid defaulting to high scam scores; weigh both indicators and counter-indicators carefully."),
+                                system_instruction="""Bạn là trợ lý đánh giá dựa trên bằng chứng để xác định tin nhắn hoặc ảnh đính kèm có khả năng là lừa đảo hay không. Hãy xem xét nội dung tin nhắn, thông tin người gửi, nền tảng và hình ảnh. Trả về 'scam_score' là số nguyên cân bằng từ 0 (không phải lừa đảo) đến 100 (chắc chắn là lừa đảo). Nếu chưa chắc chắn, dùng điểm ở khoảng giữa (ví dụ 40–60). 'reason' phải viết bằng tiếng Việt trong 20–50 từ, tóm tắt bằng chứng chính và mức độ không chắc chắn. 'action' phải viết bằng tiếng Việt, dưới 20 từ, để khuyên người dùng nên làm gì. Luôn trả lời bằng tiếng Việt dù nội dung đầu vào dùng ngôn ngữ nào. Chỉ xuất JSON hợp lệ với các khóa: {'scam_score': int, 'reason': str, 'action': str}. Không thêm giải thích, định dạng Markdown hoặc dấu backtick. Không mặc định chấm điểm lừa đảo cao; hãy cân nhắc kỹ cả dấu hiệu đáng ngờ và dấu hiệu an toàn."""),
                             )
-                                
+                    print("is this ok?")
                     clean_txt = response.text.strip().replace("```json", "").replace("```", "")
                     data = json.loads(clean_txt)
                     scam_score = int(data["scam_score"])
+                    print(scam_score)
                     response_text = f"{data['reason']} {data['action']}"
-                    status = "You are safe" if scam_score < 50 else "You have been scammed"
+                    status = "Có vẻ an toàn" if scam_score < 50 else "Có dấu hiệu lừa đảo"
                     color = "#f56020" if scam_score <60 else "#E50B31"
+                    print("hey yall")
                     history_list.append({"status":status,
                                     "scam_score":scam_score,
                                     "message":response_text,
                                     "original_message":request.form.get('message'),
                                     "color":color})
-                    print(color)
+                    print(f"LOOOKHEEEEEERE{color}")
                     if len(history_list) > 10:
                         history_list.pop(0)
                 except Exception as e:
-                    response_text = f"An error occurred: {str(e)}"
-                    scam_score = 0
-                    status = "Error"
+                    response_text = "Đã xảy ra lỗi, vui lòng thử lại."
+                    scam_score = 100
+                    status = "Lỗi"
+                    color = "#f56020"
             else:
-                response_text = "No input provided"
+                response_text = "Chưa có nội dung để kiểm tra."
                 scam_score = 0
-                status = "Error, please try again."
+                status = "Có lỗi xảy ra, vui lòng thử lại."
+                color = "#f56020"
             return render_template(
                 "result.html",
                 status=status,
