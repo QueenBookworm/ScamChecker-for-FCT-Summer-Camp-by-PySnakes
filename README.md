@@ -1,14 +1,18 @@
-just so u know me read
 
 ```
-├── app.py (run this)
-├── README.md (nevermind this one)
-├── static/
-│   ├── result.css
-│   ├── style.css
-│   └── history.css
-└── templates/
-    ├── index.html
-    ├── result.html
-    └── history.html
+├── app.py
+├── .env
+├── templates/
+│   └── index.html
+└── static/
+    └── js/
+        ├── analyze.js
+        ├── app.js
+        ├── chat.js
+        ├── extras.js
+        ├── helpers.js
+        ├── history.js
+        ├── navigation.js
+        └── voice.css
+
 ```
