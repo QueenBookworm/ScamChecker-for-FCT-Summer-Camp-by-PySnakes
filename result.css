@@ -10,8 +10,10 @@
 }
 
 .circle::after {
-    width: 10vw;
-    height: 10vw;
+    content: "";
+    position: absolute;
+    width: 15vw;
+    height: 15vw;
     border-radius: 50%;
     background-color: white;
 }
