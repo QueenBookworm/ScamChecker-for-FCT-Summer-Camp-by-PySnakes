@@ -48,7 +48,9 @@ def index():
                     data = json.loads(clean_txt)
                     scam_score = int(data["scam_score"])
                     print(scam_score)
-                    response_text = f"{data['reason']} {data['action']}"
+                    response_text = f"{data['reason']}"
+                    if scam_score > 50: 
+                        response_text += f" {data['action']}"
                     status = "Có vẻ an toàn" if scam_score < 50 else "Có dấu hiệu lừa đảo"
                     color = "#f56020" if scam_score <60 else "#E50B31"
                     print("hey yall")
