@@ -10,13 +10,11 @@ function resultToolsHtml() {
   return `
     <div class="result-action-rail">
       <button id="copyResult" class="tool-btn" type="button">Copy text</button>
-      <button id="shotResult" class="tool-btn" type="button">Screenshot</button>
       <button id="shareResult" class="tool-btn" type="button">Share</button>
-      <button id="qrResult" class="tool-btn" type="button">QR</button>
       <button id="downloadCard" class="tool-btn" type="button">Download</button>
     </div>
 
-    <div id="qrBox" class="qr-popover">
+    <div id="qrBox" class="qr-popover" hidden>
       <img
         class="qr-img"
         alt="QR ScamCheck"
@@ -74,13 +72,8 @@ function bindResultTools() {
 
   $("rescueSubmit").onclick = submitRescue;
   $("copyResult").onclick = copyResult;
-  $("shotResult").onclick = downloadResultCard;
   $("shareResult").onclick = shareResult;
   $("downloadCard").onclick = downloadResultCard;
-
-  $("qrResult").onclick = () => {
-    $("qrBox").classList.toggle("show");
-  };
 
   drawShareCard();
 }
@@ -413,6 +406,8 @@ function drawLibrary() {
       </div>
     </details>
   `).join("");
+
+  setupExclusiveDetails("#libraryList", ".library-item");
 }
 
 
@@ -420,7 +415,7 @@ function drawLibrary() {
 function setupTraining() {
   $("trainScam").onclick = () => answerTraining("scam");
   $("trainSafe").onclick = () => answerTraining("safe");
-  $("trainNext").onclick = nextTraining;
+  $("trainNext").onclick = handleTrainingNext;
 }
 
 
@@ -496,6 +491,23 @@ function answerTraining(choice) {
 
 
 // ===== Training Next Section =====
+function handleTrainingNext() {
+  if (trainingIndex < 0 || trainingAnswered) {
+    nextTraining();
+    return;
+  }
+
+  skipTraining();
+}
+
+
+function skipTraining() {
+  clearTimeout(trainingTimer);
+  trainingIndex++;
+  drawTraining();
+}
+
+
 function nextTraining() {
   clearTimeout(trainingTimer);
 
