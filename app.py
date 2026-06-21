@@ -92,7 +92,6 @@ HOTLINES = [
 
 
 def load_env():
-    """Read simple KEY=VALUE settings from .env without another library."""
     """Simple .env loader so students do not need extra setup knowledge."""
     if not os.path.exists(".env"):
         return
@@ -119,6 +118,7 @@ def gemini_keys():
 
 
 def gemini_models():
+    """Prefer user-configured models, then fall back through known Gemini Flash models."""
     extra_models = re.split(r"[\s,;]+", os.getenv("GEMINI_MODELS", ""))
     models = [
         *extra_models,
@@ -134,6 +134,7 @@ def gemini_models():
 
 
 def clamp(value, fallback=None):
+    """Convert a score-like value into a 0-100 integer."""
     try:
         return max(0, min(100, round(float(value))))
     except Exception:
@@ -141,6 +142,7 @@ def clamp(value, fallback=None):
 
 
 def require_ai_score(data, fallback=None):
+    """Read Gemini's risk score and fail loudly unless a fallback is allowed."""
     raw = data.get("riskpercentage", data.get("risk_percentage", data.get("danger_score_percent", data.get("score"))))
     if raw is None:
         if fallback is not None:
@@ -182,18 +184,120 @@ def default_actions(score):
     ]
 
 
+RISKY_HIGHLIGHT_PATTERNS = [
+    r"https?://[^\s<>()]+|www\.[^\s<>()]+",
+    r"\b[a-z0-9-]+\.[a-z]{2,}(?:/[^\s<>()]*)?",
+    r"(?:bấm|nhấn|mở|truy cập|click|open)\s+(?:vào\s+)?(?:đường\s+)?link",
+    r"(?:bam|nhan|mo|truy cap)\s+(?:vao\s+)?(?:duong\s+)?link",
+    r"(?:nhập|gửi|cung cấp|đọc)\s+(?:mã\s+)?OTP",
+    r"(?:nhap|gui|cung cap|doc)\s+(?:ma\s+)?OTP",
+    r"(?:nhập|gửi|cung cấp)\s+(?:mật khẩu|mã PIN|CCCD|căn cước|thông tin thẻ)",
+    r"(?:nhap|gui|cung cap)\s+(?:mat khau|ma PIN|CCCD|can cuoc|thong tin the)",
+    r"(?:chuyển|gửi|nạp|đóng|thanh toán)\s+(?:tiền|phí|khoản)",
+    r"(?:chuyen|gui|nap|dong|thanh toan)\s+(?:tien|phi|khoan)",
+    r"(?:nhận|receive)\s+(?:tiền|money|thưởng|quà)",
+    r"(?:nhan|receive)\s+(?:tien|money|thuong|qua)",
+    r"(?:tài khoản|SIM|thẻ).{0,24}(?:bị\s+)?khóa",
+    r"(?:tai khoan|SIM|the).{0,24}(?:bi\s+)?khoa",
+    r"(?:xác minh|đăng nhập).{0,28}(?:ngay|gấp|trong\s+\d+\s*(?:phút|giờ))",
+    r"(?:xac minh|dang nhap).{0,28}(?:ngay|gap|trong\s+\d+\s*(?:phut|gio))",
+    r"(?:ngay|gấp|khẩn cấp|trong\s+\d+\s*(?:phút|giờ))",
+    r"(?:ngay|gap|khan cap|trong\s+\d+\s*(?:phut|gio))",
+]
+
+
+def add_highlight_span(spans, start, end, text_length):
+    if end <= start or end - start < 3:
+        return
+    # Do not highlight the whole prompt; the yellow should point to specific risk cues.
+    if end - start > 120 or end - start > text_length * 0.45:
+        return
+    spans.append((start, end))
+
+
 def highlight_original(text, evidence):
-    html = escape(str(text or ""))
+    raw_text = str(text or "")
+    if not raw_text:
+        return ""
+
+    spans = []
+    text_length = len(raw_text)
+
+    for pattern in RISKY_HIGHLIGHT_PATTERNS:
+        for match in re.finditer(pattern, raw_text, re.I):
+            add_highlight_span(spans, match.start(), match.end(), text_length)
+
     for row in evidence:
         if not isinstance(row, dict):
             continue
         quote = str(row.get("quote", "")).strip()
-        if len(quote) < 2:
+        if len(quote) < 3:
             continue
-        safe_quote = escape(quote)
-        if safe_quote in html:
-            html = html.replace(safe_quote, f"<mark>{safe_quote}</mark>", 1)
-    return html
+        start = raw_text.lower().find(quote.lower())
+        if start >= 0:
+            add_highlight_span(spans, start, start + len(quote), text_length)
+
+    if not spans:
+        return escape(raw_text)
+
+    spans.sort()
+    merged = []
+    for start, end in spans:
+        if not merged or start > merged[-1][1]:
+            merged.append([start, end])
+        else:
+            merged[-1][1] = max(merged[-1][1], end)
+
+    output = []
+    cursor = 0
+    for start, end in merged:
+        output.append(escape(raw_text[cursor:start]))
+        output.append(f"<mark>{escape(raw_text[start:end])}</mark>")
+        cursor = end
+    output.append(escape(raw_text[cursor:]))
+    return "".join(output)
+
+
+def sentence_count(text):
+    text = str(text or "").strip()
+    if not text:
+        return 0
+    endings = re.findall(r"[.!。！](?=\s|$)", text)
+    return max(1, len(endings))
+
+
+def detailed_evidence_why(quote, why):
+    """Make evidence explanations useful even when Gemini returns a short reason."""
+    why = str(why or "").strip()
+    if sentence_count(why) >= 4:
+        return why
+
+    quote_lower = str(quote or "").lower()
+    additions = []
+
+    if re.search(r"https?://|www\.|\b[a-z0-9-]+\.[a-z]{2,}", quote_lower):
+        additions.append("Đường dẫn lạ có thể dẫn đến trang giả mạo để lấy mật khẩu, mã OTP hoặc thông tin thẻ.")
+    if re.search(r"otp|mật khẩu|mat khau|pin|cccd|căn cước|can cuoc|thông tin thẻ|thong tin the", quote_lower):
+        additions.append("Đây là nhóm thông tin nhạy cảm, người lạ hoặc nhân viên thật không nên yêu cầu bác gửi qua tin nhắn.")
+    if re.search(r"chuyển|chuyen|gửi|gui|nạp|nap|đóng|dong|thanh toán|thanh toan|tiền|tien|phí|phi|300", quote_lower):
+        additions.append("Yêu cầu chuyển tiền hoặc đóng phí trước thường được dùng để chiếm tiền rồi tiếp tục đòi thêm khoản khác.")
+    if re.search(r"30 phút|30 phut|ngay|gấp|gap|khẩn cấp|khan cap|quá thời hạn|qua thoi han", quote_lower):
+        additions.append("Áp lực thời gian làm người nhận khó bình tĩnh kiểm tra nguồn chính thức trước khi hành động.")
+    if re.search(r"hủy|huy|khóa|khoa|mất|mat|phạt|phat", quote_lower):
+        additions.append("Lời đe dọa hậu quả khiến bác dễ làm theo hướng dẫn mà chưa kịp hỏi người thân hoặc tổ chức thật.")
+
+    additions.append("Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra.")
+    additions.append("Nếu còn phân vân, bác nên hỏi người thân hoặc liên hệ trực tiếp tổ chức thật bằng số điện thoại chính thức.")
+
+    additions.append("Việc kiểm tra chậm lại vài phút thường an toàn hơn nhiều so với làm theo một yêu cầu gấp trong tin nhắn.")
+
+    parts = [why] if why else []
+    for sentence in additions:
+        if sentence not in parts:
+            parts.append(sentence)
+        if len(parts) >= 4:
+            break
+    return " ".join(parts)
 
 
 def result_html(item):
@@ -205,12 +309,26 @@ def result_html(item):
     actions = item.get("next_actions", [])
     original_html = highlight_original(item.get("checked_text", ""), evidence)
     psychology = item.get("psychology")
+
+    def short_support_text(text):
+        """Limit the support card to the calm 2-3 sentence shape the UI expects."""
+        text = re.sub(r"\s+", " ", str(text or "")).strip()
+        sentences = re.split(r"(?<=[.!?])\s+", text)
+        return " ".join(sentence for sentence in sentences[:3] if sentence).strip()
     if risk == "safe":
         psychology_html = ""
     elif psychology:
-        psychology_html = f"<section class='box psychology'><h3>Hiểu vì sao mình suýt tin</h3><p>{escape(str(psychology))}</p></section>"
+        psychology_html = f"""
+        <section class="support-card" aria-label="Cô tâm lý nhắc nhẹ">
+          <div class="support-icon" aria-hidden="true">♡</div>
+          <div>
+            <h3>Cô tâm lý nhắc nhẹ</h3>
+            <p>{escape(short_support_text(psychology))}</p>
+          </div>
+        </section>"""
     else:
-        psychology_html = f"<section class='box psychology'><h3>Hiểu vì sao mình suýt tin</h3><p>{escape(str(item.get('psychology_error', 'Cô tâm lý đang bận, bác có thể thử lại sau.')))}</p></section>"
+        psychology_html = """
+        <p class="support-note">Cô tâm lý đang bận, bác có thể tiếp tục theo các bước bên trên.</p>"""
     evidence_html = "".join(
         f"<div><strong>{escape(str(row.get('quote', 'Dấu hiệu')))}</strong><p>{escape(str(row.get('why') or row.get('explanation') or ''))}</p></div>"
         for row in evidence[:4] if isinstance(row, dict)
@@ -511,11 +629,14 @@ Trả về JSON object:
 
 
 def clean_result(data, message):
+    """Normalize Gemini JSON into the exact shape expected by the frontend."""
     if not isinstance(data, dict):
         data = {}
     score = require_ai_score(data, fallback=50)
     risk, default_label = risk_from_score(score)
     evidence = data.get("evidence") if isinstance(data.get("evidence"), list) else []
+
+    # Local link checks are deterministic, so show them even if Gemini misses them.
     evidence = [*link_warnings(message), *evidence]
     actions = data.get("next_actions") if isinstance(data.get("next_actions"), list) else []
     cleaned_evidence = []
@@ -524,7 +645,7 @@ def clean_result(data, message):
             quote = str(row.get("quote", "")).strip()
             why = str(row.get("why") or row.get("explanation") or "").strip()
             if quote or why:
-                cleaned_evidence.append({"quote": quote[:160], "why": why[:260]})
+                cleaned_evidence.append({"quote": quote[:180], "why": detailed_evidence_why(quote, why)[:820]})
     return {
         "source": "gemini",
         "risk": risk,
@@ -541,6 +662,7 @@ def clean_result(data, message):
 
 
 def add_psychology_if_needed(result, message, image=None):
+    """Ask for a short empathy-focused explanation only when risk is not safe."""
     if result["risk"] == "safe":
         return result
     try:
@@ -553,6 +675,7 @@ def add_psychology_if_needed(result, message, image=None):
 
 
 def clean_actions(actions, exact_three=False):
+    """Keep action buttons short and guarantee three buttons for the main result."""
     cleaned = []
     for index, action in enumerate(actions[:4]):
         if isinstance(action, dict):
@@ -637,6 +760,7 @@ def allowed_phone_set():
 
 
 def clean_rescue_steps(raw_steps):
+    """Drop rescue advice that invents phone numbers outside the trusted hotline list."""
     phones = allowed_phone_set()
     cleaned = []
     for step in raw_steps if isinstance(raw_steps, list) else []:
@@ -657,6 +781,7 @@ def home():
 
 @app.route("/api/analyze", methods=["POST"])
 def analyze():
+    # Text and image inputs both go through the same Gemini prompt so the UI stays simple.
     data = read_body()
     message = str(data.get("message", "")).strip()
     image = data.get("image")
@@ -717,6 +842,7 @@ def hotlines():
 
 @app.route("/api/rescue", methods=["POST"])
 def rescue():
+    # Rescue mode is allowed to fall back locally because users may need urgent steps.
     data = read_body()
     raw_situations = data.get("situations")
     situations = [str(value).strip() for value in raw_situations] if isinstance(raw_situations, list) else [str(data.get("situation", "")).strip()]
@@ -773,4 +899,5 @@ def history_view():
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=int(os.getenv("PORT", 5001)), debug=True)
+    debug = os.getenv("FLASK_DEBUG", "").lower() in {"1", "true", "yes"}
+    app.run(host="0.0.0.0", port=int(os.getenv("PORT", 5001)), debug=debug)
