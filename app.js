@@ -33,6 +33,8 @@ let trainingTimer = null;
 function startApp() {
   setupNavigation();
   setupTabs();
+  setupSideHistoryToggle();
+  setupExclusiveDetails(".faq-grid", ".faq-item");
   setupSamples();
   setupMainButtons();
   setupChat();
@@ -42,6 +44,26 @@ function startApp() {
 
   drawHistory();
   loadExtraPages();
+}
+
+
+// ===== Accordion Details Section =====
+function setupExclusiveDetails(containerSelector, itemSelector) {
+  const container = document.querySelector(containerSelector);
+
+  if (!container) return;
+
+  container.addEventListener("toggle", event => {
+    const opened = event.target;
+
+    if (!opened.matches(itemSelector) || !opened.open) return;
+
+    container.querySelectorAll(itemSelector).forEach(item => {
+      if (item !== opened) {
+        item.open = false;
+      }
+    });
+  }, true);
 }
 
 
