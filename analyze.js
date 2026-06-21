@@ -140,11 +140,50 @@ async function showResult(item) {
 
   $("resultBox").innerHTML = currentResult.html + resultToolsHtml();
 
+  polishResultLayout();
+
+  // Risky results get a small human support card; tuck it beside the checklist.
+  const supportCard = document.querySelector(".support-card, .support-note");
+  const actionBox = document.querySelector("#resultCard .grid .box:nth-child(2)");
+
+  if (supportCard && actionBox) {
+    actionBox.classList.add("action-box");
+    actionBox.appendChild(supportCard);
+  }
+
   document.querySelectorAll("[data-action]").forEach(button => {
     button.onclick = () => askAction(Number(button.dataset.action));
   });
 
   bindResultTools();
+}
+
+
+// ===== Result Layout Polish Section =====
+function polishResultLayout() {
+  const resultCard = $("resultCard");
+  const resultHead = resultCard?.querySelector(".result-head");
+  const resultMain = resultCard?.querySelector(".result-main");
+  const originalBox = resultCard?.querySelector(".original-text");
+  const originalText = originalBox?.querySelector("p");
+
+  if (resultCard && resultHead && resultMain) {
+    resultMain.classList.add("score-first");
+    resultCard.insertBefore(resultMain, resultHead);
+  }
+
+  if (resultHead && originalText) {
+    const quote = document.createElement("blockquote");
+
+    quote.className = "prompt-quote";
+    quote.innerHTML = `
+      <span>Tin bác nhập:</span>
+      <p>“${originalText.innerHTML}”</p>
+    `;
+
+    resultHead.appendChild(quote);
+    originalBox.remove();
+  }
 }
 
 
@@ -154,10 +193,12 @@ function askAction(index) {
 
   if (!action) return;
 
+  // Keep the chosen step available for the chat drawer response.
+  selectedActionLabel = action.label || "";
+
   openChat(true);
 
   $("chatQuestion").value =
     `Tôi muốn làm bước “${action.label}”. Hãy hướng dẫn tôi.`;
-    selectedAction = action.prompt || ""
   $("chatQuestion").focus();
 }
