@@ -3,10 +3,42 @@
    Local browser history using localStorage.
    ========================================================= */
 
+const SIDE_HISTORY_COLLAPSED_KEY = "scamcheck_side_history_collapsed_v1";
+
+
 // ===== Save History Section =====
 function saveHistory() {
   history = history.slice(0, 10);
   localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+}
+
+
+// ===== Sidebar History Collapse Section =====
+function setupSideHistoryToggle() {
+  const panel = document.querySelector(".side-history");
+  const button = $("sideHistoryToggle");
+
+  if (!panel || !button) return;
+
+  setSideHistoryCollapsed(
+    localStorage.getItem(SIDE_HISTORY_COLLAPSED_KEY) === "1"
+  );
+
+  button.onclick = () => {
+    setSideHistoryCollapsed(!panel.classList.contains("collapsed"));
+  };
+}
+
+
+function setSideHistoryCollapsed(collapsed) {
+  const panel = document.querySelector(".side-history");
+  const button = $("sideHistoryToggle");
+
+  if (!panel || !button) return;
+
+  panel.classList.toggle("collapsed", collapsed);
+  button.setAttribute("aria-expanded", String(!collapsed));
+  localStorage.setItem(SIDE_HISTORY_COLLAPSED_KEY, collapsed ? "1" : "0");
 }
 
 
