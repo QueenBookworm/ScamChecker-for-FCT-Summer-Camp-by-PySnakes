@@ -47,6 +47,8 @@
     #voiceText { min-height: 260px; }
     input[type=url] { min-height: 62px; padding: 0 18px; }
     textarea:focus, input:focus { border-color: #ff8978; box-shadow: 0 0 0 4px rgba(255,90,73,.12); }
+    .char-meter { display: flex; justify-content: flex-end; min-height: 22px; margin-top: -4px; color: #7b8798; font-size: .82rem; font-weight: 850; }
+    .char-meter.danger { color: #b91c1c; }
     .upload { display: grid; place-items: center; min-height: 270px; padding: 30px; border: 2px dashed #ff9d8f; border-radius: 22px; background: linear-gradient(180deg, #fffaf7, #fff3ee); color: var(--coral); text-align: center; cursor: pointer; transition: .18s ease; }
     .upload:hover, .upload.has-file { border-color: var(--coral); background: #fff0ec; box-shadow: 0 0 0 4px rgba(255,87,72,.1); transform: translateY(-1px); }
     .upload input { display: none; }
@@ -61,13 +63,20 @@
     .primary:hover { filter: brightness(1.04); transform: translateY(-1px); }
     .primary:disabled { opacity: .72; transform: none; }
     .secondary { min-height: 56px; padding: 0 16px; }
-    #recordBtn { width: 100%; min-height: 66px; font-size: 1.05rem; }
-    #recordBtn.recording { background: linear-gradient(135deg, #ef4444, #b91c1c); animation: softPulse 1.1s infinite; }
-    .record-icon { display: inline-grid; place-items: center; width: 22px; height: 22px; margin-right: 9px; border-radius: 50%; background: rgba(255,255,255,.18); vertical-align: middle; }
-    .record-icon::before { content: "●"; font-size: 12px; line-height: 1; }
+    #recordBtn { justify-self: center; display: inline-flex; align-items: center; justify-content: center; gap: 10px; width: min(100%, 360px); min-height: 58px; padding: 0 22px; border-radius: 16px; font-size: 1.02rem; background: linear-gradient(135deg, #0f77d8, #10b7a6); box-shadow: 0 16px 34px rgba(15,119,216,.2); }
+    #recordBtn.recording { background: linear-gradient(135deg, #ef4444, #dc2626); animation: softPulse 1.1s infinite; }
+    .record-icon { position: relative; display: inline-grid; place-items: center; width: 32px; height: 32px; border-radius: 11px; background: rgba(255,255,255,.2); vertical-align: middle; }
+    .record-icon::before { content: "🎙"; font-size: 1rem; line-height: 1; }
+    .record-icon::after { content: ""; position: absolute; right: -3px; top: -3px; width: 11px; height: 11px; border: 2px solid rgba(255,255,255,.95); border-radius: 50%; background: #22c55e; box-shadow: 0 0 0 0 rgba(34,197,94,.28); }
     .recording .record-icon { background: white; color: #ef4444; box-shadow: 0 0 0 7px rgba(255,255,255,.18); }
+    .recording .record-icon::before { content: "●"; color: #ef4444; font-size: .9rem; }
+    .recording .record-icon::after { background: #ef4444; box-shadow: 0 0 0 7px rgba(239,68,68,.18); animation: recordBlink .9s ease-in-out infinite; }
+    #voiceStatus:empty { display: none; }
     @keyframes softPulse { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-1px); } }
+    @keyframes recordBlink { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: .55; transform: scale(.82); } }
     .plain { border: 0; background: transparent; color: var(--coral); font-weight: 900; }
+    .clear-history-button { display: inline-flex; align-items: center; gap: 7px; padding: 8px 10px; border-radius: 12px; color: #dc2626; }
+    .clear-history-button:hover { background: #fff1f2; }
     .error { display: none; padding: 12px; border: 1px solid #fecaca; border-radius: 14px; background: #fff1f2; color: #9f1239; font-weight: 800; }
     .error.show { display: block; }
     .result { max-width: 920px; min-width: 0; margin: auto; padding: 18px; }
@@ -120,13 +129,16 @@
     .history-item, details { padding: 15px; border: 1px solid var(--line); border-radius: 16px; background: white; }
     #history { width: 100%; max-width: 900px; }
     #history h1 { margin-bottom: 6px; }
-    .history-item { display: grid; gap: 10px; width: 100%; padding: 18px; text-align: left; transition: border-color .15s ease, transform .15s ease; }
+    .history-item { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: stretch; gap: 10px; width: 100%; padding: 12px; text-align: left; transition: border-color .15s ease, transform .15s ease; }
     .history-item:hover { border-color: #ff9d8f; transform: translateY(-1px); }
+    .history-open { display: grid; gap: 10px; min-width: 0; border: 0; background: transparent; color: inherit; text-align: left; }
     .history-item p { margin: 0; color: var(--muted); line-height: 1.5; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .history-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
     .history-status { padding: 6px 10px; border-radius: 999px; color: white; font-size: .86rem; font-weight: 900; }
     .history-score { color: var(--muted); font-size: .9rem; font-weight: 800; }
     .history-title { font-size: 1.05rem; line-height: 1.4; }
+    .history-delete { align-self: center; display: grid; place-items: center; width: 44px; height: 44px; border: 1px solid #ffe0d8; border-radius: 12px; background: #fff8f4; color: #dc2626; font-size: 1.08rem; font-weight: 950; }
+    .history-delete:hover { border-color: #fecaca; background: #fff1f2; transform: translateY(-1px); }
     #library { width: 100%; max-width: none; min-height: calc(100vh - 78px); }
     #library h1 { margin: 8px 0 8px; font-size: clamp(2rem, 4vw, 3rem); }
     .library-tools { display: flex; flex-wrap: wrap; gap: 10px; margin: 22px 0; padding: 10px; border: 1px solid var(--line); border-radius: 14px; background: rgba(255,255,255,.78); }
@@ -169,6 +181,8 @@
     #downloadCard { background: linear-gradient(135deg, #087f8c, #0f67c7); color: white; }
     #downloadCard::before { content: "▣"; background: rgba(255,255,255,.18); color: white; } #downloadCard::after { content: "Tải ảnh"; }
     #downloadCard:hover { background: linear-gradient(135deg, #076b76, #0b55a8); color: white; }
+    #reportScam::before { content: "!"; background: #fff1f2; color: #dc2626; font-weight: 950; }
+    #reportScam::after { content: "Báo cáo"; }
     .rescue-panel { margin-top: 16px; padding: 20px; border: 1px solid #dbe8ef; border-radius: 12px; background: #fbfdff; }
     .rescue-panel summary { display: flex; align-items: center; justify-content: space-between; gap: 10px; list-style: none; pointer-events: none; }
     .rescue-panel summary::-webkit-details-marker { display: none; }
@@ -242,13 +256,15 @@
     .chat-msg ul { margin: 8px 0 0; padding-left: 20px; color: var(--muted); }
     .chat-form { display: grid; gap: 9px; padding-top: 14px; border-top: 1px solid var(--line); }
     .chat-composer { display: grid; grid-template-columns: 54px minmax(0, 1fr) 58px; align-items: start; gap: 8px; padding: 10px; border: 1px solid #d7dde8; border-radius: 18px; background: white; box-shadow: 0 8px 24px rgba(20,27,39,.07); }
-    #chatQuestion { min-height: 170px; max-height: 310px; padding: 8px 10px 14px; border: 0; border-radius: 12px; resize: vertical; box-shadow: none; line-height: 1.45; }
+    #chatQuestion { min-height: 170px; max-height: 310px; padding: 8px 10px 14px; border: 0; border-radius: 12px; resize: vertical; box-shadow: none; line-height: 1.45; white-space: pre-wrap; overflow-wrap: anywhere; word-break: break-word; }
     .chat-file { display: grid; place-items: center; min-height: 46px; padding: 0 6px; border: 1px solid #ffd6cd; border-radius: 12px; background: #fff7f2; color: #7c2d12; font-size: .78rem; font-weight: 900; cursor: pointer; text-align: center; }
     .chat-file input { display: none; }
     .chat-send { min-height: 46px; padding: 0 8px; border: 0; border-radius: 12px; background: linear-gradient(135deg, #0f77d8, #10b7a6); color: white; font-weight: 950; }
     .chat-meta { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 0 4px; }
     #chatFileName { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     #chatTimer { flex: 0 0 auto; color: #0f766e; font-weight: 800; }
+    #chatCharacterCount { margin-left: auto; color: #7b8798; font-weight: 850; }
+    #chatCharacterCount.danger { color: #b91c1c; }
     #chatFileName:empty, #chatTimer:empty { display: none; }
 
     @media (min-width: 980px) {
@@ -265,15 +281,15 @@
       .side-nav .nav:nth-child(4) { order: 3; }
       .side-nav .nav:nth-child(5) { order: 4; }
       .side-nav .nav:nth-child(3) { order: 5; }
-      .side-nav .nav:nth-child(1)::before { content: "⌂"; }
-      .side-nav .nav:nth-child(2)::before { content: "◴"; }
+      .side-nav .nav:nth-child(1)::before { content: ""; width: 32px; height: 32px; background: currentColor; clip-path: polygon(50% 9%, 89% 43%, 78% 43%, 78% 88%, 58% 88%, 58% 64%, 42% 64%, 42% 88%, 22% 88%, 22% 43%, 11% 43%); }
+      .side-nav .nav:nth-child(2)::before { content: ""; width: 32px; height: 32px; border: 2px solid currentColor; border-radius: 50%; background: radial-gradient(circle at 50% 50%, currentColor 0 2px, transparent 2.5px), linear-gradient(currentColor,currentColor) 50% 30%/2px 9px no-repeat, linear-gradient(currentColor,currentColor) 50% 50%/8px 2px no-repeat; transform: scale(.84); }
       .side-nav .nav:nth-child(3)::before { content: "?"; }
       .side-nav .nav:nth-child(4)::before { content: ""; width: 23px; height: 20px; border: 0; border-bottom: 2px solid currentColor; border-radius: 0; background: linear-gradient(currentColor,currentColor) 1px 5px/5px 13px no-repeat, linear-gradient(currentColor,currentColor) 9px 1px/5px 17px no-repeat, linear-gradient(currentColor,currentColor) 17px 7px/5px 11px no-repeat; transform: none; }
       .side-nav .nav:nth-child(5)::before { content: "✓"; }
-      .side-nav .nav:nth-child(1)::before { content: "⌂"; }
-      .side-nav .nav:nth-child(2)::before { content: "◴"; }
-      .side-nav .nav:nth-child(1)::before { font-size: 1.55rem; }
-      .side-nav .nav:nth-child(2)::before { font-size: 1.32rem; }
+      .side-nav .nav:nth-child(1)::before { content: ""; width: 32px; height: 32px; background: currentColor; clip-path: polygon(50% 9%, 89% 43%, 78% 43%, 78% 88%, 58% 88%, 58% 64%, 42% 64%, 42% 88%, 22% 88%, 22% 43%, 11% 43%); }
+      .side-nav .nav:nth-child(2)::before { content: ""; width: 32px; height: 32px; border: 2px solid currentColor; border-radius: 50%; background: radial-gradient(circle at 50% 50%, currentColor 0 2px, transparent 2.5px), linear-gradient(currentColor,currentColor) 50% 30%/2px 9px no-repeat, linear-gradient(currentColor,currentColor) 50% 50%/8px 2px no-repeat; transform: scale(.84); }
+      .side-nav .nav:nth-child(1)::before { transform: scale(.86); }
+      .side-nav .nav:nth-child(2)::before { font-size: 0; }
       .side-nav .nav:nth-child(3)::before { font-size: 1.26rem; }
       .side-nav .nav:nth-child(4)::before { width: 32px; height: 32px; border-bottom-width: 3px; background: linear-gradient(currentColor,currentColor) 5px 9px/5px 17px no-repeat, linear-gradient(currentColor,currentColor) 14px 4px/5px 22px no-repeat, linear-gradient(currentColor,currentColor) 23px 11px/5px 15px no-repeat; }
       .side-nav .nav:nth-child(5)::before { content: "✓"; font-size: 1.36rem; }
@@ -327,7 +343,7 @@
       .main { width: min(100% - 20px, 1180px); padding-bottom: 24px; }
       .checker { padding: 16px; }
       .samples { grid-template-columns: 1fr; }
-      .result-action-rail { position: static; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); width: 100%; margin: 0 0 16px; padding: 8px; }
+      .result-action-rail { position: static; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); width: 100%; margin: 0 0 16px; padding: 8px; }
       .tool-btn { width: 100%; min-height: 48px; padding: 0 8px; }
       .rescue-options { grid-template-columns: 1fr; }
       .upload { min-height: 250px; }
@@ -405,11 +421,13 @@
 
           <div class="panel" data-panel="link">
             <input id="linkInput" type="url" placeholder="Dán đường link đáng ngờ vào đây...">
+            <div id="linkCharacterCount" class="char-meter" aria-live="polite">0 / 7.000 ký tự</div>
             <p class="hint">Ví dụ: link nhận thưởng, giao hàng, ngân hàng, tuyển dụng hoặc trang yêu cầu nhập OTP.</p>
           </div>
 
           <div class="panel" data-panel="text">
-            <textarea id="message" maxlength="2000" placeholder="Dán tin nhắn, email hoặc nội dung đáng ngờ vào đây..."></textarea>
+            <textarea id="message" maxlength="30000" placeholder="Dán tin nhắn, email hoặc nội dung đáng ngờ vào đây..."></textarea>
+            <div id="messageCharacterCount" class="char-meter" aria-live="polite">0 / 7.000 ký tự</div>
             <div class="samples" id="samples">
               {% for sample in samples %}
                 <button class="sample" data-sample="{{ sample.text }}">{{ sample.label }}</button>
@@ -418,9 +436,10 @@
           </div>
 
           <div class="panel" data-panel="voice">
-            <button id="recordBtn" class="secondary"><span class="record-icon"></span>Bắt đầu ghi giọng nói</button>
-            <p id="voiceStatus" class="hint">Bấm để ghi bằng Web Speech API. Nếu trình duyệt không hỗ trợ, hãy nhập nội dung vào ô bên dưới.</p>
-            <textarea id="voiceText" maxlength="2000" placeholder="Nội dung giọng nói sẽ hiện ở đây..."></textarea>
+            <button id="recordBtn" class="secondary"><span class="record-icon"></span>Ghi giọng nói</button>
+            <p id="voiceStatus" class="hint" aria-live="polite"></p>
+            <textarea id="voiceText" maxlength="30000" placeholder="Nội dung giọng nói sẽ hiện ở đây..."></textarea>
+            <div id="voiceCharacterCount" class="char-meter" aria-live="polite">0 / 7.000 ký tự</div>
           </div>
 
           <div id="error" class="error"></div>
@@ -441,7 +460,7 @@
       <section id="history" class="page simple">
         <div class="simple-head">
           <h1>Lịch sử kiểm tra</h1>
-          <button id="clearHistory" class="plain">Xóa</button>
+          <button id="clearHistory" class="plain clear-history-button"><span aria-hidden="true">🗑</span> Delete all</button>
         </div>
         <p class="hint">10 kết quả gần nhất trên thiết bị này. Bấm vào một kết quả để xem lại đầy đủ.</p>
         <div id="historyList" class="history-list"></div>
@@ -529,11 +548,12 @@
             <span>Tệp</span>
             <input id="chatFile" type="file" accept="image/*,.txt,.json,.csv,text/plain,application/json,text/csv">
           </label>
-          <textarea id="chatQuestion" rows="1" maxlength="1200" placeholder="Nhắn cho ScamCheck AI..."></textarea>
+          <textarea id="chatQuestion" rows="1" maxlength="30000" placeholder="Nhắn cho ScamCheck AI..."></textarea>
           <button id="chatSend" class="chat-send">Gửi</button>
         </div>
         <div class="chat-meta">
           <span id="chatFileName" class="small"></span>
+          <span id="chatCharacterCount" class="small" aria-live="polite">0 / 7.000 ký tự</span>
           <span id="chatTimer" class="small" aria-live="polite"></span>
         </div>
       </div>
@@ -546,12 +566,12 @@
   <!-- These files live directly in /static, so keep the paths in sync with the project tree. -->
   <script src="{{ url_for('static', filename='helpers.js') }}"></script>
   <script src="{{ url_for('static', filename='navigation.js') }}"></script>
-  <script src="{{ url_for('static', filename='history.js') }}?v=collapse1"></script>
-  <script src="{{ url_for('static', filename='analyze.js') }}?v=layout2"></script>
-  <script src="{{ url_for('static', filename='voice.js') }}"></script>
-  <script src="{{ url_for('static', filename='chat.js') }}?v=drag1"></script>
-  <script src="{{ url_for('static', filename='extras.js') }}?v=tools4"></script>
-  <script src="{{ url_for('static', filename='app.js') }}?v=accordion1"></script>
+  <script src="{{ url_for('static', filename='history.js') }}?v=delete2"></script>
+  <script src="{{ url_for('static', filename='analyze.js') }}?v=chars1"></script>
+  <script src="{{ url_for('static', filename='voice.js') }}?v=mic1"></script>
+  <script src="{{ url_for('static', filename='chat.js') }}?v=chars1"></script>
+  <script src="{{ url_for('static', filename='extras.js') }}?v=report2"></script>
+  <script src="{{ url_for('static', filename='app.js') }}?v=chars1"></script>
 
 </body>
 </html>
