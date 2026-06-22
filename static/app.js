@@ -5,6 +5,7 @@
 
 // ===== Global State Section =====
 const HISTORY_KEY = "scamcheck_history_simple_v1";
+const AI_CHARACTER_LIMIT = 7000;
 
 let mode = "image";
 let selectedImage = null;
@@ -37,6 +38,7 @@ function startApp() {
   setupExclusiveDetails(".faq-grid", ".faq-item");
   setupSamples();
   setupMainButtons();
+  setupCharacterCounters();
   setupChat();
   setupPasteImage();
   setupTraining();
