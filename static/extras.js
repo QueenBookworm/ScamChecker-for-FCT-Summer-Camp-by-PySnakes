@@ -6,12 +6,14 @@
 // ===== Result Tools HTML Section =====
 function resultToolsHtml() {
   const appUrl = location.origin || "http://localhost:5000";
+  const rescueOptions = rescueOptionsHtml();
 
   return `
     <div class="result-action-rail">
       <button id="copyResult" class="tool-btn" type="button">Copy text</button>
       <button id="shareResult" class="tool-btn" type="button">Share</button>
       <button id="downloadCard" class="tool-btn" type="button">Download</button>
+      <button id="reportScam" class="tool-btn" type="button">Report scam</button>
     </div>
 
     <div id="qrBox" class="qr-popover" hidden>
@@ -23,32 +25,37 @@ function resultToolsHtml() {
       <span class="hint">Quét để mở ScamCheck</span>
     </div>
 
+    ${rescueOptions}
+
+    <canvas id="shareCanvas" width="1080" height="1600"></canvas>
+    <div id="toolToast" class="tool-toast"></div>
+  `;
+}
+
+// ===== Rescue Options HTML Section =====
+function rescueOptionsHtml() {
+  const options = Array.isArray(currentResult?.rescue_options)
+    ? currentResult.rescue_options
+    : [];
+
+  if (!options.length) {
+    return "";
+  }
+
+  return `
     <details class="rescue-panel" open>
       <summary>
         <strong>Bác đã làm gì rồi?</strong>
-        <span class="hint">Chọn tất cả tình huống phù hợp</span>
+        <span class="hint">Gợi ý theo phân tích Gemini</span>
       </summary>
 
       <div class="rescue-options">
-        <button class="rescue-btn" data-rescue="none" aria-pressed="false" type="button">
-          <span class="rescue-check"></span>
-          <span>Chưa làm gì</span>
-        </button>
-
-        <button class="rescue-btn" data-rescue="clicked" aria-pressed="false" type="button">
-          <span class="rescue-check"></span>
-          <span>Đã bấm vào đường dẫn</span>
-        </button>
-
-        <button class="rescue-btn" data-rescue="sent_money" aria-pressed="false" type="button">
-          <span class="rescue-check"></span>
-          <span>Đã chuyển khoản</span>
-        </button>
-
-        <button class="rescue-btn" data-rescue="shared_code" aria-pressed="false" type="button">
-          <span class="rescue-check"></span>
-          <span>Đã cung cấp mã xác thực</span>
-        </button>
+        ${options.map(option => `
+          <button class="rescue-btn" data-rescue="${safe(option.id)}" aria-pressed="false" type="button">
+            <span class="rescue-check"></span>
+            <span>${safe(option.label)}</span>
+          </button>
+        `).join("")}
       </div>
 
       <button id="rescueSubmit" class="rescue-submit" disabled type="button">
@@ -57,9 +64,6 @@ function resultToolsHtml() {
 
       <div id="rescueOutput" class="rescue-output"></div>
     </details>
-
-    <canvas id="shareCanvas" width="1080" height="1600"></canvas>
-    <div id="toolToast" class="tool-toast"></div>
   `;
 }
 
@@ -70,12 +74,22 @@ function bindResultTools() {
     button.onclick = () => toggleRescueChoice(button);
   });
 
-  $("rescueSubmit").onclick = submitRescue;
+  if ($("rescueSubmit")) {
+    $("rescueSubmit").onclick = submitRescue;
+  }
   $("copyResult").onclick = copyResult;
   $("shareResult").onclick = shareResult;
   $("downloadCard").onclick = downloadResultCard;
+  $("reportScam").onclick = reportScam;
 
   drawShareCard();
+}
+
+
+// ===== Official Scam Report Section =====
+function reportScam() {
+  window.open("https://canhbao.khonggianmang.vn", "_blank", "noopener,noreferrer");
+  showToast("Đã mở trang báo cáo chính thức của NCSC.");
 }
 
 
