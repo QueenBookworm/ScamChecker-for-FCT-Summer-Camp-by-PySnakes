@@ -9,6 +9,7 @@ function setupSamples() {
     button.onclick = () => {
       setMode("text");
       $("message").value = button.dataset.sample || button.textContent;
+      updateInputCharacterCounts();
     };
   });
 }
@@ -81,12 +82,68 @@ function getInputBody() {
 }
 
 
+// ===== Character Count Section =====
+function countCharacters(text) {
+  return String(text || "").length;
+}
+
+
+function formatCharacterCount(count) {
+  return `${count.toLocaleString("vi-VN")} / ${AI_CHARACTER_LIMIT.toLocaleString("vi-VN")} ký tự`;
+}
+
+
+function updateCharacterMeter(meterId, count) {
+  const meter = $(meterId);
+
+  if (!meter) return;
+
+  meter.textContent = formatCharacterCount(count);
+  meter.classList.toggle("danger", count > AI_CHARACTER_LIMIT);
+}
+
+
+function setupCharacterCounters() {
+  ["linkInput", "message", "voiceText"].forEach(id => {
+    const field = $(id);
+
+    if (field) {
+      field.addEventListener("input", updateInputCharacterCounts);
+    }
+  });
+
+  updateInputCharacterCounts();
+}
+
+
+function updateInputCharacterCounts() {
+  updateCharacterMeter("linkCharacterCount", countCharacters($("linkInput")?.value));
+  updateCharacterMeter("messageCharacterCount", countCharacters($("message")?.value));
+  updateCharacterMeter("voiceCharacterCount", countCharacters($("voiceText")?.value));
+}
+
+
+function inputCharacterLimitError(body) {
+  const count = countCharacters(body.message);
+
+  if (count <= AI_CHARACTER_LIMIT) return "";
+
+  return `Nội dung có ${count.toLocaleString("vi-VN")} ký tự, vượt quá giới hạn ${AI_CHARACTER_LIMIT.toLocaleString("vi-VN")} ký tự. Bác rút gọn rồi gửi lại nhé.`;
+}
+
+
 // ===== Gemini Analyze Section =====
 async function analyze() {
   const body = getInputBody();
 
   if (!body.message && !body.image) {
     return showError("Vui lòng nhập nội dung hoặc chọn ảnh.");
+  }
+
+  const limitError = inputCharacterLimitError(body);
+
+  if (limitError) {
+    return showError(limitError);
   }
 
   setBusy(true);
