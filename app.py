@@ -10,8 +10,7 @@ from flask import Flask, jsonify, render_template, request
 app = Flask(__name__)
 
 # Basic limits and trusted reference data used by the backend.
-MAX_PROMPT_WORDS = 5000
-MAX_PROMPT_CHARS = 5000
+MAX_PROMPT_CHARS = 7000
 LEGAL_TEXT = "ScamCheck là công cụ giáo dục do nhóm học viên phát triển và không thay thế cảnh báo chính thức từ ngân hàng hoặc cơ quan chức năng."
 OFFICIAL_DOMAINS = {
     "vietcombank": ["vietcombank.com.vn"],
@@ -164,26 +163,6 @@ def risk_from_score(score):
     return "safe", "An toàn"
 
 
-def default_actions(score):
-    if score >= 76:
-        return [
-            {"label": "Không bấm link", "prompt": "Tôi chưa bấm link. Hãy hướng dẫn cách kiểm tra an toàn."},
-            {"label": "Gọi nguồn chính thức", "prompt": "Tôi muốn xác minh với ngân hàng hoặc cơ quan chính thức."},
-            {"label": "Hỏi người thân", "prompt": "Tôi muốn nhờ người nhà kiểm tra lại trước khi làm tiếp."},
-        ]
-    if score >= 26:
-        return [
-            {"label": "Kiểm tra người gửi", "prompt": "Tôi muốn kiểm tra người gửi có thật hay không."},
-            {"label": "Không cung cấp OTP", "prompt": "Tôi chưa cung cấp OTP hoặc mật khẩu. Hãy nhắc tôi các điều cần tránh."},
-            {"label": "Lưu lại bằng chứng", "prompt": "Tôi muốn lưu tin nhắn này để hỏi người thân hoặc bên hỗ trợ."},
-        ]
-    return [
-        {"label": "Vẫn không gửi OTP", "prompt": "Tin có vẻ an toàn, nhưng hãy nhắc tôi cách giữ an toàn."},
-        {"label": "Kiểm tra link nếu có", "prompt": "Hãy hướng dẫn tôi kiểm tra link mà không bấm trực tiếp."},
-        {"label": "Lưu kết quả", "prompt": "Tôi muốn lưu kết quả này để xem lại sau."},
-    ]
-
-
 RISKY_HIGHLIGHT_PATTERNS = [
     r"https?://[^\s<>()]+|www\.[^\s<>()]+",
     r"\b[a-z0-9-]+\.[a-z]{2,}(?:/[^\s<>()]*)?",
@@ -310,11 +289,11 @@ def result_html(item):
     original_html = highlight_original(item.get("checked_text", ""), evidence)
     psychology = item.get("psychology")
 
-    def short_support_text(text):
-        """Limit the support card to the calm 2-3 sentence shape the UI expects."""
+    def support_text(text):
+        """Keep the support card detailed but still bounded for the result layout."""
         text = re.sub(r"\s+", " ", str(text or "")).strip()
         sentences = re.split(r"(?<=[.!?])\s+", text)
-        return " ".join(sentence for sentence in sentences[:3] if sentence).strip()
+        return " ".join(sentence for sentence in sentences[:7] if sentence).strip()
     if risk == "safe":
         psychology_html = ""
     elif psychology:
@@ -323,7 +302,7 @@ def result_html(item):
           <div class="support-icon" aria-hidden="true">♡</div>
           <div>
             <h3>Cô tâm lý nhắc nhẹ</h3>
-            <p>{escape(short_support_text(psychology))}</p>
+            <p>{escape(support_text(psychology))}</p>
           </div>
         </section>"""
     else:
@@ -336,7 +315,7 @@ def result_html(item):
     actions_html = "".join(
         f"<button class='action-btn' data-action='{index}'><span>{escape(action['label'])}</span><span>→</span></button>"
         for index, action in enumerate(actions)
-    )
+    ) or "<p class='hint'>Gemini chưa trả bước tiếp theo phù hợp cho kết quả này.</p>"
     return f"""
 <div id="resultCard" style="--risk-color:{color};padding:18px">
   <section class="result-head"><span class="pill {risk}" id="scorePill">{escape(item['verdict_label'])} · {score}% rủi ro</span><h2>Phân tích kỹ thuật</h2><p class="hint">{escape(item['summary'])}</p><p>{escape(item['explanation'])}</p></section>
@@ -364,6 +343,9 @@ def restore_result(data):
         "uncertainty": data.get("uncertainty") or "Hãy xác minh qua nguồn chính thức nếu còn lo lắng.",
         "evidence": data.get("evidence") if isinstance(data.get("evidence"), list) else [],
         "next_actions": clean_actions(actions if isinstance(actions, list) else []),
+        "rescue_options": clean_rescue_options(
+            data.get("rescue_options") or data.get("rescueOptions") or data.get("situation_options")
+        ),
         "checked_text": data.get("checked_text") or data.get("inputText", ""),
     }
 
@@ -373,17 +355,17 @@ def read_body():
     return data if isinstance(data, dict) else {}
 
 
-def word_count(text):
-    return len(re.findall(r"\S+", str(text or "")))
+def character_count(text):
+    return len(str(text or ""))
 
 
 def too_long_error():
-    return jsonify({"error": f"Nội dung quá dài. Vui lòng rút gọn dưới {MAX_PROMPT_WORDS} từ rồi thử lại."}), 400
+    return jsonify({"error": f"Nội dung quá dài. Vui lòng rút gọn dưới {MAX_PROMPT_CHARS} ký tự rồi thử lại."}), 400
 
 
 def prompt_is_too_long(*parts):
     text = " ".join(str(part or "") for part in parts)
-    return len(text) > MAX_PROMPT_CHARS or word_count(text) > MAX_PROMPT_WORDS
+    return character_count(text) > MAX_PROMPT_CHARS
 
 
 def extract_links(text):
@@ -598,6 +580,7 @@ Trả về đúng một JSON object, không markdown, gồm các trường:
 - uncertainty: 1-2 câu nói phần còn chưa chắc hoặc cần xác minh thêm; nếu không còn điểm chưa chắc, nói rõ điều đó.
 - evidence: 2 đến 4 dấu hiệu quan trọng nhất, mỗi mục có quote và why.
 - next_actions: đúng 3 bước, mỗi bước có label ngắn và prompt hướng dẫn 1-2 câu.
+- rescue_options: 3 đến 5 lựa chọn cho phần "Bác đã làm gì rồi?", mỗi lựa chọn có id, label và detail. Các lựa chọn phải dựa trên chính nội dung đang phân tích, ví dụ nếu tin đòi gửi CCCD thì có lựa chọn đã gửi CCCD; nếu tin đòi phí thì có lựa chọn đã chuyển phí; nếu có link thì có lựa chọn đã bấm link. Luôn có một lựa chọn kiểu "Chưa làm gì" nếu người dùng có thể chưa hành động.
 
 Nội dung:
 {message or "(The user uploaded an image. Read the image and analyze it.)"}
@@ -616,15 +599,16 @@ Giải thích chiêu thức tâm lý mà kẻ lừa đảo đã dùng trong tin 
 Chỉ trả JSON hợp lệ, không markdown.
 
 Bắt buộc:
-- answer gồm đúng 2 đến 3 câu tiếng Việt.
-- Không quá dài, không dùng thuật ngữ khó.
+- answer gồm ít nhất 5 câu và tối đa 7 câu tiếng Việt.
+- Mỗi câu ngắn, rõ, không dùng thuật ngữ khó.
+- Nêu cụ thể chiêu tạo áp lực, cảm xúc mà tin nhắn đang đánh vào, và cách bác nên tự trấn an trước khi làm tiếp.
 - Nếu thông tin chưa chắc, nói nhẹ nhàng là cần kiểm tra thêm.
 
 Bối cảnh:
 {json.dumps(context, ensure_ascii=False)}
 
 Trả về JSON object:
-- answer: đoạn giải thích 2 đến 3 câu.
+- answer: đoạn giải thích 5 đến 7 câu.
 """
 
 
@@ -657,6 +641,9 @@ def clean_result(data, message):
         "uncertainty": data.get("uncertainty") or "Hãy xác minh qua nguồn chính thức nếu còn lo lắng.",
         "evidence": cleaned_evidence,
         "next_actions": clean_actions(actions, exact_three=True),
+        "rescue_options": clean_rescue_options(
+            data.get("rescue_options") or data.get("rescueOptions") or data.get("situation_options")
+        ),
         "checked_text": message,
     }
 
@@ -668,14 +655,14 @@ def add_psychology_if_needed(result, message, image=None):
     try:
         data = ask_gemini(psychology_prompt(message, result), image)
         answer = str(data.get("answer", "")).strip() if isinstance(data, dict) else ""
-        result["psychology"] = answer or "Cô thấy tin này dùng cảm giác gấp gáp để bác hành động nhanh. Bác cứ chậm lại và kiểm tra qua nguồn chính thức trước."
+        result["psychology"] = answer or "Cô thấy tin này dùng cảm giác gấp gáp để bác hành động nhanh. Điều đó không có nghĩa là bác đã làm sai hay phải hoảng lên. Kẻ lừa đảo thường cố làm mình sợ mất tiền, mất tài khoản hoặc bỏ lỡ cơ hội. Bác cứ dừng lại vài phút, thở chậm và nhìn từng yêu cầu trong tin. Nếu có link, tiền, OTP hoặc giấy tờ cá nhân thì mình chỉ kiểm tra qua kênh chính thức. Bác có thể nhờ người thân xem cùng trước khi làm bất kỳ bước nào."
     except Exception:
         result["psychology_error"] = "Cô tâm lý đang bận, bác thử lại sau. Phần phân tích kỹ thuật vẫn hiển thị đầy đủ ở trên."
     return result
 
 
 def clean_actions(actions, exact_three=False):
-    """Keep action buttons short and guarantee three buttons for the main result."""
+    """Keep Gemini-provided action buttons short without inventing local defaults."""
     cleaned = []
     for index, action in enumerate(actions[:4]):
         if isinstance(action, dict):
@@ -686,11 +673,37 @@ def clean_actions(actions, exact_three=False):
             prompt = label
         if label:
             cleaned.append({"id": f"step_{index + 1}", "label": label[:80], "prompt": prompt[:240]})
-    if exact_three and len(cleaned) < 3:
-        cleaned.extend(default_actions(50)[len(cleaned):])
     if cleaned:
         return cleaned[:3] if exact_three else cleaned
-    return default_actions(50) if exact_three else []
+    return []
+
+
+def clean_rescue_options(options):
+    """Keep Gemini-generated rescue choices safe and usable by the result checklist."""
+    cleaned = []
+    seen = set()
+    for index, option in enumerate(options if isinstance(options, list) else []):
+        if isinstance(option, dict):
+            raw_id = str(option.get("id", "")).strip().lower()
+            label = str(option.get("label", "")).strip()
+            detail = str(option.get("detail") or option.get("prompt") or "").strip()
+        else:
+            raw_id = ""
+            label = str(option).strip()
+            detail = ""
+        if not label:
+            continue
+        option_id = re.sub(r"[^a-z0-9_]+", "_", raw_id).strip("_") or f"ai_option_{index + 1}"
+        option_id = option_id[:42]
+        if option_id in seen:
+            option_id = f"{option_id}_{index + 1}"[:48]
+        seen.add(option_id)
+        cleaned.append({
+            "id": option_id,
+            "label": label[:90],
+            "detail": detail[:220],
+        })
+    return cleaned[:5]
 
 
 def compact_result(item):
@@ -698,7 +711,7 @@ def compact_result(item):
     if not isinstance(item, dict):
         return {}
     fields = ("time", "inputText", "danger_score_percent", "verdict_label", "summary",
-              "explanation", "uncertainty", "evidence", "next_actions")
+              "explanation", "uncertainty", "evidence", "next_actions", "rescue_options")
     return {name: item.get(name) for name in fields if item.get(name) not in (None, "", [])}
 
 
@@ -709,6 +722,7 @@ def chat_prompt(data):
         "lich_su_chat_gan_day": data.get("messages", [])[-6:],
         "noi_dung_file_text_neu_co": str(data.get("fileText", ""))[:3000],
         "cau_hoi_moi": data.get("question", ""),
+        "danh_sach_hotline_duoc_phep_dung": HOTLINES,
     }
     return f"""
 Bạn là ScamCheck Chat, trợ lý hỏi đáp tiếp tục sau khi người dùng đã phân tích một tin nhắn/lừa đảo.
@@ -716,9 +730,13 @@ Chỉ trả JSON hợp lệ bằng tiếng Việt có dấu, không markdown.
 
 Nhiệm vụ:
 - Trả lời câu hỏi mới của người dùng bằng 1-3 đoạn ngắn, dễ hiểu cho người lớn tuổi.
+- Luôn gọi người dùng là "bác", không gọi là "cháu", "bạn" hoặc "anh/chị".
 - Nếu người dùng gửi ảnh/file mới, hãy dùng nội dung đó như thông tin cập nhật mới về vụ việc.
 - Nếu có rủi ro, nói rõ nên làm gì ngay bây giờ, nhưng không làm người dùng hoảng sợ.
-- Không bịa số hotline, số tài khoản, tên cơ quan nếu người dùng không cung cấp. Có thể nhắc gọi ngân hàng qua số chính thức trên thẻ/app hoặc báo cáo 156/5656 khi phù hợp.
+- Chỉ dùng số điện thoại trong danh_sach_hotline_duoc_phep_dung. Không bịa hotline, số tài khoản hoặc tên cơ quan.
+- Khi người dùng hỏi về hỗ trợ, đã bấm link, đã gửi tiền, đã gửi OTP/CCCD, hoặc đang cần xử lý ngay, hãy nêu số hỗ trợ cụ thể phù hợp từ danh_sach_hotline_duoc_phep_dung.
+- Nếu chưa biết ngân hàng nào liên quan, nói "gọi số trên thẻ hoặc trong ứng dụng ngân hàng chính thức"; nếu cần ví dụ, chỉ lấy ví dụ từ danh_sach_hotline_duoc_phep_dung.
+- Có thể nhắc Công an 113 khi bị đe dọa trực tiếp, 156 khi phản ánh cuộc gọi lừa đảo, và 5656 khi phản ánh tin nhắn rác/lừa đảo.
 - Nếu cần thêm thông tin, hỏi đúng 1 câu ngắn.
 - Nếu câu hỏi là về việc đã bấm link, nhập OTP, gửi tiền, gửi CCCD, cài app lạ, hãy ưu tiên hướng dẫn chặn thiệt hại.
 - Dùng kết quả hiện tại và lịch sử kiểm tra để hiểu bối cảnh; không bắt người dùng kể lại thông tin đã có.
@@ -733,9 +751,9 @@ Trả về đúng JSON object gồm:
 """
 
 
-def rescue_prompt(situation, result, hotlines):
+def rescue_prompt(selected_options, result, hotlines):
     context = {
-        "tinh_huong": situation,
+        "cac_lua_chon_nguoi_dung_da_chon": selected_options,
         "ket_qua_phan_tich": compact_result(result),
         "danh_sach_so_duoc_phep_dung": hotlines,
     }
@@ -771,6 +789,54 @@ def clean_rescue_steps(raw_steps):
         if text:
             cleaned.append(text[:420])
     return cleaned[:5]
+
+
+def clean_chat_steps(raw_steps):
+    """Keep chat next steps from mentioning unapproved phone numbers."""
+    phones = allowed_phone_set()
+    cleaned = []
+    for step in raw_steps if isinstance(raw_steps, list) else []:
+        text = str(step).strip()
+        found = set(re.findall(r"\b\d{3,11}\b", text))
+        if found and not found.issubset(phones):
+            continue
+        if text:
+            cleaned.append(text[:260])
+    return cleaned[:3]
+
+
+def sanitize_unapproved_phones(text):
+    """Remove phone numbers that are not in the curated support list."""
+    allowed = allowed_phone_set()
+
+    def replace(match):
+        phone = match.group(0)
+        return phone if phone in allowed else "[số chưa xác minh]"
+
+    return re.sub(r"\b\d{3,11}\b", replace, str(text or ""))
+
+
+def contains_allowed_phone(*texts):
+    """Detect whether Gemini already gave at least one approved support number."""
+    allowed = allowed_phone_set()
+    found = set()
+    for text in texts:
+        found.update(re.findall(r"\b\d{3,11}\b", str(text or "")))
+    return bool(found & allowed)
+
+
+def hotline_support_steps(result):
+    """Add concrete support contacts when a risky chat answer omits them."""
+    if not isinstance(result, dict) or result.get("risk") == "safe":
+        return []
+    bank_examples = ", ".join(
+        f"{row['name']} {row['phone']}" for row in [row for row in HOTLINES if row["type"] == "bank"][:4]
+    )
+    return [
+        f"Nếu liên quan tiền hoặc tài khoản ngân hàng, gọi số trên thẻ/app; ví dụ trong danh sách ScamCheck có {bank_examples}.",
+        "Nếu bị đe dọa trực tiếp, gọi Công an 113.",
+        "Nếu muốn phản ánh cuộc gọi hoặc tin nhắn lừa đảo, dùng 156 hoặc 5656.",
+    ]
 
 
 # Web pages and API endpoints used by static/app.js.
@@ -813,10 +879,21 @@ def chat():
         return too_long_error()
     try:
         answer = ask_gemini(chat_prompt(data), image)
+        result = data.get("result", {})
+        answer_data = answer if isinstance(answer, dict) else {}
+        answer_text = sanitize_unapproved_phones(answer_data.get("answer", "")).strip()
+        ai_steps = clean_chat_steps(answer_data.get("next_steps"))
+        support_steps = hotline_support_steps(result)
+        if support_steps and not contains_allowed_phone(answer_text, *ai_steps):
+            ai_steps = [*support_steps, *ai_steps]
+        merged_steps = []
+        for step in ai_steps:
+            if step not in merged_steps:
+                merged_steps.append(step)
         return jsonify({
             "source": "gemini",
-            "answer": str(answer.get("answer", "")).strip(),
-            "next_steps": (answer.get("next_steps") if isinstance(answer.get("next_steps"), list) else [])[:3],
+            "answer": answer_text,
+            "next_steps": merged_steps[:3],
         })
     except Exception as error:
         return jsonify({
@@ -844,44 +921,22 @@ def hotlines():
 def rescue():
     # Rescue mode is allowed to fall back locally because users may need urgent steps.
     data = read_body()
-    raw_situations = data.get("situations")
-    situations = [str(value).strip() for value in raw_situations] if isinstance(raw_situations, list) else [str(data.get("situation", "")).strip()]
-    situations = list(dict.fromkeys(value for value in situations if value))
+    raw_options = data.get("situations")
+    selected_ids = [str(value).strip() for value in raw_options] if isinstance(raw_options, list) else [str(data.get("situation", "")).strip()]
+    selected_ids = list(dict.fromkeys(value for value in selected_ids if value))
     result = data.get("result", {})
-    if situations == ["none"]:
-        return jsonify({
-            "source": "local",
-            "steps": ["Bác làm rất đúng: dừng lại trước khi bấm link hoặc gửi thông tin. Bác chỉ cần giữ tin nhắn làm bằng chứng và hỏi người thân nếu còn phân vân."],
-        })
-    allowed_situations = {"clicked", "sent_money", "shared_code"}
-    if not situations or "none" in situations or not set(situations).issubset(allowed_situations):
-        return jsonify({"error": "Vui lòng chọn các tình huống hợp lệ."}), 400
-    fallback = {
-        "clicked": [
-            "1. Ngắt thao tác với đường dẫn. Câu nói mẫu: Tôi đã bấm vào link lạ, xin hướng dẫn kiểm tra tài khoản.",
-            "2. Đổi mật khẩu tài khoản liên quan nếu đã nhập thông tin. Câu nói mẫu: Tôi cần khóa phiên đăng nhập đáng ngờ.",
-            "3. Gọi ngân hàng qua số trong danh sách hỗ trợ nếu liên quan tiền. Câu nói mẫu: Tôi nghi bị lừa qua link, xin kiểm tra giao dịch."
-        ],
-        "sent_money": [
-            "1. Gọi ngay ngân hàng của bác trong danh sách hỗ trợ để yêu cầu tra soát. Câu nói mẫu: Tôi vừa chuyển khoản nghi lừa đảo, xin hỗ trợ phong tỏa/tra soát.",
-            "2. Lưu ảnh chụp tin nhắn, số tài khoản, thời gian giao dịch. Câu nói mẫu: Tôi có bằng chứng giao dịch và tin nhắn.",
-            "3. Gọi 113 nếu có đe dọa trực tiếp. Câu nói mẫu: Tôi đang bị đe dọa sau khi chuyển tiền."
-        ],
-        "shared_code": [
-            "1. Gọi ngân hàng trong danh sách hỗ trợ để khóa dịch vụ khẩn cấp. Câu nói mẫu: Tôi đã cung cấp mã xác thực, xin khóa giao dịch ngay.",
-            "2. Đổi mật khẩu và đăng xuất khỏi thiết bị lạ. Câu nói mẫu: Tôi cần hủy phiên đăng nhập không phải của tôi.",
-            "3. Báo cáo tin nhắn/cuộc gọi lừa đảo qua 156 hoặc 5656. Câu nói mẫu: Tôi muốn phản ánh tin nhắn lừa đảo."
-        ],
-    }
-    fallback_steps = []
-    for situation in situations:
-        for step in fallback[situation]:
-            if step not in fallback_steps:
-                fallback_steps.append(step)
-    fallback_steps = fallback_steps[:5]
-    situation_context = ", ".join(situations)
+    options = clean_rescue_options(result.get("rescue_options"))
+    option_map = {option["id"]: option for option in options}
+    selected_options = [option_map[option_id] for option_id in selected_ids if option_id in option_map]
+    if not selected_options:
+        return jsonify({"error": "Vui lòng chọn tình huống từ gợi ý AI của kết quả này."}), 400
+    fallback_steps = [
+        "1. Dừng mọi thao tác với người gửi và giữ lại tin nhắn, ảnh chụp, đường link hoặc biên lai liên quan. Câu nói mẫu: Tôi cần kiểm tra lại vụ việc trước khi làm tiếp.",
+        "2. Nếu có liên quan tài khoản hoặc tiền, liên hệ ngân hàng qua số chính thức trong ứng dụng/thẻ hoặc danh sách hỗ trợ. Câu nói mẫu: Tôi nghi có rủi ro lừa đảo, xin kiểm tra và khóa giao dịch nếu cần.",
+        "3. Nếu đã lộ giấy tờ, mã xác thực hoặc bị đe dọa, báo cho người thân và cơ quan chức năng phù hợp. Câu nói mẫu: Tôi muốn trình báo việc nghi bị lừa đảo và có bằng chứng kèm theo.",
+    ]
     try:
-        data = ask_gemini(rescue_prompt(situation_context, result, HOTLINES))
+        data = ask_gemini(rescue_prompt(selected_options, result, HOTLINES))
         steps = clean_rescue_steps(data.get("steps", [])) if isinstance(data, dict) else []
         return jsonify({"source": "gemini", "steps": steps or fallback_steps})
     except Exception:
