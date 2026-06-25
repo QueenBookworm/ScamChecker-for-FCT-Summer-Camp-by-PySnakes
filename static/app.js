@@ -6,11 +6,14 @@
 // ===== Global State Section =====
 const HISTORY_KEY = "scamcheck_history_simple_v1";
 const AI_CHARACTER_LIMIT = 7000;
+const HISTORY_PAGE_SIZE = 6;
+const TRAINING_FIRST_BATCH_SIZE = 15;
 
 let mode = "image";
 let selectedImage = null;
 let currentResult = null;
 let selectedActionLabel = "";
+let historyPage = 1;
 
 let chatImage = null;
 let chatText = "";
@@ -24,10 +27,14 @@ let libraryData = [];
 let libraryGroup = "Tất cả";
 
 let trainingData = [];
+let trainingAllData = [];
+let trainingBatchStart = 0;
 let trainingIndex = 0;
 let trainingScore = 0;
 let trainingAnswered = false;
 let trainingTimer = null;
+let trainingAnswers = [];
+let trainingSubmitted = false;
 
 
 // ===== App Startup Section =====
@@ -45,6 +52,7 @@ function startApp() {
   setupVoice();
 
   drawHistory();
+  loadPersistentHistory();
   loadExtraPages();
 }
 
