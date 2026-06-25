@@ -4,11 +4,14 @@
    ========================================================= */
 
 const CHAT_TOGGLE_POSITION_KEY = "scamcheck_chat_toggle_position_v1";
+const CHAT_HISTORY_KEY = "scamcheck_chat_messages_v1";
 
 
 // ===== Chat Setup Section =====
 function setupChat() {
   setupChatToggleDrag();
+  loadChatHistory();
+  renderChatHistory();
 
   $("chatClose").onclick = () => openChat(false);
 
@@ -40,7 +43,7 @@ function setupChatToggleDrag() {
   let startTop = 0;
   let moved = false;
 
-  restoreChatTogglePosition();
+  resetChatTogglePosition();
 
   window.addEventListener("resize", keepChatToggleOnScreen);
 
@@ -133,6 +136,17 @@ function restoreChatTogglePosition() {
 }
 
 
+function resetChatTogglePosition() {
+  const button = $("chatToggle");
+
+  localStorage.removeItem(CHAT_TOGGLE_POSITION_KEY);
+  button.style.left = "";
+  button.style.top = "";
+  button.style.right = "";
+  button.style.bottom = "";
+}
+
+
 function keepChatToggleOnScreen() {
   const rect = $("chatToggle").getBoundingClientRect();
 
@@ -192,7 +206,7 @@ async function sendChat() {
     return;
   }
 
-  addChatMessage("user", question || "Da gui them tep/anh de AI xem.");
+  addChatMessage("user", question || "Đã gửi thêm tệp/ảnh để AI xem.");
 
   const fallbackAnswer = selectedActionLabel
     ? `Bước: ${selectedActionLabel}`
@@ -251,16 +265,48 @@ function updateChatCharacterCount() {
 
 // ===== Chat Message Render Section =====
 function addChatMessage(role, text, steps = []) {
-  chatMessages.push({ role, text });
-  chatMessages = chatMessages.slice(-8);
+  chatMessages.push({ role, text, steps });
+  chatMessages = chatMessages.slice(-30);
+  saveChatHistory();
 
+  appendChatMessage({ role, text, steps });
+}
+
+
+// ===== Chat History Persistence Section =====
+function loadChatHistory() {
+  try {
+    chatMessages = JSON.parse(localStorage.getItem(CHAT_HISTORY_KEY) || "[]")
+      .filter(message => message && message.role && message.text)
+      .slice(-30);
+  } catch {
+    chatMessages = [];
+  }
+}
+
+
+function saveChatHistory() {
+  localStorage.setItem(CHAT_HISTORY_KEY, JSON.stringify(chatMessages));
+}
+
+
+function renderChatHistory() {
+  if (!chatMessages.length) return;
+
+  $("chatLog").innerHTML = "";
+  chatMessages.forEach(appendChatMessage);
+}
+
+
+function appendChatMessage(message) {
+  const steps = Array.isArray(message.steps) ? message.steps : [];
   const stepList = steps.length
     ? `<ul>${steps.map(step => `<li>${safe(step)}</li>`).join("")}</ul>`
     : "";
 
   $("chatLog").insertAdjacentHTML(
     "beforeend",
-    `<div class="chat-msg ${role}">${safe(text)}${stepList}</div>`
+    `<div class="chat-msg ${message.role}">${safe(message.text)}${stepList}</div>`
   );
 
   $("chatLog").scrollTop = $("chatLog").scrollHeight;
