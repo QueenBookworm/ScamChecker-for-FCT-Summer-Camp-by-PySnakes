@@ -1,16 +1,22 @@
 import json
 import os
 import re
+import textwrap
+import uuid
+from io import BytesIO
 from html import escape
+from xml.sax.saxutils import escape as xml_escape
 
 import requests
-from flask import Flask, jsonify, render_template, request
+from flask import Flask, jsonify, render_template, request, send_file
 
 
 app = Flask(__name__)
+app.config["TEMPLATES_AUTO_RELOAD"] = True
 
 # Basic limits and trusted reference data used by the backend.
 MAX_PROMPT_CHARS = 7000
+SHARED_RESULTS_FILE = os.path.join(os.path.dirname(__file__), "shared_results.json")
 LEGAL_TEXT = "ScamCheck là công cụ giáo dục do nhóm học viên phát triển và không thay thế cảnh báo chính thức từ ngân hàng hoặc cơ quan chức năng."
 OFFICIAL_DOMAINS = {
     "vietcombank": ["vietcombank.com.vn"],
@@ -19,6 +25,14 @@ OFFICIAL_DOMAINS = {
     "agribank": ["agribank.com.vn"],
     "momo": ["momo.vn"],
 }
+
+
+@app.after_request
+def add_security_headers(response):
+    """Allow first-party microphone use while keeping other powerful features scoped down."""
+    response.headers["Permissions-Policy"] = "microphone=(self), camera=(), geolocation=()"
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    return response
 
 # Simple project data lives here so the hackathon app stays in only a few files.
 SCAM_LIBRARY = [
@@ -353,6 +367,238 @@ def restore_result(data):
 def read_body():
     data = request.get_json(silent=True)
     return data if isinstance(data, dict) else {}
+
+
+def load_shared_results():
+    """Read shared analysis results used by /analysis/<share_id> links."""
+    if not os.path.exists(SHARED_RESULTS_FILE):
+        return {}
+    try:
+        with open(SHARED_RESULTS_FILE, "r", encoding="utf-8") as file:
+            data = json.load(file)
+        return data if isinstance(data, dict) else {}
+    except Exception:
+        return {}
+
+
+def save_shared_results(data):
+    """Persist shared analysis results so another browser can open the URL."""
+    with open(SHARED_RESULTS_FILE, "w", encoding="utf-8") as file:
+        json.dump(data, file, ensure_ascii=False, indent=2)
+
+
+def share_result_payload(data):
+    """Normalize and store one result, returning its public analysis URL."""
+    result = restore_result(data)
+    share_id = str(result.get("share_id") or result.get("id") or uuid.uuid4().hex[:12])
+    result["share_id"] = re.sub(r"[^a-zA-Z0-9_-]", "", share_id)[:40] or uuid.uuid4().hex[:12]
+    result["id"] = result.get("id") or result["share_id"]
+    result["html"] = result_html(result)
+
+    shared = load_shared_results()
+    shared[result["share_id"]] = result
+    save_shared_results(shared)
+    return result
+
+
+def shared_history_items():
+    """Return all persisted results sorted newest first for permanent history."""
+    items = []
+    for share_id, result in load_shared_results().items():
+        if not isinstance(result, dict):
+            continue
+        restored = restore_result(result)
+        restored["share_id"] = restored.get("share_id") or share_id
+        restored["id"] = restored.get("id") or restored["share_id"]
+        restored["share_url"] = f"/analysis/{restored['share_id']}"
+        items.append(restored)
+    return sorted(items, key=lambda item: item.get("time") or "", reverse=True)
+
+
+def result_pdf_sections(result):
+    """Convert an analysis result into Vietnamese PDF sections."""
+    evidence_rows = []
+    for item in result.get("evidence", []):
+        if isinstance(item, dict):
+            evidence_rows.append({
+                "quote": str(item.get("quote") or "Dấu hiệu").strip(),
+                "why": str(item.get("why") or item.get("explanation") or "").strip(),
+            })
+
+    action_rows = []
+    for item in result.get("next_actions", []):
+        if isinstance(item, dict):
+            action_rows.append({
+                "label": str(item.get("label") or "Việc cần làm").strip(),
+                "detail": str(item.get("detail") or item.get("prompt") or "").strip(),
+            })
+
+    sections = [
+        ("Phân tích kỹ thuật", [result.get("summary", ""), result.get("explanation", "")]),
+        ("Dấu hiệu phát hiện", evidence_rows or [{"quote": "Chưa có dấu hiệu riêng", "why": "Gemini chưa tách được dấu hiệu cụ thể từ nội dung này."}]),
+        ("Nên làm gì tiếp?", action_rows or [{"label": "Kiểm tra lại qua kênh chính thức", "detail": "Không vội làm theo tin nhắn nếu còn nghi ngờ."}]),
+        ("Tin gốc đã kiểm tra", [result.get("checked_text", "") or result.get("inputText", "")]),
+    ]
+
+    if result.get("psychology"):
+        sections.append(("Cô tâm lý nhắc nhẹ", [result.get("psychology", "")]))
+
+    sections.append((
+        "Ghi chú giáo dục",
+        ["ScamCheck là công cụ giáo dục do học sinh phát triển. Kết quả chỉ mang tính tham khảo và không thay thế cảnh báo chính thức từ ngân hàng hoặc cơ quan chức năng."]
+    ))
+    return sections
+
+
+def vietnamese_font_path():
+    """Pick a local Unicode font so Vietnamese accents render correctly in PDFs."""
+    candidates = [
+        os.path.join(os.environ.get("WINDIR", "C:\\Windows"), "Fonts", "arial.ttf"),
+        "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+        "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
+    ]
+    return next((path for path in candidates if os.path.exists(path)), None)
+
+
+def build_result_pdf(result):
+    """Create a polished multi-page PDF that mirrors the web result card."""
+    from reportlab.lib import colors
+    from reportlab.lib.enums import TA_CENTER
+    from reportlab.lib.pagesizes import A4
+    from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
+    from reportlab.lib.units import mm
+    from reportlab.pdfbase import pdfmetrics
+    from reportlab.pdfbase.ttfonts import TTFont
+    from reportlab.platypus import Flowable, Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
+
+    class ScoreCircle(Flowable):
+        """Draw the percentage badge shown at the top of the PDF."""
+        def __init__(self, score, color, font):
+            super().__init__()
+            self.score = score
+            self.color = color
+            self.font = font
+            self.width = 34 * mm
+            self.height = 34 * mm
+
+        def draw(self):
+            canvas = self.canv
+            radius = 16 * mm
+            center = self.width / 2
+            canvas.setStrokeColor(colors.HexColor("#f2e7e1"))
+            canvas.setLineWidth(7)
+            canvas.circle(center, center, radius, stroke=1, fill=0)
+            canvas.setStrokeColor(self.color)
+            canvas.setLineWidth(7)
+            canvas.arc(center - radius, center - radius, center + radius, center + radius, 90, -360 * self.score / 100)
+            canvas.setFillColor(colors.white)
+            canvas.circle(center, center, radius - 4, stroke=0, fill=1)
+            canvas.setFillColor(colors.HexColor("#172033"))
+            canvas.setFont(self.font, 18)
+            canvas.drawCentredString(center, center + 2, f"{self.score}%")
+            canvas.setFillColor(colors.HexColor("#667085"))
+            canvas.setFont(self.font, 8)
+            canvas.drawCentredString(center, center - 11, "rủi ro")
+
+    def paragraph(text, style):
+        safe_text = xml_escape(str(text or "")).replace("\n", "<br/>")
+        return Paragraph(safe_text, style)
+
+    def text_box(title, body, background="#ffffff", border="#eee2dc"):
+        rows = [[paragraph(title, styles["BoxTitle"])]]
+        if isinstance(body, list) and body and isinstance(body[0], dict):
+            for row in body:
+                heading = row.get("quote") or row.get("label") or "Nội dung"
+                detail = row.get("why") or row.get("detail") or ""
+                rows.append([paragraph(f"<b>{xml_escape(heading)}</b><br/>{xml_escape(detail)}", styles["Body"])])
+        else:
+            for item in body if isinstance(body, list) else [body]:
+                rows.append([paragraph(item, styles["Body"])])
+
+        table = Table(rows, colWidths=[170 * mm], hAlign="LEFT")
+        table.setStyle(TableStyle([
+            ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor(background)),
+            ("BOX", (0, 0), (-1, -1), 0.8, colors.HexColor(border)),
+            ("INNERGRID", (0, 1), (-1, -1), 0.45, colors.HexColor("#f4dfd7")),
+            ("TOPPADDING", (0, 0), (-1, -1), 9),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 9),
+            ("LEFTPADDING", (0, 0), (-1, -1), 10),
+            ("RIGHTPADDING", (0, 0), (-1, -1), 10),
+        ]))
+        return table
+
+    buffer = BytesIO()
+    score = int(result.get("danger_score_percent", 0))
+    risk_color = colors.HexColor("#16a34a" if score < 26 else "#f59e0b" if score < 76 else "#ef4444")
+    font_name = "Helvetica"
+    font_path = vietnamese_font_path()
+
+    if font_path:
+        pdfmetrics.registerFont(TTFont("ScamCheckVietnamese", font_path))
+        font_name = "ScamCheckVietnamese"
+
+    base = getSampleStyleSheet()
+    styles = {
+        "Title": ParagraphStyle("Title", parent=base["Title"], fontName=font_name, fontSize=20, leading=25, textColor=colors.HexColor("#172033"), spaceAfter=8),
+        "Body": ParagraphStyle("Body", parent=base["BodyText"], fontName=font_name, fontSize=10.5, leading=16, textColor=colors.HexColor("#536176")),
+        "Muted": ParagraphStyle("Muted", parent=base["BodyText"], fontName=font_name, fontSize=9.5, leading=14, textColor=colors.HexColor("#667085")),
+        "Pill": ParagraphStyle("Pill", parent=base["BodyText"], fontName=font_name, fontSize=10, leading=14, textColor=colors.white, alignment=TA_CENTER),
+        "BoxTitle": ParagraphStyle("BoxTitle", parent=base["Heading3"], fontName=font_name, fontSize=13, leading=17, textColor=colors.HexColor("#172033"), spaceAfter=4),
+    }
+
+    doc = SimpleDocTemplate(
+        buffer,
+        pagesize=A4,
+        rightMargin=18 * mm,
+        leftMargin=18 * mm,
+        topMargin=18 * mm,
+        bottomMargin=18 * mm,
+        title="ScamCheck - Kết quả phân tích",
+    )
+
+    verdict = result.get("verdict_label", "Kết quả")
+    story = []
+    pill = Table([[paragraph(f"{verdict} · {score}% rủi ro", styles["Pill"])]], colWidths=[54 * mm])
+    pill.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, -1), risk_color),
+        ("BOX", (0, 0), (-1, -1), 0, risk_color),
+        ("TOPPADDING", (0, 0), (-1, -1), 6),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
+    ]))
+    story.append(pill)
+    story.append(Spacer(1, 5 * mm))
+    story.append(paragraph("Phân tích kỹ thuật", styles["Title"]))
+    story.append(paragraph(result.get("summary", ""), styles["Muted"]))
+    story.append(Spacer(1, 5 * mm))
+
+    score_table = Table([
+        [
+            ScoreCircle(score, risk_color, font_name),
+            [
+                paragraph(result.get("zone_title", verdict), styles["Title"]),
+                paragraph(result.get("uncertainty", ""), styles["Muted"]),
+            ],
+        ]
+    ], colWidths=[42 * mm, 124 * mm])
+    score_table.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#fffaf7")),
+        ("BOX", (0, 0), (-1, -1), 0.8, colors.HexColor("#f1ddd5")),
+        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+        ("TOPPADDING", (0, 0), (-1, -1), 12),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 12),
+        ("LEFTPADDING", (0, 0), (-1, -1), 12),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 12),
+    ]))
+    story.append(score_table)
+    story.append(Spacer(1, 6 * mm))
+
+    for title, body in result_pdf_sections(result):
+        story.append(text_box(title, body, "#fff8f4" if title in {"Dấu hiệu phát hiện", "Tin gốc đã kiểm tra"} else "#ffffff"))
+        story.append(Spacer(1, 5 * mm))
+
+    doc.build(story)
+    buffer.seek(0)
+    return buffer
 
 
 def character_count(text):
@@ -839,6 +1085,197 @@ def hotline_support_steps(result):
     ]
 
 
+FOLLOWUP_RISK_THRESHOLD = 40
+
+
+def needs_followup(result):
+    """Gate human-support follow-ups so safe checks stay clean and fast."""
+    try:
+        return int(result.get("danger_score_percent", 0)) >= FOLLOWUP_RISK_THRESHOLD
+    except Exception:
+        return False
+
+
+def analysis_prompt(message):
+    """Shorter first-pass Gemini prompt for faster detective analysis."""
+    return f"""
+Bạn là Thám tử ScamCheck. Chỉ trả về JSON hợp lệ bằng tiếng Việt có dấu, không markdown.
+Phân tích tin nhắn/link/ảnh để chấm riskpercentage từ 0 đến 100.
+
+Luật chấm điểm:
+- Thấp khi nội dung đời thường, rõ nguồn, không link lạ, không tiền, không OTP/mật khẩu/CCCD.
+- Trung bình khi thiếu ngữ cảnh, người gửi chưa xác minh, có thúc giục hoặc có chi tiết cần kiểm tra.
+- Cao khi có mạo danh, link lạ, chuyển tiền/phí, OTP/mật khẩu, CCCD, tải app, đe dọa hoặc tạo áp lực gấp.
+- Không dùng điểm mặc định. Điểm phải dựa trên chi tiết thật sự xuất hiện trong nội dung.
+
+Yêu cầu nội dung:
+- summary: 1 câu kết luận trực tiếp.
+- explanation: 3-5 câu ngắn, giải thích vì sao điểm rủi ro như vậy.
+- uncertainty: 1-2 câu về điều còn cần xác minh.
+- evidence: 2-4 mục quan trọng nhất, mỗi mục có quote ngắn nguyên văn và why chi tiết.
+- next_actions: đúng 3 bước, mỗi bước có label ngắn và prompt hướng dẫn 1-2 câu.
+- rescue_options: chỉ tạo khi có khả năng lừa đảo hoặc cần xử lý; 3-5 lựa chọn dựa trên nội dung, có id, label, detail.
+Không bịa số điện thoại, link, ngân hàng hoặc cơ quan không có trong nội dung.
+
+Trả về đúng JSON object gồm:
+riskpercentage, summary, explanation, uncertainty, evidence, next_actions, rescue_options.
+
+Nội dung:
+{message or "(The user uploaded an image. Read the image and analyze it.)"}
+"""
+
+
+def result_html(item):
+    """Turn a cleaned Gemini result into the analysis dashboard HTML."""
+    score = item["danger_score_percent"]
+    risk = item["risk"]
+    color = {"safe": "#22c55e", "suspicious": "#f59e0b", "danger": "#ef4444"}.get(risk, "#f59e0b")
+    evidence = item.get("evidence", [])
+    actions = item.get("next_actions", [])
+    original_html = highlight_original(item.get("checked_text", ""), evidence)
+    psychology = item.get("psychology")
+    psychology_error = item.get("psychology_error")
+
+    def support_text(text):
+        text = re.sub(r"\s+", " ", str(text or "")).strip()
+        sentences = re.split(r"(?<=[.!?])\s+", text)
+        return " ".join(sentence for sentence in sentences[:3] if sentence).strip()
+
+    psychology_html = ""
+    if needs_followup(item) and psychology:
+        psychology_html = f"""
+        <section class="support-card" aria-label="Cô tâm lý nhắc nhẹ">
+          <div class="support-icon" aria-hidden="true">♡</div>
+          <div>
+            <h3>Cô tâm lý nhắc nhẹ</h3>
+            <p>{escape(support_text(psychology))}</p>
+          </div>
+        </section>"""
+    elif needs_followup(item) and psychology_error:
+        psychology_html = """
+        <p class="support-note">Cô tâm lý đang bận, bác có thể tiếp tục theo các bước bên trên.</p>"""
+
+    evidence_html = "".join(
+        f"<div><strong>{escape(str(row.get('quote', 'Dấu hiệu')))}</strong><p>{escape(str(row.get('why') or row.get('explanation') or ''))}</p></div>"
+        for row in evidence[:4] if isinstance(row, dict)
+    ) or f"<p>{escape(str(item.get('checked_text', '')))}</p>"
+    actions_html = "".join(
+        f"<button class='action-btn' data-action='{index}'><span>{escape(action['label'])}</span><span>→</span></button>"
+        for index, action in enumerate(actions)
+    ) or "<p class='hint'>Gemini chưa trả bước tiếp theo phù hợp cho kết quả này.</p>"
+    return f"""
+<div id="resultCard" style="--risk-color:{color};padding:18px" data-score="{score}">
+  <section class="result-head"><span class="pill {risk}" id="scorePill">{escape(item['verdict_label'])} · {score}% rủi ro</span><h2>Phân tích kỹ thuật</h2><p class="hint">{escape(item['summary'])}</p><p>{escape(item['explanation'])}</p></section>
+  <div class="result-main"><div id="scoreRing" class="ring" style="--score:{score}%"><strong id="scoreText">{score}%</strong><small>rủi ro</small></div><div><h2 id="zoneTitle">{escape(item['zone_title'])}</h2><p class="hint">{escape(item['uncertainty'])}</p></div></div>
+  <div class="grid"><div class="box"><h3>Dấu hiệu phát hiện</h3><div class="evidence">{evidence_html}</div></div><div class="box"><h3>Nên làm gì tiếp?</h3><div class="checks">{actions_html}</div></div></div>
+  <div class="box original-text"><h3>Tin gốc đã tô vàng</h3><p>{original_html or "Không có văn bản gốc để tô vàng."}</p></div>
+  {psychology_html}
+</div>"""
+
+
+def chat_prompt(data):
+    """Build a compact contextual prompt for the chat drawer."""
+    context = {
+        "ket_qua_hien_tai": compact_result(data.get("result", {})),
+        "lich_su_kiem_tra_tren_thiet_bi": [compact_result(row) for row in data.get("history", [])],
+        "lich_su_chat_gan_day": data.get("messages", [])[-10:],
+        "noi_dung_file_text_neu_co": str(data.get("fileText", ""))[:3000],
+        "cau_hoi_moi": data.get("question", ""),
+        "danh_sach_hotline_duoc_phep_dung": HOTLINES,
+    }
+    return f"""
+Bạn là ScamCheck Chat. Hãy xem ket_qua_hien_tai, lich_su_kiem_tra_tren_thiet_bi và lich_su_chat_gan_day là bối cảnh liên tục của cùng người dùng.
+Dùng bối cảnh đó để trả lời tiếp, không bắt người dùng kể lại thông tin đã có.
+Chỉ trả JSON hợp lệ bằng tiếng Việt có dấu, không markdown.
+
+Quy tac:
+- Gọi người dùng là "bác".
+- Trả lời ngắn gọn, bình tĩnh, dễ hiểu cho người lớn tuổi.
+- Nếu có rủi ro, nói việc cần làm ngay nhưng không làm bác hoảng sợ.
+- Chỉ dùng số điện thoại trong danh_sach_hotline_duoc_phep_dung; không bịa hotline, số tài khoản, link hoặc cơ quan.
+- Nếu bác đã bấm link, gửi tiền, nhập OTP/CCCD hoặc cài app lạ, ưu tiên chặn thiệt hại.
+- Nếu thiếu thông tin quan trọng, hỏi đúng 1 câu ngắn.
+
+Boi canh:
+{json.dumps(context, ensure_ascii=False)}
+
+Tra ve JSON object:
+- answer: cau tra loi chinh.
+- next_steps: danh sach 0 den 3 buoc ngan.
+"""
+
+
+def psychology_prompt(message, detective):
+    """Build the short delayed Cô tâm lý prompt used only for 40%+ results."""
+    context = {
+        "tin_goc": message,
+        "ket_qua_tham_tu": compact_result(detective),
+    }
+    return f"""
+Bạn là Cô tâm lý ScamCheck. Xưng là "cô" và gọi người dùng là "bác".
+Chi tra JSON hop le, khong markdown.
+Viet am ap, khong do loi, khong lam bac so hon.
+answer chỉ gồm 2 đến 3 câu ngắn bằng tiếng Việt có dấu.
+Nhac dung 1 chien thuat tam ly trong tin va 1 cach binh tinh kiem tra tiep.
+
+Boi canh:
+{json.dumps(context, ensure_ascii=False)}
+
+Tra ve JSON object:
+- answer: 2 đến 3 câu ngắn.
+"""
+
+
+def result_html(item):
+    """Render the Vietnamese analysis result cards shown in the browser."""
+    score = item["danger_score_percent"]
+    risk = item["risk"]
+    color = {"safe": "#22c55e", "suspicious": "#f59e0b", "danger": "#ef4444"}.get(risk, "#f59e0b")
+    evidence = item.get("evidence", [])
+    actions = item.get("next_actions", [])
+    original_html = highlight_original(item.get("checked_text", ""), evidence)
+    psychology = item.get("psychology")
+    psychology_error = item.get("psychology_error")
+
+    def support_text(text):
+        text = re.sub(r"\s+", " ", str(text or "")).strip()
+        sentences = re.split(r"(?<=[.!?])\s+", text)
+        return " ".join(sentence for sentence in sentences[:3] if sentence).strip()
+
+    psychology_html = ""
+    if needs_followup(item) and psychology:
+        psychology_html = f"""
+        <section class="support-card" aria-label="Cô tâm lý nhắc nhẹ">
+          <div class="support-icon" aria-hidden="true">♡</div>
+          <div>
+            <h3>Cô tâm lý nhắc nhẹ</h3>
+            <p>{escape(support_text(psychology))}</p>
+          </div>
+        </section>"""
+    elif needs_followup(item) and psychology_error:
+        psychology_html = """
+        <p class="support-note">Cô tâm lý đang bận, bác có thể tiếp tục theo các bước bên trên.</p>"""
+
+    evidence_html = "".join(
+        f"<div><strong>{escape(str(row.get('quote', 'Dấu hiệu')))}</strong><p>{escape(str(row.get('why') or row.get('explanation') or ''))}</p></div>"
+        for row in evidence[:4] if isinstance(row, dict)
+    ) or f"<p>{escape(str(item.get('checked_text', '')))}</p>"
+
+    actions_html = "".join(
+        f"<button class='action-btn' data-action='{index}'><span>{escape(action['label'])}</span><span>→</span></button>"
+        for index, action in enumerate(actions)
+    ) or "<p class='hint'>Gemini chưa trả bước tiếp theo phù hợp cho kết quả này.</p>"
+
+    return f"""
+<div id="resultCard" style="--risk-color:{color};padding:18px" data-score="{score}">
+  <section class="result-head"><span class="pill {risk}" id="scorePill">{escape(item['verdict_label'])} · {score}% rủi ro</span><h2>Phân tích kỹ thuật</h2><p class="hint">{escape(item['summary'])}</p><p>{escape(item['explanation'])}</p></section>
+  <div class="result-main"><div id="scoreRing" class="ring" style="--score:{score}%"><strong id="scoreText">{score}%</strong><small>rủi ro</small></div><div><h2 id="zoneTitle">{escape(item['zone_title'])}</h2><p class="hint">{escape(item['uncertainty'])}</p></div></div>
+  <div class="grid"><div class="box"><h3>Dấu hiệu phát hiện</h3><div class="evidence">{evidence_html}</div></div><div class="box"><h3>Nên làm gì tiếp?</h3><div class="checks">{actions_html}</div></div></div>
+  <div class="box original-text"><h3>Tin gốc đã tô vàng</h3><p>{original_html or "Không có văn bản gốc để tô vàng."}</p></div>
+  {psychology_html}
+</div>"""
+
+
 # Web pages and API endpoints used by static/app.js.
 @app.route("/")
 def home():
@@ -857,13 +1294,30 @@ def analyze():
         return too_long_error()
     try:
         result = clean_result(ask_gemini(analysis_prompt(message), image), message)
-        result = add_psychology_if_needed(result, message, image)
         result["html"] = result_html(result)
     except Exception as error:
         return jsonify({
             "error": friendly_gemini_error(error),
             "detail": str(error)[:500],
         }), 503
+    return jsonify(result)
+
+
+@app.route("/api/analysis-followup", methods=["POST"])
+def analysis_followup():
+    """Return delayed Cô tâm lý HTML after the main analysis has rendered."""
+    data = read_body()
+    result = restore_result(data.get("result", {}))
+    message = str(data.get("message") or result.get("checked_text") or "").strip()
+    image = data.get("image")
+    if not needs_followup(result):
+        result["html"] = result_html(result)
+        return jsonify(result)
+    try:
+        result = add_psychology_if_needed(result, message, image)
+    except Exception:
+        result["psychology_error"] = "Cô tâm lý đang bận, bác có thể tiếp tục theo các bước bên trên."
+    result["html"] = result_html(result)
     return jsonify(result)
 
 
@@ -902,6 +1356,49 @@ def chat():
         }), 503
 
 
+@app.route("/api/share-result", methods=["POST"])
+def share_result():
+    """Store a result and return a shareable /analysis/<id> URL."""
+    result = share_result_payload(read_body().get("result", read_body()))
+    return jsonify({
+        **result,
+        "share_url": f"/analysis/{result['share_id']}",
+    })
+
+
+@app.route("/api/shared-result/<share_id>")
+def shared_result(share_id):
+    """Return a stored result for a public analysis URL."""
+    clean_id = re.sub(r"[^a-zA-Z0-9_-]", "", share_id)
+    result = load_shared_results().get(clean_id)
+    if not result:
+        return jsonify({"error": "Không tìm thấy kết quả đã chia sẻ."}), 404
+    result = restore_result(result)
+    result["share_id"] = clean_id
+    result["html"] = result_html(result)
+    return jsonify(result)
+
+
+@app.route("/api/history")
+def persistent_history():
+    """Return the permanent analysis history stored on the app server."""
+    return jsonify({"history": shared_history_items()})
+
+
+@app.route("/api/result-pdf", methods=["POST"])
+def result_pdf():
+    """Download the current result as a Vietnamese multi-page PDF."""
+    result = restore_result(read_body().get("result", read_body()))
+    pdf_file = build_result_pdf(result)
+    preview = request.args.get("preview") == "1"
+    return send_file(
+        pdf_file,
+        mimetype="application/pdf",
+        as_attachment=not preview,
+        download_name="scamcheck-ket-qua.pdf",
+    )
+
+
 @app.route("/api/library")
 def library():
     return jsonify(SCAM_LIBRARY)
@@ -915,6 +1412,42 @@ def training():
 @app.route("/api/hotlines")
 def hotlines():
     return jsonify(HOTLINES)
+
+
+@app.route("/api/transcribe", methods=["POST"])
+def transcribe():
+    key = os.getenv("DEEPGRAM_API_KEY", "").strip()
+    audio = request.files.get("audio")
+    if not key:
+        return jsonify({"error": "Chua cau hinh DEEPGRAM_API_KEY trong file .env."}), 503
+    if not audio:
+        return jsonify({"error": "Chua nhan duoc am thanh de ghi."}), 400
+
+    content_type = audio.mimetype or "audio/webm"
+    response = requests.post(
+        "https://api.deepgram.com/v1/listen?model=nova-3&language=vi&smart_format=true",
+        headers={
+            "Authorization": f"Token {key}",
+            "Content-Type": content_type,
+        },
+        data=audio.read(),
+        timeout=45,
+    )
+    if response.status_code >= 400:
+        return jsonify({
+            "error": "Deepgram chua nhan dien duoc giong noi luc nay.",
+            "detail": response.text[:300],
+        }), 503
+
+    data = response.json()
+    transcript = (
+        data.get("results", {})
+        .get("channels", [{}])[0]
+        .get("alternatives", [{}])[0]
+        .get("transcript", "")
+        .strip()
+    )
+    return jsonify({"text": transcript})
 
 
 @app.route("/api/rescue", methods=["POST"])
@@ -953,6 +1486,20 @@ def history_view():
         return jsonify({"error": "Kết quả cũ không còn đủ dữ liệu để mở lại."}), 400
 
 
+@app.route("/<path:client_path>")
+def client_route(client_path):
+    """Serve the app shell for shareable browser paths after API routes are tried."""
+    if client_path.startswith("api/"):
+        return jsonify({"error": "API route not found."}), 404
+    return render_template("index.html", samples=SAMPLE_MESSAGES)
+
+
 if __name__ == "__main__":
     debug = os.getenv("FLASK_DEBUG", "").lower() in {"1", "true", "yes"}
-    app.run(host="0.0.0.0", port=int(os.getenv("PORT", 5001)), debug=debug)
+    https = os.getenv("SCAMCHECK_HTTPS", "").lower() in {"1", "true", "yes"}
+    app.run(
+        host=os.getenv("HOST", "0.0.0.0"),
+        port=int(os.getenv("PORT", 5001)),
+        debug=debug,
+        ssl_context="adhoc" if https else None,
+    )
