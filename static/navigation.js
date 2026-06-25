@@ -4,7 +4,7 @@
    ========================================================= */
 
 // ===== Page Switch Section =====
-function showPage(name) {
+function showPage(name, updatePath = true) {
   document.querySelectorAll(".page").forEach(page => {
     page.classList.toggle("active", page.id === name);
   });
@@ -13,7 +13,25 @@ function showPage(name) {
     button.classList.toggle("active", button.dataset.page === name);
   });
 
+  if (updatePath) {
+    window.history.pushState({ page: name }, "", pagePath(name));
+  }
+
   scrollTo(0, 0);
+}
+
+
+// ===== URL Path Section =====
+function pagePath(name) {
+  return name === "home" ? "/" : `/${name}`;
+}
+
+
+function pageFromPath(pathname = location.pathname) {
+  const firstPart = pathname.split("/").filter(Boolean)[0] || "home";
+  const allowed = ["home", "analysis", "history", "faq", "library", "training"];
+
+  return allowed.includes(firstPart) ? firstPart : "home";
 }
 
 
@@ -60,6 +78,19 @@ function setupNavigation() {
   document.querySelectorAll(".side-all").forEach(button => {
     button.onclick = () => showPage(button.dataset.page);
   });
+
+  showPage(pageFromPath(), false);
+
+  if (typeof loadSharedAnalysisFromPath === "function") {
+    loadSharedAnalysisFromPath();
+  }
+
+  window.onpopstate = () => {
+    showPage(pageFromPath(), false);
+    if (typeof loadSharedAnalysisFromPath === "function") {
+      loadSharedAnalysisFromPath();
+    }
+  };
 }
 
 
