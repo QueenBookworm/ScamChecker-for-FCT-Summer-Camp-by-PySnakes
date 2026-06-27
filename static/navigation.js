@@ -17,6 +17,18 @@ function showPage(name, updatePath = true) {
     window.history.pushState({ page: name }, "", pagePath(name));
   }
 
+  resetPageScroll();
+}
+
+
+function resetPageScroll() {
+  const main = document.querySelector(".main");
+
+  if (window.matchMedia("(min-width: 980px)").matches && main) {
+    main.scrollTop = 0;
+    return;
+  }
+
   scrollTo(0, 0);
 }
 
@@ -71,6 +83,8 @@ function showError(text) {
 
 // ===== Navigation Setup Section =====
 function setupNavigation() {
+  setupDesktopScrollShell();
+
   document.querySelectorAll(".nav").forEach(button => {
     button.onclick = () => showPage(button.dataset.page);
   });
@@ -91,6 +105,21 @@ function setupNavigation() {
       loadSharedAnalysisFromPath();
     }
   };
+}
+
+
+function setupDesktopScrollShell() {
+  const sidebar = document.querySelector(".sidebar");
+  const main = document.querySelector(".main");
+
+  if (!sidebar || !main) return;
+
+  sidebar.addEventListener("wheel", event => {
+    if (!window.matchMedia("(min-width: 980px)").matches) return;
+
+    event.preventDefault();
+    main.scrollTop += event.deltaY;
+  }, { passive: false });
 }
 
 
