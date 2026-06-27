@@ -1,0 +1,457 @@
+{
+  "check-1782407247467": {
+    "checked_text": "I'm a fake police from cambodia, give me 10 billion i need to fund for charity",
+    "danger_score_percent": 95,
+    "evidence": [
+      {
+        "quote": "I'm a fake police from cambodia",
+        "why": "Đối tượng tự nhận mình là cảnh sát giả mạo, thừa nhận hành vi lừa đảo. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra. Nếu còn phân vân, bác nên hỏi người thân hoặc liên hệ trực tiếp tổ chức thật bằng số điện thoại chính thức. Việc kiểm tra chậm lại vài phút thường an toàn hơn nhiều so với làm theo một yêu cầu gấp trong tin nhắn."
+      },
+      {
+        "quote": "give me 10 billion",
+        "why": "Yêu cầu một khoản tiền cực lớn, vượt quá khả năng và sự hợp lý thông thường. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra. Nếu còn phân vân, bác nên hỏi người thân hoặc liên hệ trực tiếp tổ chức thật bằng số điện thoại chính thức. Việc kiểm tra chậm lại vài phút thường an toàn hơn nhiều so với làm theo một yêu cầu gấp trong tin nhắn."
+      },
+      {
+        "quote": "i need to fund for charity",
+        "why": "Lý do làm từ thiện được đưa ra một cách tùy tiện và không có bằng chứng xác thực, thường là chiêu bài để đánh vào lòng thương. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra. Nếu còn phân vân, bác nên hỏi người thân hoặc liên hệ trực tiếp tổ chức thật bằng số điện thoại chính thức. Việc kiểm tra chậm lại vài phút thường an toàn hơn nhiều so với làm theo một yêu cầu gấp trong tin nhắn."
+      }
+    ],
+    "explanation": "Đối tượng tự xưng là cảnh sát từ Campuchia và yêu cầu một khoản tiền khổng lồ (10 tỷ) để làm từ thiện. Đây là dấu hiệu điển hình của lừa đảo, không có cơ quan thực thi pháp luật nào yêu cầu tiền trực tiếp từ người dân qua tin nhắn với lý do như vậy. Yêu cầu này mang tính chất ép buộc và không có căn cứ.",
+    "html": "\n<div id=\"resultCard\" style=\"--risk-color:#ef4444;padding:18px\" data-score=\"95\">\n  <section class=\"result-head\"><span class=\"pill danger\" id=\"scorePill\">Nguy hiểm · 95% rủi ro</span><h2>Phân tích kỹ thuật</h2><p class=\"hint\">Đây là một vụ lừa đảo rõ ràng, yêu cầu chuyển một khoản tiền lớn với lý do không đáng tin cậy.</p><p>Đối tượng tự xưng là cảnh sát từ Campuchia và yêu cầu một khoản tiền khổng lồ (10 tỷ) để làm từ thiện. Đây là dấu hiệu điển hình của lừa đảo, không có cơ quan thực thi pháp luật nào yêu cầu tiền trực tiếp từ người dân qua tin nhắn với lý do như vậy. Yêu cầu này mang tính chất ép buộc và không có căn cứ.</p></section>\n  <div class=\"result-main\"><div id=\"scoreRing\" class=\"ring\" style=\"--score:95%\"><strong id=\"scoreText\">95%</strong><small>rủi ro</small></div><div><h2 id=\"zoneTitle\">Nguy hiểm</h2><p class=\"hint\">Không có điểm không chắc chắn nào, đây là hành vi lừa đảo có chủ đích.</p></div></div>\n  <div class=\"grid\"><div class=\"box\"><h3>Dấu hiệu phát hiện</h3><div class=\"evidence\"><div><strong>I&#x27;m a fake police from cambodia</strong><p>Đối tượng tự nhận mình là cảnh sát giả mạo, thừa nhận hành vi lừa đảo. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra. Nếu còn phân vân, bác nên hỏi người thân hoặc liên hệ trực tiếp tổ chức thật bằng số điện thoại chính thức. Việc kiểm tra chậm lại vài phút thường an toàn hơn nhiều so với làm theo một yêu cầu gấp trong tin nhắn.</p></div><div><strong>give me 10 billion</strong><p>Yêu cầu một khoản tiền cực lớn, vượt quá khả năng và sự hợp lý thông thường. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra. Nếu còn phân vân, bác nên hỏi người thân hoặc liên hệ trực tiếp tổ chức thật bằng số điện thoại chính thức. Việc kiểm tra chậm lại vài phút thường an toàn hơn nhiều so với làm theo một yêu cầu gấp trong tin nhắn.</p></div><div><strong>i need to fund for charity</strong><p>Lý do làm từ thiện được đưa ra một cách tùy tiện và không có bằng chứng xác thực, thường là chiêu bài để đánh vào lòng thương. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra. Nếu còn phân vân, bác nên hỏi người thân hoặc liên hệ trực tiếp tổ chức thật bằng số điện thoại chính thức. Việc kiểm tra chậm lại vài phút thường an toàn hơn nhiều so với làm theo một yêu cầu gấp trong tin nhắn.</p></div></div></div><div class=\"box\"><h3>Nên làm gì tiếp?</h3><div class=\"checks\"><button class='action-btn' data-action='0'><span>Không phản hồi</span><span>→</span></button><button class='action-btn' data-action='1'><span>Chặn và báo cáo</span><span>→</span></button><button class='action-btn' data-action='2'><span>Cảnh báo người thân</span><span>→</span></button></div></div></div>\n  <div class=\"box original-text\"><h3>Tin gốc đã tô vàng</h3><p><mark>I&#x27;m a fake police from cambodia</mark>, <mark>give me 10 billion</mark> <mark>i need to fund for charity</mark></p></div>\n  \n        <section class=\"support-card\" aria-label=\"Cô tâm lý nhắc nhẹ\">\n          <div class=\"support-icon\" aria-hidden=\"true\">♡</div>\n          <div>\n            <h3>Cô tâm lý nhắc nhẹ</h3>\n            <p>Bác ơi, tin nhắn này có dấu hiệu không an toàn rồi ạ. Kẻ xấu thường dùng chiêu bài đánh vào lòng trắc ẩn, như việc nói cần tiền làm từ thiện để bác dễ tin tưởng. Để an tâm, bác cứ bình tĩnh tìm số điện thoại chính thức của tổ chức đó để kiểm tra lại thông tin nhé.</p>\n          </div>\n        </section>\n</div>",
+    "next_actions": [
+      {
+        "id": "step_1",
+        "label": "Không phản hồi",
+        "prompt": "Tuyệt đối không trả lời tin nhắn hoặc tương tác với đối tượng."
+      },
+      {
+        "id": "step_2",
+        "label": "Chặn và báo cáo",
+        "prompt": "Chặn số điện thoại/tài khoản của đối tượng và báo cáo lên nhà cung cấp dịch vụ hoặc cơ quan chức năng nếu có thể."
+      },
+      {
+        "id": "step_3",
+        "label": "Cảnh báo người thân",
+        "prompt": "Chia sẻ thông tin về vụ việc để cảnh báo bạn bè và gia đình về các hình thức lừa đảo tương tự."
+      }
+    ],
+    "rescue_options": [
+      {
+        "id": "1",
+        "label": "Báo cáo với cơ quan công an",
+        "detail": "Nếu bạn nhận được các yêu cầu tương tự hoặc nghi ngờ có dấu hiệu lừa đảo, hãy liên hệ cơ quan công an địa phương để được hỗ trợ và xử lý."
+      },
+      {
+        "id": "2",
+        "label": "Tìm hiểu về các hình thức lừa đảo",
+        "detail": "Chủ động tìm hiểu các phương thức lừa đảo phổ biến để nâng cao cảnh giác và tránh trở thành nạn nhân."
+      }
+    ],
+    "risk": "danger",
+    "source": "gemini",
+    "summary": "Đây là một vụ lừa đảo rõ ràng, yêu cầu chuyển một khoản tiền lớn với lý do không đáng tin cậy.",
+    "uncertainty": "Không có điểm không chắc chắn nào, đây là hành vi lừa đảo có chủ đích.",
+    "verdict_label": "Nguy hiểm",
+    "zone_title": "Nguy hiểm",
+    "id": "check-1782407247467",
+    "time": "2026-06-25T17:07:27.467Z",
+    "inputText": "I'm a fake police from cambodia, give me 10 billion i need to fund for charity",
+    "share_id": "check-1782407247467",
+    "share_url": "/analysis/check-1782407247467",
+    "psychology": "Bác ơi, tin nhắn này có dấu hiệu không an toàn rồi ạ. Kẻ xấu thường dùng chiêu bài đánh vào lòng trắc ẩn, như việc nói cần tiền làm từ thiện để bác dễ tin tưởng. Để an tâm, bác cứ bình tĩnh tìm số điện thoại chính thức của tổ chức đó để kiểm tra lại thông tin nhé."
+  },
+  "check-1782409435957": {
+    "checked_text": "Chúng tôi là cán bộ thuộc cơ quan điều tra và đang xử lý một vụ án rửa tiền có liên quan đến tài khoản đứng tên bạn. Bạn phải giữ bí mật, không được thông báo cho gia đình và chuyển toàn bộ số tiền vào tài khoản tạm giữ để chứng minh tài sản hợp pháp. Nếu không thực hiện trong hai giờ tới, hồ sơ sẽ được chuyển sang khởi tố và bạn phải chịu trách nhiệm trước pháp luật. Hãy gọi lại số điện thoại trong tin nhắn ngay để được cán bộ hướng dẫn từng bước chuyển khoản.",
+    "danger_score_percent": 100,
+    "evidence": [
+      {
+        "quote": "Chúng tôi là cán bộ thuộc cơ quan điều tra và đang xử lý một vụ án rửa tiền có liên quan đến tài khoản đứng tên bạn.",
+        "why": "Mạo danh cơ quan nhà nước để tạo uy tín giả và đe dọa người nhận, đây là dấu hiệu lừa đảo phổ biến. Yêu cầu chuyển tiền hoặc đóng phí trước thường được dùng để chiếm tiền rồi tiếp tục đòi thêm khoản khác. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra. Nếu còn phân vân, bác nên hỏi người thân hoặc liên hệ trực tiếp tổ chức thật bằng số điện thoại chính thức."
+      },
+      {
+        "quote": "Bạn phải giữ bí mật, không được thông báo cho gia đình và chuyển toàn bộ số tiền vào tài khoản tạm giữ để chứng minh tài sản hợp pháp.",
+        "why": "Yêu cầu giữ bí mật và chuyển tiền vào tài khoản lạ là dấu hiệu lừa đảo nhằm cô lập nạn nhân và chiếm đoạt tài sản. Yêu cầu chuyển tiền hoặc đóng phí trước thường được dùng để chiếm tiền rồi tiếp tục đòi thêm khoản khác. Lời đe dọa hậu quả khiến bác dễ làm theo hướng dẫn mà chưa kịp hỏi người thân hoặc tổ chức thật. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra."
+      },
+      {
+        "quote": "Nếu không thực hiện trong hai giờ tới, hồ sơ sẽ được chuyển sang khởi tố và bạn phải chịu trách nhiệm trước pháp luật.",
+        "why": "Tạo áp lực thời gian và đe dọa pháp lý để buộc nạn nhân hành động gấp rút mà không kịp suy nghĩ, không có thời gian kiểm chứng. Yêu cầu chuyển tiền hoặc đóng phí trước thường được dùng để chiếm tiền rồi tiếp tục đòi thêm khoản khác. Lời đe dọa hậu quả khiến bác dễ làm theo hướng dẫn mà chưa kịp hỏi người thân hoặc tổ chức thật. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra."
+      },
+      {
+        "quote": "Hãy gọi lại số điện thoại trong tin nhắn ngay để được cán bộ hướng dẫn từng bước chuyển khoản.",
+        "why": "Hướng dẫn nạn nhân liên hệ để nhận chỉ dẫn chuyển tiền, hoàn tất hành vi lừa đảo. Yêu cầu chuyển tiền hoặc đóng phí trước thường được dùng để chiếm tiền rồi tiếp tục đòi thêm khoản khác. Áp lực thời gian làm người nhận khó bình tĩnh kiểm tra nguồn chính thức trước khi hành động. Lời đe dọa hậu quả khiến bác dễ làm theo hướng dẫn mà chưa kịp hỏi người thân hoặc tổ chức thật."
+      }
+    ],
+    "explanation": "Tin nhắn mạo danh cơ quan điều tra để đe dọa và tạo áp lực tâm lý. Yêu cầu chuyển tiền vào tài khoản lạ để \"chứng minh tài sản\" là chiêu trò lừa đảo phổ biến. Việc thúc giục gấp rút và cấm thông báo cho người thân là dấu hiệu rõ ràng của lừa đảo. Các cơ quan chức năng không bao giờ yêu cầu chuyển tiền vào tài khoản cá nhân hoặc tài khoản \"tạm giữ\" qua điện thoại/tin nhắn.",
+    "html": "\n<div id=\"resultCard\" style=\"--risk-color:#ef4444;padding:18px\" data-score=\"100\">\n  <section class=\"result-head\"><span class=\"pill danger\" id=\"scorePill\">Nguy hiểm · 100% rủi ro</span><h2>Phân tích kỹ thuật</h2><p class=\"hint\">Đây là một tin nhắn lừa đảo mạo danh cơ quan điều tra nhằm chiếm đoạt tài sản.</p><p>Tin nhắn mạo danh cơ quan điều tra để đe dọa và tạo áp lực tâm lý. Yêu cầu chuyển tiền vào tài khoản lạ để &quot;chứng minh tài sản&quot; là chiêu trò lừa đảo phổ biến. Việc thúc giục gấp rút và cấm thông báo cho người thân là dấu hiệu rõ ràng của lừa đảo. Các cơ quan chức năng không bao giờ yêu cầu chuyển tiền vào tài khoản cá nhân hoặc tài khoản &quot;tạm giữ&quot; qua điện thoại/tin nhắn.</p></section>\n  <div class=\"result-main\"><div id=\"scoreRing\" class=\"ring\" style=\"--score:100%\"><strong id=\"scoreText\">100%</strong><small>rủi ro</small></div><div><h2 id=\"zoneTitle\">Nguy hiểm</h2><p class=\"hint\">Tin nhắn không cung cấp số điện thoại cụ thể để gọi lại, đây là một thiếu sót trong nội dung tin nhắn gốc. Cần xác minh xem người nhận đã thực hiện bất kỳ hành động nào theo yêu cầu hay chưa.</p></div></div>\n  <div class=\"grid\"><div class=\"box\"><h3>Dấu hiệu phát hiện</h3><div class=\"evidence\"><div><strong>Chúng tôi là cán bộ thuộc cơ quan điều tra và đang xử lý một vụ án rửa tiền có liên quan đến tài khoản đứng tên bạn.</strong><p>Mạo danh cơ quan nhà nước để tạo uy tín giả và đe dọa người nhận, đây là dấu hiệu lừa đảo phổ biến. Yêu cầu chuyển tiền hoặc đóng phí trước thường được dùng để chiếm tiền rồi tiếp tục đòi thêm khoản khác. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra. Nếu còn phân vân, bác nên hỏi người thân hoặc liên hệ trực tiếp tổ chức thật bằng số điện thoại chính thức.</p></div><div><strong>Bạn phải giữ bí mật, không được thông báo cho gia đình và chuyển toàn bộ số tiền vào tài khoản tạm giữ để chứng minh tài sản hợp pháp.</strong><p>Yêu cầu giữ bí mật và chuyển tiền vào tài khoản lạ là dấu hiệu lừa đảo nhằm cô lập nạn nhân và chiếm đoạt tài sản. Yêu cầu chuyển tiền hoặc đóng phí trước thường được dùng để chiếm tiền rồi tiếp tục đòi thêm khoản khác. Lời đe dọa hậu quả khiến bác dễ làm theo hướng dẫn mà chưa kịp hỏi người thân hoặc tổ chức thật. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra.</p></div><div><strong>Nếu không thực hiện trong hai giờ tới, hồ sơ sẽ được chuyển sang khởi tố và bạn phải chịu trách nhiệm trước pháp luật.</strong><p>Tạo áp lực thời gian và đe dọa pháp lý để buộc nạn nhân hành động gấp rút mà không kịp suy nghĩ, không có thời gian kiểm chứng. Yêu cầu chuyển tiền hoặc đóng phí trước thường được dùng để chiếm tiền rồi tiếp tục đòi thêm khoản khác. Lời đe dọa hậu quả khiến bác dễ làm theo hướng dẫn mà chưa kịp hỏi người thân hoặc tổ chức thật. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra.</p></div><div><strong>Hãy gọi lại số điện thoại trong tin nhắn ngay để được cán bộ hướng dẫn từng bước chuyển khoản.</strong><p>Hướng dẫn nạn nhân liên hệ để nhận chỉ dẫn chuyển tiền, hoàn tất hành vi lừa đảo. Yêu cầu chuyển tiền hoặc đóng phí trước thường được dùng để chiếm tiền rồi tiếp tục đòi thêm khoản khác. Áp lực thời gian làm người nhận khó bình tĩnh kiểm tra nguồn chính thức trước khi hành động. Lời đe dọa hậu quả khiến bác dễ làm theo hướng dẫn mà chưa kịp hỏi người thân hoặc tổ chức thật.</p></div></div></div><div class=\"box\"><h3>Nên làm gì tiếp?</h3><div class=\"checks\"><button class='action-btn' data-action='0'><span>Không làm theo</span><span>→</span></button><button class='action-btn' data-action='1'><span>Kiểm tra thông tin</span><span>→</span></button><button class='action-btn' data-action='2'><span>Báo cáo lừa đảo</span><span>→</span></button></div></div></div>\n  <div class=\"box original-text\"><h3>Tin gốc đã tô vàng</h3><p><mark>Chúng tôi là cán bộ thuộc cơ quan điều tra và đang xử lý một vụ án rửa tiền có liên quan đến tài khoản đứng tên bạn.</mark> Bạn phải giữ bí mật, không được thông báo cho gia đình và chuyển toàn bộ số tiền vào tài khoản tạm giữ để chứng minh tài sản hợp pháp. <mark>Nếu không thực hiện trong hai giờ tới, hồ sơ sẽ được chuyển sang khởi tố và bạn phải chịu trách nhiệm trước pháp luật.</mark> <mark>Hãy gọi lại số điện thoại trong tin nhắn ngay để được cán bộ hướng dẫn từng bước chuyển khoản.</mark></p></div>\n  \n        <section class=\"support-card\" aria-label=\"Cô tâm lý nhắc nhẹ\">\n          <div class=\"support-icon\" aria-hidden=\"true\">♡</div>\n          <div>\n            <h3>Cô tâm lý nhắc nhẹ</h3>\n            <p>Bác ơi, tin nhắn này có dấu hiệu lừa đảo rất rõ ràng, bác đừng lo lắng nhé. Các cơ quan chức năng không bao giờ yêu cầu bác chuyển tiền vào tài khoản lạ hay giữ bí mật đâu ạ. Bác cứ bình tĩnh, không làm theo yêu cầu trong tin nhắn và tuyệt đối không cung cấp thông tin cá nhân hay chuyển tiền bác nhé.</p>\n          </div>\n        </section>\n</div>",
+    "next_actions": [
+      {
+        "id": "step_1",
+        "label": "Không làm theo",
+        "prompt": "Tuyệt đối không gọi lại số điện thoại hoặc chuyển bất kỳ khoản tiền nào theo yêu cầu trong tin nhắn."
+      },
+      {
+        "id": "step_2",
+        "label": "Kiểm tra thông tin",
+        "prompt": "Nếu lo lắng, hãy liên hệ trực tiếp với cơ quan công an địa phương hoặc tổng đài 113 để xác minh thông tin, không dùng số điện thoại từ tin nhắn."
+      },
+      {
+        "id": "step_3",
+        "label": "Báo cáo lừa đảo",
+        "prompt": "Báo cáo tin nhắn này cho nhà mạng hoặc cơ quan chức năng để giúp ngăn chặn các vụ lừa đảo tương tự."
+      }
+    ],
+    "rescue_options": [
+      {
+        "id": "bao_cao_cong_an",
+        "label": "Báo cáo Công an",
+        "detail": "Liên hệ cơ quan công an gần nhất hoặc đường dây nóng của Bộ Công an để trình báo về tin nhắn lừa đảo này."
+      },
+      {
+        "id": "lien_he_ngan_hang",
+        "label": "Liên hệ Ngân hàng",
+        "detail": "Nếu đã lỡ chuyển tiền, hãy ngay lập tức liên hệ ngân hàng của bạn để yêu cầu hỗ trợ và phong tỏa giao dịch."
+      },
+      {
+        "id": "thong_bao_nguoi_than",
+        "label": "Thông báo người thân",
+        "detail": "Chia sẻ thông tin về tin nhắn này với gia đình và bạn bè để họ cảnh giác và không mắc bẫy tương tự."
+      }
+    ],
+    "risk": "danger",
+    "source": "gemini",
+    "summary": "Đây là một tin nhắn lừa đảo mạo danh cơ quan điều tra nhằm chiếm đoạt tài sản.",
+    "uncertainty": "Tin nhắn không cung cấp số điện thoại cụ thể để gọi lại, đây là một thiếu sót trong nội dung tin nhắn gốc. Cần xác minh xem người nhận đã thực hiện bất kỳ hành động nào theo yêu cầu hay chưa.",
+    "verdict_label": "Nguy hiểm",
+    "zone_title": "Nguy hiểm",
+    "id": "check-1782409435957",
+    "time": "2026-06-25T17:43:55.957Z",
+    "inputText": "Chúng tôi là cán bộ thuộc cơ quan điều tra và đang xử lý một vụ án rửa tiền có liên quan đến tài khoản đứng tên bạn. Bạn phải giữ bí mật, không được thông báo cho gia đình và chuyển toàn bộ số tiền vào tài khoản tạm giữ để chứng minh tài sản hợp pháp. Nếu không thực hiện trong hai giờ tới, hồ sơ sẽ được chuyển sang khởi tố và bạn phải chịu trách nhiệm trước pháp luật. Hãy gọi lại số điện thoại trong tin nhắn ngay để được cán bộ hướng dẫn từng bước chuyển khoản.",
+    "share_id": "check-1782409435957",
+    "share_url": "/analysis/check-1782409435957",
+    "psychology": "Bác ơi, tin nhắn này có dấu hiệu lừa đảo rất rõ ràng, bác đừng lo lắng nhé. Các cơ quan chức năng không bao giờ yêu cầu bác chuyển tiền vào tài khoản lạ hay giữ bí mật đâu ạ. Bác cứ bình tĩnh, không làm theo yêu cầu trong tin nhắn và tuyệt đối không cung cấp thông tin cá nhân hay chuyển tiền bác nhé."
+  },
+  "check-1782409708846": {
+    "checked_text": "487841168_1079113217581049_8520200124653311859_n.jpg",
+    "danger_score_percent": 0,
+    "evidence": [
+      {
+        "quote": "Nhóm người trẻ đang vui vẻ",
+        "why": "Bức ảnh cho thấy nhiều người trẻ đang cười và tạo dáng, thể hiện một hoạt động xã hội bình thường, không có dấu hiệu bất thường hay đe dọa. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra. Nếu còn phân vân, bác nên hỏi người thân hoặc liên hệ trực tiếp tổ chức thật bằng số điện thoại chính thức. Việc kiểm tra chậm lại vài phút thường an toàn hơn nhiều so với làm theo một yêu cầu gấp trong tin nhắn."
+      },
+      {
+        "quote": "Không có văn bản hay liên kết",
+        "why": "Bức ảnh chỉ chứa hình ảnh, không có bất kỳ chữ viết, đường dẫn web hay mã QR nào có thể dẫn đến nội dung độc hại hoặc lừa đảo. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra. Nếu còn phân vân, bác nên hỏi người thân hoặc liên hệ trực tiếp tổ chức thật bằng số điện thoại chính thức. Việc kiểm tra chậm lại vài phút thường an toàn hơn nhiều so với làm theo một yêu cầu gấp trong tin nhắn."
+      },
+      {
+        "quote": "Không có yêu cầu thông tin/tiền bạc",
+        "why": "Không có bất kỳ dấu hiệu nào cho thấy có yêu cầu cung cấp thông tin cá nhân, mật khẩu, OTP hay chuyển tiền, là những dấu hiệu phổ biến của lừa đảo. Yêu cầu chuyển tiền hoặc đóng phí trước thường được dùng để chiếm tiền rồi tiếp tục đòi thêm khoản khác. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra. Nếu còn phân vân, bác nên hỏi người thân hoặc liên hệ trực tiếp tổ chức thật bằng số điện thoại chính thức."
+      }
+    ],
+    "explanation": "Bức ảnh chụp một nhóm người trẻ đang vui vẻ chụp ảnh cùng nhau, có thể trong một buồng chụp ảnh hoặc không gian giải trí. Nội dung hoàn toàn là hình ảnh cá nhân, không có văn bản, liên kết, yêu cầu thông tin cá nhân, chuyển tiền hay bất kỳ yếu tố nào thường thấy trong các chiêu trò lừa đảo. Do đó, rủi ro lừa đảo là cực kỳ thấp.",
+    "html": "\n<div id=\"resultCard\" style=\"--risk-color:#22c55e;padding:18px\" data-score=\"0\">\n  <section class=\"result-head\"><span class=\"pill safe\" id=\"scorePill\">An toàn · 0% rủi ro</span><h2>Phân tích kỹ thuật</h2><p class=\"hint\">Bức ảnh này là một khoảnh khắc đời thường của một nhóm bạn và không chứa bất kỳ dấu hiệu lừa đảo nào.</p><p>Bức ảnh chụp một nhóm người trẻ đang vui vẻ chụp ảnh cùng nhau, có thể trong một buồng chụp ảnh hoặc không gian giải trí. Nội dung hoàn toàn là hình ảnh cá nhân, không có văn bản, liên kết, yêu cầu thông tin cá nhân, chuyển tiền hay bất kỳ yếu tố nào thường thấy trong các chiêu trò lừa đảo. Do đó, rủi ro lừa đảo là cực kỳ thấp.</p></section>\n  <div class=\"result-main\"><div id=\"scoreRing\" class=\"ring\" style=\"--score:0%\"><strong id=\"scoreText\">0%</strong><small>rủi ro</small></div><div><h2 id=\"zoneTitle\">An toàn</h2><p class=\"hint\">Không có thông tin bổ sung nào từ bức ảnh có thể làm thay đổi đánh giá rủi ro lừa đảo.</p></div></div>\n  <div class=\"grid\"><div class=\"box\"><h3>Dấu hiệu phát hiện</h3><div class=\"evidence\"><div><strong>Nhóm người trẻ đang vui vẻ</strong><p>Bức ảnh cho thấy nhiều người trẻ đang cười và tạo dáng, thể hiện một hoạt động xã hội bình thường, không có dấu hiệu bất thường hay đe dọa. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra. Nếu còn phân vân, bác nên hỏi người thân hoặc liên hệ trực tiếp tổ chức thật bằng số điện thoại chính thức. Việc kiểm tra chậm lại vài phút thường an toàn hơn nhiều so với làm theo một yêu cầu gấp trong tin nhắn.</p></div><div><strong>Không có văn bản hay liên kết</strong><p>Bức ảnh chỉ chứa hình ảnh, không có bất kỳ chữ viết, đường dẫn web hay mã QR nào có thể dẫn đến nội dung độc hại hoặc lừa đảo. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra. Nếu còn phân vân, bác nên hỏi người thân hoặc liên hệ trực tiếp tổ chức thật bằng số điện thoại chính thức. Việc kiểm tra chậm lại vài phút thường an toàn hơn nhiều so với làm theo một yêu cầu gấp trong tin nhắn.</p></div><div><strong>Không có yêu cầu thông tin/tiền bạc</strong><p>Không có bất kỳ dấu hiệu nào cho thấy có yêu cầu cung cấp thông tin cá nhân, mật khẩu, OTP hay chuyển tiền, là những dấu hiệu phổ biến của lừa đảo. Yêu cầu chuyển tiền hoặc đóng phí trước thường được dùng để chiếm tiền rồi tiếp tục đòi thêm khoản khác. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra. Nếu còn phân vân, bác nên hỏi người thân hoặc liên hệ trực tiếp tổ chức thật bằng số điện thoại chính thức.</p></div></div></div><div class=\"box\"><h3>Nên làm gì tiếp?</h3><div class=\"checks\"><button class='action-btn' data-action='0'><span>Kiểm tra ngữ cảnh</span><span>→</span></button><button class='action-btn' data-action='1'><span>Xác minh người gửi</span><span>→</span></button><button class='action-btn' data-action='2'><span>Bảo mật thông tin</span><span>→</span></button></div></div></div>\n  <div class=\"box original-text\"><h3>Tin gốc đã tô vàng</h3><p>487841168_1079113217581049_8520200124653311859_n.jpg</p></div>\n  \n</div>",
+    "next_actions": [
+      {
+        "id": "step_1",
+        "label": "Kiểm tra ngữ cảnh",
+        "prompt": "Nếu bức ảnh này được gửi kèm tin nhắn, hãy xem xét nội dung tin nhắn để hiểu rõ hơn mục đích của người gửi."
+      },
+      {
+        "id": "step_2",
+        "label": "Xác minh người gửi",
+        "prompt": "Đảm bảo bạn biết rõ người đã gửi bức ảnh này và tin tưởng họ để tránh những hiểu lầm không đáng có."
+      },
+      {
+        "id": "step_3",
+        "label": "Bảo mật thông tin",
+        "prompt": "Luôn cẩn trọng khi chia sẻ hình ảnh hoặc thông tin cá nhân trực tuyến, ngay cả với bạn bè, để bảo vệ quyền riêng tư của mình."
+      }
+    ],
+    "rescue_options": [],
+    "risk": "safe",
+    "source": "gemini",
+    "summary": "Bức ảnh này là một khoảnh khắc đời thường của một nhóm bạn và không chứa bất kỳ dấu hiệu lừa đảo nào.",
+    "uncertainty": "Không có thông tin bổ sung nào từ bức ảnh có thể làm thay đổi đánh giá rủi ro lừa đảo.",
+    "verdict_label": "An toàn",
+    "zone_title": "An toàn",
+    "id": "check-1782409708846",
+    "time": "2026-06-25T17:48:28.846Z",
+    "inputText": "487841168_1079113217581049_8520200124653311859_n.jpg",
+    "share_id": "check-1782409708846"
+  },
+  "check-1782410827692": {
+    "checked_text": "babe ur a abi otch",
+    "danger_score_percent": 5,
+    "evidence": [
+      {
+        "quote": "babe ur a abi otch",
+        "why": "Đây là toàn bộ nội dung tin nhắn, thể hiện rõ ràng ngôn ngữ thô tục và xúc phạm. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra. Nếu còn phân vân, bác nên hỏi người thân hoặc liên hệ trực tiếp tổ chức thật bằng số điện thoại chính thức. Việc kiểm tra chậm lại vài phút thường an toàn hơn nhiều so với làm theo một yêu cầu gấp trong tin nhắn."
+      },
+      {
+        "quote": "Không có yêu cầu thông tin cá nhân/tài chính",
+        "why": "Tin nhắn không chứa bất kỳ yêu cầu nào về thông tin cá nhân, tài chính, hoặc các yếu tố thường thấy trong các chiêu trò lừa đảo. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra. Nếu còn phân vân, bác nên hỏi người thân hoặc liên hệ trực tiếp tổ chức thật bằng số điện thoại chính thức. Việc kiểm tra chậm lại vài phút thường an toàn hơn nhiều so với làm theo một yêu cầu gấp trong tin nhắn."
+      }
+    ],
+    "explanation": "Nội dung chỉ là một câu chửi bới, không chứa bất kỳ yếu tố nào liên quan đến lừa đảo như yêu cầu tiền bạc, thông tin cá nhân, liên kết độc hại hay tải ứng dụng. Mục đích của tin nhắn dường như là quấy rối hoặc xúc phạm cá nhân. Do đó, rủi ro lừa đảo từ tin nhắn này là cực kỳ thấp.",
+    "html": "\n<div id=\"resultCard\" style=\"--risk-color:#22c55e;padding:18px\" data-score=\"5\">\n  <section class=\"result-head\"><span class=\"pill safe\" id=\"scorePill\">An toàn · 5% rủi ro</span><h2>Phân tích kỹ thuật</h2><p class=\"hint\">Tin nhắn này chứa ngôn ngữ xúc phạm và không có dấu hiệu lừa đảo.</p><p>Nội dung chỉ là một câu chửi bới, không chứa bất kỳ yếu tố nào liên quan đến lừa đảo như yêu cầu tiền bạc, thông tin cá nhân, liên kết độc hại hay tải ứng dụng. Mục đích của tin nhắn dường như là quấy rối hoặc xúc phạm cá nhân. Do đó, rủi ro lừa đảo từ tin nhắn này là cực kỳ thấp.</p></section>\n  <div class=\"result-main\"><div id=\"scoreRing\" class=\"ring\" style=\"--score:5%\"><strong id=\"scoreText\">5%</strong><small>rủi ro</small></div><div><h2 id=\"zoneTitle\">An toàn</h2><p class=\"hint\">Không rõ người gửi tin nhắn này là ai và mối quan hệ của họ với người nhận. Ngữ cảnh cụ thể của cuộc trò chuyện có thể làm rõ hơn ý định của người gửi.</p></div></div>\n  <div class=\"grid\"><div class=\"box\"><h3>Dấu hiệu phát hiện</h3><div class=\"evidence\"><div><strong>babe ur a abi otch</strong><p>Đây là toàn bộ nội dung tin nhắn, thể hiện rõ ràng ngôn ngữ thô tục và xúc phạm. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra. Nếu còn phân vân, bác nên hỏi người thân hoặc liên hệ trực tiếp tổ chức thật bằng số điện thoại chính thức. Việc kiểm tra chậm lại vài phút thường an toàn hơn nhiều so với làm theo một yêu cầu gấp trong tin nhắn.</p></div><div><strong>Không có yêu cầu thông tin cá nhân/tài chính</strong><p>Tin nhắn không chứa bất kỳ yêu cầu nào về thông tin cá nhân, tài chính, hoặc các yếu tố thường thấy trong các chiêu trò lừa đảo. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra. Nếu còn phân vân, bác nên hỏi người thân hoặc liên hệ trực tiếp tổ chức thật bằng số điện thoại chính thức. Việc kiểm tra chậm lại vài phút thường an toàn hơn nhiều so với làm theo một yêu cầu gấp trong tin nhắn.</p></div></div></div><div class=\"box\"><h3>Nên làm gì tiếp?</h3><div class=\"checks\"><button class='action-btn' data-action='0'><span>Chặn người gửi</span><span>→</span></button><button class='action-btn' data-action='1'><span>Báo cáo</span><span>→</span></button><button class='action-btn' data-action='2'><span>Xem xét ngữ cảnh</span><span>→</span></button></div></div></div>\n  <div class=\"box original-text\"><h3>Tin gốc đã tô vàng</h3><p>babe ur a abi otch</p></div>\n  \n</div>",
+    "next_actions": [
+      {
+        "id": "step_1",
+        "label": "Chặn người gửi",
+        "prompt": "Nếu đây là tin nhắn không mong muốn, hãy chặn người gửi để tránh bị quấy rối thêm."
+      },
+      {
+        "id": "step_2",
+        "label": "Báo cáo",
+        "prompt": "Tùy thuộc vào nền tảng, bạn có thể báo cáo tin nhắn này là quấy rối hoặc ngôn ngữ không phù hợp."
+      },
+      {
+        "id": "step_3",
+        "label": "Xem xét ngữ cảnh",
+        "prompt": "Nếu bạn biết người gửi, hãy xem xét ngữ cảnh của cuộc trò chuyện để hiểu rõ hơn lý do tin nhắn này được gửi."
+      }
+    ],
+    "rescue_options": [
+      {
+        "id": "1",
+        "label": "Chặn liên lạc",
+        "detail": "Chặn số điện thoại hoặc tài khoản mạng xã hội của người gửi để ngăn chặn các tin nhắn tương tự trong tương lai."
+      },
+      {
+        "id": "2",
+        "label": "Báo cáo nền tảng",
+        "detail": "Sử dụng tính năng báo cáo của ứng dụng nhắn tin hoặc mạng xã hội để thông báo về hành vi quấy rối hoặc ngôn ngữ xúc phạm."
+      },
+      {
+        "id": "3",
+        "label": "Lưu giữ bằng chứng",
+        "detail": "Chụp ảnh màn hình tin nhắn để làm bằng chứng nếu cần thiết cho các hành động tiếp theo."
+      }
+    ],
+    "risk": "safe",
+    "source": "gemini",
+    "summary": "Tin nhắn này chứa ngôn ngữ xúc phạm và không có dấu hiệu lừa đảo.",
+    "uncertainty": "Không rõ người gửi tin nhắn này là ai và mối quan hệ của họ với người nhận. Ngữ cảnh cụ thể của cuộc trò chuyện có thể làm rõ hơn ý định của người gửi.",
+    "verdict_label": "An toàn",
+    "zone_title": "An toàn",
+    "id": "check-1782410827692",
+    "time": "2026-06-25T18:07:07.692Z",
+    "inputText": "babe ur a abi otch",
+    "share_id": "check-1782410827692"
+  },
+  "check-1782411940448": {
+    "checked_text": "hello!",
+    "danger_score_percent": 0,
+    "evidence": [
+      {
+        "quote": "hello!",
+        "why": "Đây là một lời chào xã giao đơn giản, không mang bất kỳ thông tin cụ thể nào về mục đích giao tiếp. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra. Nếu còn phân vân, bác nên hỏi người thân hoặc liên hệ trực tiếp tổ chức thật bằng số điện thoại chính thức. Việc kiểm tra chậm lại vài phút thường an toàn hơn nhiều so với làm theo một yêu cầu gấp trong tin nhắn."
+      }
+    ],
+    "explanation": "Tin nhắn chỉ bao gồm một lời chào 'hello!', không chứa bất kỳ thông tin nào có thể gây hiểu lầm hoặc yêu cầu hành động bất thường. Không có link lạ, yêu cầu cung cấp thông tin cá nhân, hay đề cập đến tiền bạc.",
+    "html": "\n<div id=\"resultCard\" style=\"--risk-color:#22c55e;padding:18px\" data-score=\"0\">\n  <section class=\"result-head\"><span class=\"pill safe\" id=\"scorePill\">An toàn · 0% rủi ro</span><h2>Phân tích kỹ thuật</h2><p class=\"hint\">Tin nhắn chỉ là lời chào hỏi thông thường, không có dấu hiệu rủi ro.</p><p>Tin nhắn chỉ bao gồm một lời chào &#x27;hello!&#x27;, không chứa bất kỳ thông tin nào có thể gây hiểu lầm hoặc yêu cầu hành động bất thường. Không có link lạ, yêu cầu cung cấp thông tin cá nhân, hay đề cập đến tiền bạc.</p></section>\n  <div class=\"result-main\"><div id=\"scoreRing\" class=\"ring\" style=\"--score:0%\"><strong id=\"scoreText\">0%</strong><small>rủi ro</small></div><div><h2 id=\"zoneTitle\">An toàn</h2><p class=\"hint\">Cần thêm ngữ cảnh để hiểu mục đích của người gửi.</p></div></div>\n  <div class=\"grid\"><div class=\"box\"><h3>Dấu hiệu phát hiện</h3><div class=\"evidence\"><div><strong>hello!</strong><p>Đây là một lời chào xã giao đơn giản, không mang bất kỳ thông tin cụ thể nào về mục đích giao tiếp. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra. Nếu còn phân vân, bác nên hỏi người thân hoặc liên hệ trực tiếp tổ chức thật bằng số điện thoại chính thức. Việc kiểm tra chậm lại vài phút thường an toàn hơn nhiều so với làm theo một yêu cầu gấp trong tin nhắn.</p></div></div></div><div class=\"box\"><h3>Nên làm gì tiếp?</h3><div class=\"checks\"><button class='action-btn' data-action='0'><span>Phản hồi</span><span>→</span></button><button class='action-btn' data-action='1'><span>Kiểm tra người gửi</span><span>→</span></button><button class='action-btn' data-action='2'><span>Cung cấp thêm ngữ cảnh</span><span>→</span></button></div></div></div>\n  <div class=\"box original-text\"><h3>Tin gốc đã tô vàng</h3><p>hello!</p></div>\n  \n</div>",
+    "next_actions": [
+      {
+        "id": "step_1",
+        "label": "Phản hồi",
+        "prompt": "Bạn có thể trả lời lại tin nhắn để biết thêm thông tin hoặc bỏ qua nếu không quen biết."
+      },
+      {
+        "id": "step_2",
+        "label": "Kiểm tra người gửi",
+        "prompt": "Nếu có thể, hãy kiểm tra thông tin người gửi để xác định mối quan hệ hoặc nguồn gốc của tin nhắn."
+      },
+      {
+        "id": "step_3",
+        "label": "Cung cấp thêm ngữ cảnh",
+        "prompt": "Nếu bạn biết người gửi hoặc có ngữ cảnh trước đó, hãy cung cấp thêm thông tin để đánh giá chính xác hơn."
+      }
+    ],
+    "rescue_options": [],
+    "risk": "safe",
+    "source": "gemini",
+    "summary": "Tin nhắn chỉ là lời chào hỏi thông thường, không có dấu hiệu rủi ro.",
+    "uncertainty": "Cần thêm ngữ cảnh để hiểu mục đích của người gửi.",
+    "verdict_label": "An toàn",
+    "zone_title": "An toàn",
+    "id": "check-1782411940448",
+    "time": "2026-06-25T18:25:40.448Z",
+    "inputText": "hello!",
+    "share_id": "check-1782411940448"
+  },
+  "check-1782412288439": {
+    "checked_text": "Chúc mừng quý khách đã được chọn là người nhận giải thưởng đặc biệt trị giá 50 triệu đồng trong chương trình tri ân khách hàng. Để xác nhận giải, quý khách cần gửi ảnh căn cước công dân và chuyển 300.000 đồng phí hồ sơ trong vòng 30 phút. Sau khi nhận phí, ban tổ chức cam kết chuyển toàn bộ tiền thưởng vào tài khoản ngân hàng của quý khách ngay trong ngày. Nếu quá thời hạn trên, giải thưởng sẽ tự động bị hủy và chuyển cho người nhận khác.",
+    "danger_score_percent": 98,
+    "evidence": [
+      {
+        "quote": "gửi ảnh căn cước công dân",
+        "why": "Yêu cầu cung cấp thông tin cá nhân nhạy cảm như CCCD có thể bị kẻ gian lợi dụng để mạo danh, mở tài khoản trái phép hoặc thực hiện các hành vi lừa đảo khác. Đây là nhóm thông tin nhạy cảm, người lạ hoặc nhân viên thật không nên yêu cầu bác gửi qua tin nhắn. Yêu cầu chuyển tiền hoặc đóng phí trước thường được dùng để chiếm tiền rồi tiếp tục đòi thêm khoản khác. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra."
+      },
+      {
+        "quote": "chuyển 300.000 đồng phí hồ sơ",
+        "why": "Yêu cầu chuyển tiền trước để nhận giải thưởng là dấu hiệu điển hình của lừa đảo 'phí trước', nơi kẻ gian thu tiền từ nạn nhân mà không bao giờ trao giải. Yêu cầu chuyển tiền hoặc đóng phí trước thường được dùng để chiếm tiền rồi tiếp tục đòi thêm khoản khác. Lời đe dọa hậu quả khiến bác dễ làm theo hướng dẫn mà chưa kịp hỏi người thân hoặc tổ chức thật. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra."
+      },
+      {
+        "quote": "trong vòng 30 phút. Nếu quá thời hạn trên, giải thưởng sẽ tự động bị hủy",
+        "why": "Tạo áp lực thời gian gấp rút là chiến thuật phổ biến của kẻ lừa đảo nhằm khiến nạn nhân hoảng sợ, không có đủ thời gian suy nghĩ, kiểm tra thông tin và đưa ra quyết định vội vàng. Áp lực thời gian làm người nhận khó bình tĩnh kiểm tra nguồn chính thức trước khi hành động. Lời đe dọa hậu quả khiến bác dễ làm theo hướng dẫn mà chưa kịp hỏi người thân hoặc tổ chức thật. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra."
+      },
+      {
+        "quote": "giải thưởng đặc biệt trị giá 50 triệu đồng",
+        "why": "Mồi nhử hấp dẫn với giá trị lớn không có cơ sở rõ ràng, được dùng để thu hút sự chú ý và lòng tham của nạn nhân, khiến họ dễ dàng rơi vào bẫy. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra. Nếu còn phân vân, bác nên hỏi người thân hoặc liên hệ trực tiếp tổ chức thật bằng số điện thoại chính thức. Việc kiểm tra chậm lại vài phút thường an toàn hơn nhiều so với làm theo một yêu cầu gấp trong tin nhắn."
+      }
+    ],
+    "explanation": "Tin nhắn yêu cầu cung cấp thông tin cá nhân nhạy cảm như ảnh căn cước công dân và chuyển khoản một khoản phí nhỏ để nhận giải thưởng lớn. Việc tạo áp lực thời gian gấp rút (30 phút) là dấu hiệu phổ biến của lừa đảo nhằm khiến nạn nhân không kịp suy nghĩ. Các chương trình tri ân hợp pháp thường không yêu cầu phí hay thông tin cá nhân để nhận giải thưởng. Đây là chiêu trò 'phí trước' để chiếm đoạt tiền và thông tin của nạn nhân.",
+    "html": "\n<div id=\"resultCard\" style=\"--risk-color:#ef4444;padding:18px\" data-score=\"98\">\n  <section class=\"result-head\"><span class=\"pill danger\" id=\"scorePill\">Nguy hiểm · 98% rủi ro</span><h2>Phân tích kỹ thuật</h2><p class=\"hint\">Đây là một tin nhắn lừa đảo có rủi ro rất cao, sử dụng chiêu trò tặng thưởng để chiếm đoạt thông tin cá nhân và tiền bạc.</p><p>Tin nhắn yêu cầu cung cấp thông tin cá nhân nhạy cảm như ảnh căn cước công dân và chuyển khoản một khoản phí nhỏ để nhận giải thưởng lớn. Việc tạo áp lực thời gian gấp rút (30 phút) là dấu hiệu phổ biến của lừa đảo nhằm khiến nạn nhân không kịp suy nghĩ. Các chương trình tri ân hợp pháp thường không yêu cầu phí hay thông tin cá nhân để nhận giải thưởng. Đây là chiêu trò &#x27;phí trước&#x27; để chiếm đoạt tiền và thông tin của nạn nhân.</p></section>\n  <div class=\"result-main\"><div id=\"scoreRing\" class=\"ring\" style=\"--score:98%\"><strong id=\"scoreText\">98%</strong><small>rủi ro</small></div><div><h2 id=\"zoneTitle\">Nguy hiểm</h2><p class=\"hint\">Không có thông tin về tổ chức đứng ra trao giải, tên chương trình cụ thể hoặc cách thức liên hệ chính thức. Cần xác minh tính hợp lệ của chương trình tri ân này từ các kênh chính thức của nhà cung cấp dịch vụ mà quý khách đang sử dụng (nếu có).</p></div></div>\n  <div class=\"grid\"><div class=\"box\"><h3>Dấu hiệu phát hiện</h3><div class=\"evidence\"><div><strong>gửi ảnh căn cước công dân</strong><p>Yêu cầu cung cấp thông tin cá nhân nhạy cảm như CCCD có thể bị kẻ gian lợi dụng để mạo danh, mở tài khoản trái phép hoặc thực hiện các hành vi lừa đảo khác. Đây là nhóm thông tin nhạy cảm, người lạ hoặc nhân viên thật không nên yêu cầu bác gửi qua tin nhắn. Yêu cầu chuyển tiền hoặc đóng phí trước thường được dùng để chiếm tiền rồi tiếp tục đòi thêm khoản khác. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra.</p></div><div><strong>chuyển 300.000 đồng phí hồ sơ</strong><p>Yêu cầu chuyển tiền trước để nhận giải thưởng là dấu hiệu điển hình của lừa đảo &#x27;phí trước&#x27;, nơi kẻ gian thu tiền từ nạn nhân mà không bao giờ trao giải. Yêu cầu chuyển tiền hoặc đóng phí trước thường được dùng để chiếm tiền rồi tiếp tục đòi thêm khoản khác. Lời đe dọa hậu quả khiến bác dễ làm theo hướng dẫn mà chưa kịp hỏi người thân hoặc tổ chức thật. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra.</p></div><div><strong>trong vòng 30 phút. Nếu quá thời hạn trên, giải thưởng sẽ tự động bị hủy</strong><p>Tạo áp lực thời gian gấp rút là chiến thuật phổ biến của kẻ lừa đảo nhằm khiến nạn nhân hoảng sợ, không có đủ thời gian suy nghĩ, kiểm tra thông tin và đưa ra quyết định vội vàng. Áp lực thời gian làm người nhận khó bình tĩnh kiểm tra nguồn chính thức trước khi hành động. Lời đe dọa hậu quả khiến bác dễ làm theo hướng dẫn mà chưa kịp hỏi người thân hoặc tổ chức thật. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra.</p></div><div><strong>giải thưởng đặc biệt trị giá 50 triệu đồng</strong><p>Mồi nhử hấp dẫn với giá trị lớn không có cơ sở rõ ràng, được dùng để thu hút sự chú ý và lòng tham của nạn nhân, khiến họ dễ dàng rơi vào bẫy. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra. Nếu còn phân vân, bác nên hỏi người thân hoặc liên hệ trực tiếp tổ chức thật bằng số điện thoại chính thức. Việc kiểm tra chậm lại vài phút thường an toàn hơn nhiều so với làm theo một yêu cầu gấp trong tin nhắn.</p></div></div></div><div class=\"box\"><h3>Nên làm gì tiếp?</h3><div class=\"checks\"><button class='action-btn' data-action='0'><span>Bỏ qua tin nhắn</span><span>→</span></button><button class='action-btn' data-action='1'><span>Không cung cấp thông tin</span><span>→</span></button><button class='action-btn' data-action='2'><span>Chặn người gửi</span><span>→</span></button></div></div></div>\n  <div class=\"box original-text\"><h3>Tin gốc đã tô vàng</h3><p>Chúc mừng quý khách đã được chọn là người nhận <mark>giải thưởng đặc biệt trị giá 50 triệu đồng</mark> trong chương trình tri ân khách hàng. Để xác nhận giải, quý khách cần <mark>gửi ảnh căn cước công dân</mark> và <mark>chuyển 300.000 đồng phí hồ sơ</mark> trong vòng 30 phút. Sau khi nhận phí, ban tổ chức cam kết chuyển toàn bộ tiền thưởng vào tài khoản ngân hàng của quý khách <mark>ngay</mark> trong ngày. Nếu quá thời hạn trên, giải thưởng sẽ tự động bị hủy và chuyển cho người nhận khác.</p></div>\n  \n        <section class=\"support-card\" aria-label=\"Cô tâm lý nhắc nhẹ\">\n          <div class=\"support-icon\" aria-hidden=\"true\">♡</div>\n          <div>\n            <h3>Cô tâm lý nhắc nhẹ</h3>\n            <p>Cô chào bác, tin nhắn này đang dùng chiêu tạo áp lực thời gian để bác vội vàng làm theo đó. Bác cứ bình tĩnh, đừng lo mất giải thưởng mà hãy tự mình liên hệ kênh chính thức của tổ chức đó để kiểm tra lại nhé.</p>\n          </div>\n        </section>\n</div>",
+    "next_actions": [
+      {
+        "id": "step_1",
+        "label": "Bỏ qua tin nhắn",
+        "prompt": "Không phản hồi hoặc thực hiện bất kỳ yêu cầu nào từ tin nhắn này."
+      },
+      {
+        "id": "step_2",
+        "label": "Không cung cấp thông tin",
+        "prompt": "Tuyệt đối không gửi ảnh CCCD, chuyển tiền hoặc cung cấp bất kỳ thông tin cá nhân nào khác."
+      },
+      {
+        "id": "step_3",
+        "label": "Chặn người gửi",
+        "prompt": "Chặn số điện thoại hoặc tài khoản gửi tin nhắn này để tránh nhận thêm các tin nhắn lừa đảo tương tự."
+      }
+    ],
+    "rescue_options": [
+      {
+        "id": "1",
+        "label": "Không thực hiện yêu cầu",
+        "detail": "Tuyệt đối không gửi ảnh CCCD, không chuyển tiền và không cung cấp bất kỳ thông tin cá nhân nào theo yêu cầu của tin nhắn."
+      },
+      {
+        "id": "2",
+        "label": "Cảnh báo người thân",
+        "detail": "Chia sẻ thông tin về tin nhắn lừa đảo này với bạn bè và người thân để họ cảnh giác và tránh bị lừa đảo tương tự."
+      },
+      {
+        "id": "3",
+        "label": "Báo cáo cơ quan chức năng",
+        "detail": "Nếu bạn đã lỡ cung cấp thông tin hoặc chuyển tiền, hãy liên hệ ngay với cơ quan công an gần nhất hoặc Cục An toàn thông tin để được hỗ trợ và hướng dẫn các bước tiếp theo."
+      }
+    ],
+    "risk": "danger",
+    "source": "gemini",
+    "summary": "Đây là một tin nhắn lừa đảo có rủi ro rất cao, sử dụng chiêu trò tặng thưởng để chiếm đoạt thông tin cá nhân và tiền bạc.",
+    "uncertainty": "Không có thông tin về tổ chức đứng ra trao giải, tên chương trình cụ thể hoặc cách thức liên hệ chính thức. Cần xác minh tính hợp lệ của chương trình tri ân này từ các kênh chính thức của nhà cung cấp dịch vụ mà quý khách đang sử dụng (nếu có).",
+    "verdict_label": "Nguy hiểm",
+    "zone_title": "Nguy hiểm",
+    "id": "check-1782412288439",
+    "time": "2026-06-25T18:31:28.439Z",
+    "inputText": "Chúc mừng quý khách đã được chọn là người nhận giải thưởng đặc biệt trị giá 50 triệu đồng trong chương trình tri ân khách hàng. Để xác nhận giải, quý khách cần gửi ảnh căn cước công dân và chuyển 300.000 đồng phí hồ sơ trong vòng 30 phút. Sau khi nhận phí, ban tổ chức cam kết chuyển toàn bộ tiền thưởng vào tài khoản ngân hàng của quý khách ngay trong ngày. Nếu quá thời hạn trên, giải thưởng sẽ tự động bị hủy và chuyển cho người nhận khác.",
+    "share_id": "check-1782412288439",
+    "share_url": "/analysis/check-1782412288439",
+    "psychology": "Cô chào bác, tin nhắn này đang dùng chiêu tạo áp lực thời gian để bác vội vàng làm theo đó. Bác cứ bình tĩnh, đừng lo mất giải thưởng mà hãy tự mình liên hệ kênh chính thức của tổ chức đó để kiểm tra lại nhé."
+  },
+  "check-1782414848343": {
+    "checked_text": "alo Máy tính này nó nóng",
+    "danger_score_percent": 5,
+    "evidence": [
+      {
+        "quote": "alo Máy tính này nó nóng",
+        "why": "Đây là một câu nói mô tả tình trạng kỹ thuật thông thường của một thiết bị, không mang tính chất lừa đảo hay yêu cầu hành động khẩn cấp. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra. Nếu còn phân vân, bác nên hỏi người thân hoặc liên hệ trực tiếp tổ chức thật bằng số điện thoại chính thức. Việc kiểm tra chậm lại vài phút thường an toàn hơn nhiều so với làm theo một yêu cầu gấp trong tin nhắn."
+      },
+      {
+        "quote": "alo Máy tính này nó nóng",
+        "why": "Tin nhắn không chứa các yếu tố thường gặp trong lừa đảo như link lạ, yêu cầu tiền bạc, thông tin cá nhân (OTP, CCCD), tải ứng dụng hay đe dọa. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra. Nếu còn phân vân, bác nên hỏi người thân hoặc liên hệ trực tiếp tổ chức thật bằng số điện thoại chính thức. Việc kiểm tra chậm lại vài phút thường an toàn hơn nhiều so với làm theo một yêu cầu gấp trong tin nhắn."
+      }
+    ],
+    "explanation": "Nội dung \"alo Máy tính này nó nóng\" là một câu nói thông thường, không chứa bất kỳ dấu hiệu lừa đảo nào. Không có yêu cầu cung cấp thông tin cá nhân, mật khẩu, OTP hay chuyển tiền. Tin nhắn không chứa liên kết lạ, tệp đính kèm độc hại hay lời đe dọa. Đây chỉ là một thông báo đơn giản về tình trạng thiết bị.",
+    "html": "\n<div id=\"resultCard\" style=\"--risk-color:#22c55e;padding:18px\" data-score=\"5\">\n  <section class=\"result-head\"><span class=\"pill safe\" id=\"scorePill\">An toàn · 5% rủi ro</span><h2>Phân tích kỹ thuật</h2><p class=\"hint\">Tin nhắn này có rủi ro rất thấp vì nội dung chỉ là một câu nói đời thường về tình trạng máy tính.</p><p>Nội dung &quot;alo Máy tính này nó nóng&quot; là một câu nói thông thường, không chứa bất kỳ dấu hiệu lừa đảo nào. Không có yêu cầu cung cấp thông tin cá nhân, mật khẩu, OTP hay chuyển tiền. Tin nhắn không chứa liên kết lạ, tệp đính kèm độc hại hay lời đe dọa. Đây chỉ là một thông báo đơn giản về tình trạng thiết bị.</p></section>\n  <div class=\"result-main\"><div id=\"scoreRing\" class=\"ring\" style=\"--score:5%\"><strong id=\"scoreText\">5%</strong><small>rủi ro</small></div><div><h2 id=\"zoneTitle\">An toàn</h2><p class=\"hint\">Điều cần xác minh là người gửi tin nhắn này là ai và ngữ cảnh của cuộc trò chuyện. Nếu người gửi là người lạ, vẫn cần thận trọng với các tin nhắn tiếp theo.</p></div></div>\n  <div class=\"grid\"><div class=\"box\"><h3>Dấu hiệu phát hiện</h3><div class=\"evidence\"><div><strong>alo Máy tính này nó nóng</strong><p>Đây là một câu nói mô tả tình trạng kỹ thuật thông thường của một thiết bị, không mang tính chất lừa đảo hay yêu cầu hành động khẩn cấp. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra. Nếu còn phân vân, bác nên hỏi người thân hoặc liên hệ trực tiếp tổ chức thật bằng số điện thoại chính thức. Việc kiểm tra chậm lại vài phút thường an toàn hơn nhiều so với làm theo một yêu cầu gấp trong tin nhắn.</p></div><div><strong>alo Máy tính này nó nóng</strong><p>Tin nhắn không chứa các yếu tố thường gặp trong lừa đảo như link lạ, yêu cầu tiền bạc, thông tin cá nhân (OTP, CCCD), tải ứng dụng hay đe dọa. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra. Nếu còn phân vân, bác nên hỏi người thân hoặc liên hệ trực tiếp tổ chức thật bằng số điện thoại chính thức. Việc kiểm tra chậm lại vài phút thường an toàn hơn nhiều so với làm theo một yêu cầu gấp trong tin nhắn.</p></div></div></div><div class=\"box\"><h3>Nên làm gì tiếp?</h3><div class=\"checks\"><button class='action-btn' data-action='0'><span>Xác định người gửi</span><span>→</span></button><button class='action-btn' data-action='1'><span>Đánh giá ngữ cảnh</span><span>→</span></button><button class='action-btn' data-action='2'><span>Không hành động vội vàng</span><span>→</span></button></div></div></div>\n  <div class=\"box original-text\"><h3>Tin gốc đã tô vàng</h3><p>alo Máy tính này nó nóng</p></div>\n  \n</div>",
+    "next_actions": [
+      {
+        "id": "step_1",
+        "label": "Xác định người gửi",
+        "prompt": "Hãy kiểm tra xem người gửi tin nhắn này là ai. Nếu là người lạ, hãy cẩn trọng với các tin nhắn tiếp theo."
+      },
+      {
+        "id": "step_2",
+        "label": "Đánh giá ngữ cảnh",
+        "prompt": "Xem xét tin nhắn này xuất hiện trong ngữ cảnh nào. Đây có phải là một phần của cuộc trò chuyện đang diễn ra không?"
+      },
+      {
+        "id": "step_3",
+        "label": "Không hành động vội vàng",
+        "prompt": "Không cần thực hiện bất kỳ hành động khẩn cấp nào dựa trên tin nhắn này vì nội dung không có yếu tố rủi ro."
+      }
+    ],
+    "rescue_options": [],
+    "risk": "safe",
+    "source": "gemini",
+    "summary": "Tin nhắn này có rủi ro rất thấp vì nội dung chỉ là một câu nói đời thường về tình trạng máy tính.",
+    "uncertainty": "Điều cần xác minh là người gửi tin nhắn này là ai và ngữ cảnh của cuộc trò chuyện. Nếu người gửi là người lạ, vẫn cần thận trọng với các tin nhắn tiếp theo.",
+    "verdict_label": "An toàn",
+    "zone_title": "An toàn",
+    "id": "check-1782414848343",
+    "time": "2026-06-25T19:14:08.343Z",
+    "inputText": "alo Máy tính này nó nóng",
+    "share_id": "check-1782414848343"
+  },
+  "check-1782415359171": {
+    "checked_text": "bắt mày",
+    "danger_score_percent": 75,
+    "evidence": [
+      {
+        "quote": "bắt mày",
+        "why": "Đây là một lời đe dọa trực tiếp, mang tính chất gây hấn và áp lực, phù hợp với tiêu chí rủi ro cao về \"đe dọa hoặc tạo áp lực gấp\". Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra. Nếu còn phân vân, bác nên hỏi người thân hoặc liên hệ trực tiếp tổ chức thật bằng số điện thoại chính thức. Việc kiểm tra chậm lại vài phút thường an toàn hơn nhiều so với làm theo một yêu cầu gấp trong tin nhắn."
+      },
+      {
+        "quote": "(Toàn bộ nội dung tin nhắn)",
+        "why": "Tin nhắn cực kỳ ngắn gọn và thiếu mọi ngữ cảnh, không có thông tin về người gửi, lý do hay mục đích, làm tăng tính đáng ngờ và khó xác định ý đồ. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra. Nếu còn phân vân, bác nên hỏi người thân hoặc liên hệ trực tiếp tổ chức thật bằng số điện thoại chính thức. Việc kiểm tra chậm lại vài phút thường an toàn hơn nhiều so với làm theo một yêu cầu gấp trong tin nhắn."
+      }
+    ],
+    "explanation": "Nội dung \"bắt mày\" là một lời đe dọa rõ ràng, gây áp lực và lo lắng cho người nhận. Việc thiếu thông tin về người gửi và mục đích khiến tin nhắn trở nên đáng ngờ và khó xác định ý đồ thực sự. Mặc dù không có yêu cầu tài chính hay link độc hại, đây có thể là bước đầu của một âm mưu lừa đảo hoặc quấy rối. Cần hết sức thận trọng và không phản hồi nếu không biết rõ người gửi.",
+    "html": "\n<div id=\"resultCard\" style=\"--risk-color:#f59e0b;padding:18px\" data-score=\"75\">\n  <section class=\"result-head\"><span class=\"pill suspicious\" id=\"scorePill\">Nghi ngờ · 75% rủi ro</span><h2>Phân tích kỹ thuật</h2><p class=\"hint\">Tin nhắn này chứa lời đe dọa trực tiếp và thiếu ngữ cảnh, tiềm ẩn rủi ro cao về quấy rối hoặc ý đồ xấu.</p><p>Nội dung &quot;bắt mày&quot; là một lời đe dọa rõ ràng, gây áp lực và lo lắng cho người nhận. Việc thiếu thông tin về người gửi và mục đích khiến tin nhắn trở nên đáng ngờ và khó xác định ý đồ thực sự. Mặc dù không có yêu cầu tài chính hay link độc hại, đây có thể là bước đầu của một âm mưu lừa đảo hoặc quấy rối. Cần hết sức thận trọng và không phản hồi nếu không biết rõ người gửi.</p></section>\n  <div class=\"result-main\"><div id=\"scoreRing\" class=\"ring\" style=\"--score:75%\"><strong id=\"scoreText\">75%</strong><small>rủi ro</small></div><div><h2 id=\"zoneTitle\">Nghi ngờ</h2><p class=\"hint\">Không rõ danh tính người gửi và mối quan hệ của họ với người nhận. Mục đích chính xác của lời đe dọa này là gì và liệu có phải là một phần của âm mưu lừa đảo hay quấy rối hay không.</p></div></div>\n  <div class=\"grid\"><div class=\"box\"><h3>Dấu hiệu phát hiện</h3><div class=\"evidence\"><div><strong>bắt mày</strong><p>Đây là một lời đe dọa trực tiếp, mang tính chất gây hấn và áp lực, phù hợp với tiêu chí rủi ro cao về &quot;đe dọa hoặc tạo áp lực gấp&quot;. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra. Nếu còn phân vân, bác nên hỏi người thân hoặc liên hệ trực tiếp tổ chức thật bằng số điện thoại chính thức. Việc kiểm tra chậm lại vài phút thường an toàn hơn nhiều so với làm theo một yêu cầu gấp trong tin nhắn.</p></div><div><strong>(Toàn bộ nội dung tin nhắn)</strong><p>Tin nhắn cực kỳ ngắn gọn và thiếu mọi ngữ cảnh, không có thông tin về người gửi, lý do hay mục đích, làm tăng tính đáng ngờ và khó xác định ý đồ. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra. Nếu còn phân vân, bác nên hỏi người thân hoặc liên hệ trực tiếp tổ chức thật bằng số điện thoại chính thức. Việc kiểm tra chậm lại vài phút thường an toàn hơn nhiều so với làm theo một yêu cầu gấp trong tin nhắn.</p></div></div></div><div class=\"box\"><h3>Nên làm gì tiếp?</h3><div class=\"checks\"><button class='action-btn' data-action='0'><span>Không phản hồi</span><span>→</span></button><button class='action-btn' data-action='1'><span>Chặn người gửi</span><span>→</span></button><button class='action-btn' data-action='2'><span>Lưu giữ bằng chứng</span><span>→</span></button></div></div></div>\n  <div class=\"box original-text\"><h3>Tin gốc đã tô vàng</h3><p>bắt mày</p></div>\n  \n        <section class=\"support-card\" aria-label=\"Cô tâm lý nhắc nhẹ\">\n          <div class=\"support-icon\" aria-hidden=\"true\">♡</div>\n          <div>\n            <h3>Cô tâm lý nhắc nhẹ</h3>\n            <p>Bác ơi, tin nhắn &#x27;bắt mày&#x27; này đang dùng chiêu đe dọa trực tiếp để làm bác lo lắng đó. Cô khuyên bác cứ bình tĩnh, đừng vội phản hồi mà hãy hỏi người thân xem sao nhé.</p>\n          </div>\n        </section>\n</div>",
+    "next_actions": [
+      {
+        "id": "step_1",
+        "label": "Không phản hồi",
+        "prompt": "Tránh phản hồi tin nhắn này để không cung cấp thêm thông tin hoặc khuyến khích người gửi tiếp tục quấy rối."
+      },
+      {
+        "id": "step_2",
+        "label": "Chặn người gửi",
+        "prompt": "Chặn số điện thoại hoặc tài khoản gửi tin nhắn để ngăn chặn các liên lạc tiếp theo từ người này."
+      },
+      {
+        "id": "step_3",
+        "label": "Lưu giữ bằng chứng",
+        "prompt": "Chụp ảnh màn hình hoặc lưu lại tin nhắn để làm bằng chứng nếu cần báo cáo cho cơ quan chức năng."
+      }
+    ],
+    "rescue_options": [
+      {
+        "id": "1",
+        "label": "Báo cáo nền tảng",
+        "detail": "Nếu tin nhắn được gửi qua một ứng dụng nhắn tin hoặc mạng xã hội, hãy sử dụng tính năng báo cáo của nền tảng đó để thông báo về hành vi quấy rối hoặc đe dọa."
+      },
+      {
+        "id": "2",
+        "label": "Chia sẻ với người thân",
+        "detail": "Kể cho gia đình hoặc bạn bè thân thiết về tin nhắn này để nhận được sự hỗ trợ và lời khuyên, đặc biệt nếu bạn cảm thấy lo lắng hoặc bị đe dọa."
+      },
+      {
+        "id": "3",
+        "label": "Liên hệ cơ quan chức năng",
+        "detail": "Nếu cảm thấy bị đe dọa nghiêm trọng hoặc tin rằng đây là một phần của hành vi phạm pháp, hãy cân nhắc liên hệ với công an địa phương để được tư vấn và hỗ trợ."
+      }
+    ],
+    "risk": "suspicious",
+    "source": "gemini",
+    "summary": "Tin nhắn này chứa lời đe dọa trực tiếp và thiếu ngữ cảnh, tiềm ẩn rủi ro cao về quấy rối hoặc ý đồ xấu.",
+    "uncertainty": "Không rõ danh tính người gửi và mối quan hệ của họ với người nhận. Mục đích chính xác của lời đe dọa này là gì và liệu có phải là một phần của âm mưu lừa đảo hay quấy rối hay không.",
+    "verdict_label": "Nghi ngờ",
+    "zone_title": "Nghi ngờ",
+    "id": "check-1782415359171",
+    "time": "2026-06-25T19:22:39.171Z",
+    "inputText": "bắt mày",
+    "share_id": "check-1782415359171",
+    "share_url": "/analysis/check-1782415359171",
+    "psychology": "Bác ơi, tin nhắn 'bắt mày' này đang dùng chiêu đe dọa trực tiếp để làm bác lo lắng đó. Cô khuyên bác cứ bình tĩnh, đừng vội phản hồi mà hãy hỏi người thân xem sao nhé."
+  }
+}
