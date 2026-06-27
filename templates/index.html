@@ -1,665 +1,1011 @@
-<!doctype html>
-<html lang="vi">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>ScamCheck</title>
-  <style>
-    :root {
-      --ink: #172033;
-      --muted: #667085;
-      --red: #ef4444;
-      --orange: #f59e0b;
-      --green: #22c55e;
-      --blue: #0f766e;
-      --coral: #ff5748;
-      --line: #eee2dc;
-      --timer-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cg fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 2h6'/%3E%3Cpath d='M12 2v3'/%3E%3Ccircle cx='12' cy='13' r='8'/%3E%3Cpath d='M12 13V9'/%3E%3Cpath d='M12 13l4 2'/%3E%3C/g%3E%3C/svg%3E");
-      font-family: "Segoe UI", Arial, sans-serif;
-    }
-
-    * { box-sizing: border-box; }
-    body { margin: 0; min-width: 320px; color: var(--ink); background: linear-gradient(180deg, #fffdfb, #fff7f2 65%, #fff); font-size: 18px; }
-    button, textarea, input { font: inherit; }
-    button { cursor: pointer; }
-    .app { min-height: 100vh; padding-bottom: 124px; }
-    .main { width: min(1180px, calc(100% - 24px)); margin: auto; padding: 18px 0 30px; }
-    .sidebar { display: none; }
-    .mobile-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
-    .brand { display: flex; align-items: center; gap: 10px; font-size: 1.55rem; font-weight: 900; }
-    .logo { display: inline-grid; place-items: center; flex: 0 0 auto; width: 62px; height: 62px; filter: drop-shadow(0 8px 12px rgba(15,119,216,.16)); }
-    .logo svg { display: block; width: 100%; height: 100%; }
-    .brand-name { display: inline-flex; align-items: baseline; gap: 0; letter-spacing: 0; }
-    .teal { color: #0ea5e9; }
-    .page { display: none; }
-    .page.active { display: block; }
-    .hero { text-align: center; padding: 18px 0 20px; }
-    .hero h1 { max-width: 780px; margin: 0 auto 12px; font-size: clamp(1.9rem, 6vw, 3rem); line-height: 1.12; }
-    .hero p { max-width: 660px; margin: auto; color: var(--muted); line-height: 1.55; }
-    .accent { color: var(--coral); }
-    .card { border: 1px solid var(--line); border-radius: 22px; background: rgba(255,255,255,.96); box-shadow: 0 24px 70px rgba(44,34,28,.12); }
-    .checker { max-width: 900px; margin: auto; padding: 22px; }
-    .tabs { display: grid; grid-template-columns: repeat(2, 1fr); border-bottom: 1px solid var(--line); margin-bottom: 16px; }
-    .tab { min-height: 52px; border: 0; border-bottom: 3px solid transparent; background: transparent; color: #667085; font-weight: 900; }
-    .tab.active { color: var(--coral); border-color: var(--coral); }
-    .panel { display: none; gap: 12px; }
-    .panel.active { display: grid; }
-    textarea, input[type=url] { width: 100%; border: 1px solid #d7dde8; border-radius: 18px; outline: none; line-height: 1.55; }
-    textarea { min-height: 220px; resize: vertical; padding: 18px; }
-    #message { min-height: 340px; }
-    #voiceText { min-height: 260px; }
-    input[type=url] { min-height: 62px; padding: 0 18px; }
-    textarea:focus, input:focus { border-color: #ff8978; box-shadow: 0 0 0 4px rgba(255,90,73,.12); }
-    .char-meter { display: flex; justify-content: flex-end; min-height: 22px; margin-top: -4px; color: #7b8798; font-size: .82rem; font-weight: 850; }
-    .char-meter.danger { color: #b91c1c; }
-    .upload { display: grid; place-items: center; min-height: 270px; padding: 30px; border: 2px dashed #ff9d8f; border-radius: 22px; background: linear-gradient(180deg, #fffaf7, #fff3ee); color: var(--coral); text-align: center; cursor: pointer; transition: .18s ease; }
-    .upload:hover, .upload.has-file { border-color: var(--coral); background: #fff0ec; box-shadow: 0 0 0 4px rgba(255,87,72,.1); transform: translateY(-1px); }
-    .upload input { display: none; }
-    .upload strong { display: block; margin-top: 8px; color: var(--ink); font-size: 1.15rem; }
-    .hint, .small { color: var(--muted); line-height: 1.55; }
-    .row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-    .samples { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding-bottom: 2px; }
-    .sample { min-height: 58px; padding: 9px 12px; border: 1px solid #ffe0d8; border-radius: 14px; background: #fff8f4; color: #6b4b45; font-size: 1rem; font-weight: 800; }
-    .primary, .secondary { min-height: 58px; border: 0; border-radius: 17px; background: linear-gradient(135deg, #ff6f5a, #ff392f); color: white; font-weight: 950; box-shadow: 0 18px 36px rgba(255,90,73,.24); }
-    .primary { position: relative; display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; min-height: 66px; border-radius: 20px; font-size: 1.08rem; letter-spacing: 0; background: linear-gradient(135deg, #10b7a6 0%, #0f77d8 52%, #0648c8 100%); box-shadow: 0 18px 42px rgba(15,119,216,.25); }
-    #analyzeBtn { margin-top: 16px; }
-    .primary::before { content: "✦"; font-size: 1.25rem; }
-    .primary:hover { filter: brightness(1.04); transform: translateY(-1px); }
-    .primary:disabled { opacity: .72; transform: none; }
-    .secondary { min-height: 56px; padding: 0 16px; }
-    #recordBtn { justify-self: center; display: inline-flex; align-items: center; justify-content: center; gap: 10px; width: min(100%, 360px); min-height: 58px; padding: 0 22px; border-radius: 11px; font-size: 1.02rem; background: linear-gradient(135deg, #0f77d8, #10b7a6); box-shadow: 0 16px 34px rgba(15,119,216,.2); }
-    #recordBtn.recording { background: linear-gradient(135deg, #ef4444, #dc2626); animation: softPulse 1.1s infinite; }
-    .record-icon { position: relative; display: inline-grid; place-items: center; width: 32px; height: 32px; border-radius: 11px; background: rgba(255,255,255,.2); vertical-align: middle; }
-    .record-icon::before { content: "🎙"; font-size: 1rem; line-height: 1; }
-    .record-icon::after { content: ""; position: absolute; right: -3px; top: -3px; width: 11px; height: 11px; border: 2px solid rgba(255,255,255,.95); border-radius: 50%; background: #22c55e; box-shadow: 0 0 0 0 rgba(34,197,94,.28); }
-    .recording .record-icon { background: white; color: #ef4444; box-shadow: 0 0 0 7px rgba(255,255,255,.18); }
-    .recording .record-icon::before { content: "●"; color: #ef4444; font-size: .9rem; }
-    .recording .record-icon::after { background: #ef4444; box-shadow: 0 0 0 7px rgba(239,68,68,.18); animation: recordBlink .9s ease-in-out infinite; }
-    #voiceStatus:empty { display: none; }
-    @keyframes softPulse { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-1px); } }
-    @keyframes recordBlink { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: .55; transform: scale(.82); } }
-    .plain { border: 0; background: transparent; color: var(--coral); font-weight: 900; }
-    .clear-history-button { display: none; align-items: center; gap: 7px; min-height: 42px; padding: 0 12px; border: 1px solid rgba(220,38,38,.22); border-radius: 12px; background: rgba(255,241,242,.62); color: #dc2626; box-shadow: inset 0 1px 0 rgba(255,255,255,.72); }
-    .clear-history-button:hover { border-color: rgba(220,38,38,.42); background: rgba(255,241,242,.9); transform: translateY(-1px); }
-    .clear-history-button svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-    .error { display: none; padding: 12px; border: 1px solid #fecaca; border-radius: 14px; background: #fff1f2; color: #9f1239; font-weight: 800; }
-    .error.show { display: block; }
-    .result { max-width: 920px; min-width: 0; margin: auto; padding: 18px; }
-    .topbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
-    .result-head { display: grid; gap: 7px; min-width: 0; max-width: 100%; padding: 16px 18px; border: 1px solid var(--line); border-radius: 18px; background: linear-gradient(135deg, #fff7f2, #fff); }
-    .result-head h2 { margin: 0 0 2px; line-height: 1.18; }
-    .result-head p { margin: 0; }
-    .pill { display: inline-flex; width: fit-content; padding: 7px 12px; border-radius: 999px; background: #fff0ec; color: var(--coral); font-weight: 900; }
-    .result-main { display: grid; gap: 18px; align-items: center; min-width: 0; max-width: 100%; margin-top: 14px; padding: 18px; border: 1px solid #f1ddd5; border-radius: 20px; background: #fffaf7; }
-    .result-main.score-first { margin: 0 0 14px; background: linear-gradient(135deg, #fffaf7, #fff4ee); }
-    .ring { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 136px; height: 136px; border-radius: 50%; line-height: 1.05; text-align: center; background: radial-gradient(circle, white 0 57%, transparent 58%), conic-gradient(var(--risk-color) var(--score), #f2e7e1 0); }
-    .ring strong { font-size: 2rem; }
-    .ring small { display: block; margin-top: 4px; color: var(--muted); font-weight: 800; }
-    .grid { display: grid; gap: 12px; min-width: 0; max-width: 100%; margin-top: 14px; }
-    .box { min-width: 0; max-width: 100%; overflow: hidden; padding: 15px; border: 1px solid var(--line); border-radius: 16px; background: white; }
-    .box h3 { margin: 0 0 8px; }
-    .box p, .box li { color: var(--muted); line-height: 1.55; overflow-wrap: anywhere; word-break: break-word; }
-    .evidence { display: grid; gap: 9px; min-width: 0; max-width: 100%; }
-    .evidence div { min-width: 0; max-width: 100%; overflow: hidden; padding: 10px; border-radius: 12px; background: #fff8f4; border: 1px solid #ffe0d8; }
-    .evidence strong,
-    .evidence a,
-    .link-ellipsis {display: block;max-width: 100%;overflow: hidden;text-overflow: ellipsis;white-space: nowrap;}
-    .evidence p {margin: 6px 0 0;}
-    #linkInput:not(:focus) {overflow: hidden;text-overflow: ellipsis;white-space: nowrap;}
-    .original-text { min-width: 0; max-width: 100%; margin-top: 12px; }
-    .original-text p { white-space: pre-wrap; overflow-wrap: anywhere; word-break: break-word; }
-    .prompt-quote { margin: 4px 0 0; padding: 11px 13px; border: 1px solid #f4ded6; border-left: 4px solid #ff9d8f; border-radius: 12px; background: rgba(255,255,255,.72); }
-    .prompt-quote span { display: block; margin-bottom: 5px; color: #9a6b62; font-size: .78rem; font-style: normal; font-weight: 900; text-transform: uppercase; letter-spacing: .02em; }
-    .prompt-quote p { margin: 0; color: #79534d; font-size: .9rem; font-style: italic; line-height: 1.55; white-space: pre-wrap; overflow-wrap: anywhere; word-break: break-word; }
-    .prompt-quote mark { font-style: italic; }
-    mark { padding: 1px 4px; border-radius: 6px; background: #fde68a; color: #713f12; font-weight: 800; }
-    .checks { display: grid; gap: 9px; min-width: 0; max-width: 100%; }
-    .action-btn { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; min-width: 0; max-width: 100%; min-height: 58px; padding: 13px 16px; border: 1px solid #ffd6cd; border-radius: 14px; background: #fff7f2; color: #7c2d12; font-weight: 900; text-align: left; }
-    .action-btn:hover, .action-btn.active { border-color: var(--coral); background: #fff0ec; box-shadow: 0 0 0 3px rgba(255,87,72,.12); }
-    .action-btn span:first-child { min-width: 0; overflow-wrap: anywhere; word-break: break-word; }
-    .action-btn span:last-child { color: var(--coral); font-size: 1.25rem; }
-    .action-box { display: grid; align-content: start; gap: 12px; }
-    .support-card { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 13px; margin-top: 2px; padding: 15px 16px; border: 1px solid #f8d8ce; border-radius: 14px; background: linear-gradient(135deg, #fff8f1, #fff1f5); box-shadow: inset 0 1px 0 rgba(255,255,255,.9), 0 14px 28px rgba(150,77,66,.07); }
-    .support-icon { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 12px; background: #fff; color: #e15b74; font-size: 1.35rem; font-weight: 950; box-shadow: 0 8px 18px rgba(225,91,116,.12); }
-    .support-card h3 { margin: 0 0 5px; color: #7c2d12; font-size: 1.18rem; line-height: 1.25; }
-    .support-card p { margin: 0; color: #7f4f47; font-size: 1.08rem; line-height: 1.62; }
-    .support-note { margin: 2px 0 0; padding: 10px 12px; border: 1px solid #f3ded7; border-radius: 11px; background: #fffaf7; color: #8a625c; font-size: 1rem; line-height: 1.5; }
-    .secondary:disabled { opacity: .45; cursor: not-allowed; box-shadow: none; }
-    .step-log { display: grid; gap: 8px; }
-    .step-log article { padding: 10px 12px; border-radius: 12px; background: #fffaf7; border: 1px solid #ffe0d8; }
-    .source-note { font-size: .85rem; color: var(--muted); }
-    .simple { max-width: 840px; margin: auto; }
-    .simple-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
-    .history-list, .faq-list { display: grid; gap: 12px; }
-    .history-item, details { padding: 15px; border: 1px solid var(--line); border-radius: 16px; background: white; }
-    #history { width: 100%; max-width: 900px; }
-    #history h1 { margin-bottom: 6px; }
-    .history-item { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: stretch; gap: 10px; width: 100%; padding: 12px; text-align: left; transition: border-color .15s ease, transform .15s ease; }
-    .history-item:hover { border-color: #ff9d8f; transform: translateY(-1px); }
-    .history-open { display: grid; gap: 10px; min-width: 0; border: 0; background: transparent; color: inherit; text-align: left; }
-    .history-item p { margin: 0; color: var(--muted); line-height: 1.5; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .history-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-    .history-status { padding: 6px 10px; border-radius: 999px; color: white; font-size: .86rem; font-weight: 900; }
-    .history-score { color: var(--muted); font-size: .9rem; font-weight: 800; }
-    .history-title { font-size: 1.05rem; line-height: 1.4; }
-    .history-delete { align-self: center; display: grid; place-items: center; width: 44px; height: 44px; border: 1px solid #ffe0d8; border-radius: 12px; background: #fff8f4; color: #dc2626; font-size: 1.08rem; font-weight: 950; }
-    .history-delete:hover { border-color: #fecaca; background: #fff1f2; transform: translateY(-1px); }
-    #library { width: 100%; max-width: none; min-height: calc(100vh - 78px); }
-    #library h1 { margin: 8px 0 8px; font-size: clamp(2rem, 4vw, 3rem); }
-    .library-tools { display: flex; flex-wrap: wrap; gap: 10px; margin: 22px 0; padding: 10px; border: 1px solid var(--line); border-radius: 14px; background: rgba(255,255,255,.78); }
-    .filter-btn, .choice-btn { min-height: 50px; padding: 0 16px; border: 1px solid #ffd6cd; border-radius: 10px; background: white; color: #7c2d12; font-weight: 900; }
-    .filter-btn { min-width: 120px; }
-    .filter-btn:hover, .filter-btn.active, .choice-btn:hover { background: #ff5748; border-color: #ff5748; color: white; box-shadow: 0 10px 24px rgba(255,87,72,.18); transform: translateY(-1px); }
-    .library-list { display: flex; flex-direction: column; gap: 12px; width: 100%; max-width: 100%; }
-    .library-item { align-self: stretch; width: 100%; min-width: 0; padding: 0; overflow: hidden; border: 1px solid var(--line); border-radius: 12px; background: white; box-shadow: 0 16px 38px rgba(44,34,28,.07); }
-    .library-item summary { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; min-height: 88px; padding: 20px 24px; list-style: none; cursor: pointer; }
-    .library-item summary::-webkit-details-marker { display: none; }
-    .library-item summary::after { content: "+"; display: grid; place-items: center; flex: 0 0 auto; width: 32px; height: 32px; border-radius: 9px; background: #fff0ec; color: var(--coral); font-weight: 950; }
-    .library-item[open] summary { border-bottom: 1px solid var(--line); }
-    .library-item[open] summary::after { content: "−"; }
-    .library-title { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 14px; min-width: 0; width: 100%; }
-    .library-title strong { color: var(--ink); font-size: 1.08rem; line-height: 1.35; white-space: normal; }
-    .library-tag, .faq-tag { display: inline-flex; width: fit-content; min-height: 26px; align-items: center; padding: 3px 9px; border-radius: 8px; background: #fff0ec; color: #9f2f22; font-size: .78rem; font-weight: 950; }
-    .library-body { display: grid; gap: 16px; padding: 22px 24px 24px; }
-    .library-body p { margin: 0; color: var(--muted); font-size: 1.05rem; line-height: 1.75; }
-    .library-example { padding: 14px; border: 1px solid #ffe0d8; border-radius: 10px; background: #fff8f4; color: #7c2d12; font-weight: 800; line-height: 1.6; }
-    #training { width: 100%; max-width: none; min-height: calc(100vh - 78px); }
-    #training h1 { margin: 8px 0 18px; font-size: clamp(2rem, 4vw, 3rem); }
-    .training-card { display: grid; grid-template-rows: auto 1fr auto auto; gap: 18px; min-height: calc(100vh - 170px); padding: 30px; border: 1px solid var(--line); border-radius: 16px; background: white; box-shadow: 0 20px 54px rgba(44,34,28,.1); }
-    #trainProgress { display: inline-flex; width: fit-content; padding: 10px 14px; border-radius: 999px; background: #fff0ec; color: var(--coral); font-size: 1rem; }
-    .training-text { display: flex; align-items: center; justify-content: center; min-height: 360px; padding: 34px; border: 1px solid #ffe0d8; border-radius: 14px; background: linear-gradient(180deg, #fffaf7, #fff4ee); color: var(--ink); font-size: clamp(1.25rem, 2.3vw, 1.75rem); font-weight: 800; line-height: 1.65; text-align: center; }
-    #training .row { display: grid; grid-template-columns: minmax(130px, .55fr) minmax(0, 1fr) minmax(0, 1fr) minmax(130px, .55fr); gap: 12px; align-items: stretch; }
-    #training .choice-btn, #training #trainPrev, #training #trainNext { display: inline-flex; align-items: center; justify-content: center; min-height: 68px; padding: 0 18px; border-radius: 14px; font-size: 1.08rem; font-weight: 950; text-align: center; transition: border-color .18s ease, background .18s ease, color .18s ease, box-shadow .18s ease, transform .18s ease; }
-    #training #trainPrev, #training #trainNext { border: 1px solid var(--line); background: #fff; color: var(--coral); }
-    #training #trainNext { position: relative; overflow: hidden; gap: 9px; isolation: isolate; }
-    #training #trainNext::after { content: ">"; display: grid; place-items: center; width: 24px; height: 24px; border-radius: 999px; background: rgba(255,255,255,.24); color: inherit; opacity: 0; transform: translateX(-8px) scale(.82); transition: opacity .18s ease, transform .18s ease; }
-    #training #trainNext:hover:not(:disabled), #training #trainNext:focus-visible:not(:disabled) { border-color: #ff5748; background: linear-gradient(135deg, #ff5748, #ff7a45); color: white; box-shadow: 0 14px 30px rgba(255,87,72,.28); transform: translateY(-2px); }
-    #training #trainNext:hover:not(:disabled)::after, #training #trainNext:focus-visible:not(:disabled)::after { opacity: 1; transform: translateX(0) scale(1); }
-    #training #trainNext:active:not(:disabled) { transform: translateY(0) scale(.99); }
-    #trainFeedback { min-height: 58px; margin: 0; padding: 16px 18px; border: 1px solid #e7eef5; border-radius: 14px; background: #f8fafc; font-size: 1.04rem; }
-    #trainFeedback.train-ok, #trainFeedback.train-bad { display: flex; align-items: center; gap: 14px; }
-    #trainFeedback.train-ok { border-color: #bbf7d0; background: #f0fdf4; color: #166534; }
-    #trainFeedback.train-bad { border-color: #fecaca; background: #fff1f2; color: #991b1b; }
-    .train-icon { display: grid; place-items: center; flex: 0 0 auto; width: 44px; height: 44px; border-radius: 12px; background: currentColor; color: white; font-size: 1.6rem; font-weight: 950; }
-    .history-pagination { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 18px; }
-    .page-btn { min-height: 40px; padding: 0 12px; border: 1px solid var(--line); border-radius: 10px; background: white; color: #334155; font-weight: 900; transition: background .15s ease, border-color .15s ease, transform .15s ease; }
-    .page-btn:hover:not(:disabled), .page-btn.active { border-color: var(--coral); background: #fff0ec; color: var(--coral); transform: translateY(-1px); }
-    .page-btn:disabled { opacity: .45; cursor: not-allowed; }
-    .history-delete svg { width: 21px; height: 21px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-    .tooltip-button { position: relative; }
-    .tooltip-button::after { content: attr(data-tooltip); position: absolute; left: 50%; bottom: calc(100% + 8px); z-index: 60; min-width: max-content; padding: 5px 8px; border-radius: 8px; background: #172033; color: white; font-size: .78rem; font-weight: 800; opacity: 0; pointer-events: none; transform: translate(-50%, 4px); transition: opacity .15s ease, transform .15s ease; }
-    .tooltip-button:hover::after, .tooltip-button:focus-visible::after { opacity: 1; transform: translate(-50%, 0); }
-    .support-loading { display: flex; align-items: center; gap: 10px; margin-top: 2px; padding: 10px 12px; border: 1px solid #f3ded7; border-radius: 12px; background: #fffaf7; color: #8a625c; font-size: .9rem; font-weight: 800; }
-    .mini-spinner { width: 18px; height: 18px; border: 3px solid #fde7df; border-top-color: var(--coral); border-radius: 50%; animation: spin .8s linear infinite; }
-    .confirm-backdrop { position: fixed; inset: 0; z-index: 80; display: grid; place-items: center; padding: 20px; background: rgba(23,32,51,.35); backdrop-filter: blur(5px); }
-    .confirm-backdrop[hidden] { display: none; }
-    .confirm-card { width: min(420px, 100%); padding: 22px; border: 1px solid var(--line); border-radius: 18px; background: white; box-shadow: 0 24px 70px rgba(20,27,39,.22); }
-    .confirm-card h2 { margin: 0 0 8px; font-size: 1.25rem; }
-    .confirm-card p { margin: 0; color: var(--muted); line-height: 1.55; }
-    .confirm-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
-    .confirm-cancel, .confirm-ok { min-height: 44px; padding: 0 14px; border-radius: 11px; font-weight: 950; }
-    .confirm-cancel { border: 1px solid var(--line); background: white; color: #334155; }
-    .confirm-ok { border: 0; background: #0f77d8; color: white; }
-    .confirm-ok.danger { background: #dc2626; }
-    .pdf-preview-backdrop { position: fixed; inset: 0; z-index: 90; display: grid; place-items: center; padding: 18px; background: rgba(23,32,51,.42); backdrop-filter: blur(6px); }
-    .pdf-preview-backdrop[hidden] { display: none; }
-    .pdf-preview-card { display: grid; grid-template-rows: auto minmax(0, 1fr); gap: 12px; width: min(980px, 100%); height: min(86vh, 760px); padding: 16px; border: 1px solid var(--line); border-radius: 18px; background: #fffaf7; box-shadow: 0 28px 80px rgba(20,27,39,.26); }
-    .pdf-preview-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-    .pdf-preview-head strong { color: var(--ink); font-size: 1.08rem; }
-    .pdf-preview-actions { display: flex; gap: 8px; }
-    .pdf-preview-actions button { min-height: 42px; padding: 0 13px; border-radius: 11px; font-weight: 950; }
-    .pdf-close { border: 1px solid var(--line); background: white; color: #334155; }
-    .pdf-download { border: 0; background: linear-gradient(135deg, #087f8c, #0f67c7); color: white; }
-    .pdf-frame { width: 100%; height: 100%; min-height: 360px; border: 1px solid #e5d9d2; border-radius: 14px; background: white; }
-    .training-shell { display: grid; grid-template-columns: 190px minmax(0, 1fr); gap: 16px; align-items: stretch; }
-    .training-sidebar { display: grid; align-content: start; gap: 14px; min-height: calc(100vh - 170px); padding: 14px; border: 1px solid var(--line); border-radius: 16px; background: white; box-shadow: 0 18px 46px rgba(44,34,28,.08); }
-    .train-map { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-    .train-chip { min-height: 48px; border: 1px solid #d7dde8; border-radius: 12px; background: white; color: #334155; font-weight: 950; transition: background .15s ease, border-color .15s ease, transform .15s ease; }
-    .train-chip:hover, .train-chip.current { border-color: var(--coral); background: #fff0ec; color: var(--coral); transform: translateY(-1px); }
-    .train-chip.correct { border-color: #bbf7d0; background: #f0fdf4; color: #166534; }
-    .train-chip.wrong { border-color: #fecaca; background: #fff1f2; color: #991b1b; }
-    .train-chip.unanswered { color: #64748b; }
-    .training-submit { min-height: 50px; border: 0; border-radius: 12px; background: linear-gradient(135deg, #0f77d8, #10b7a6); color: white; font-weight: 950; }
-    .choice-btn.selected { border-color: var(--coral); background: #fff0ec; color: #9f2f22; box-shadow: 0 0 0 3px rgba(255,87,72,.12); }
-    .training-dashboard { display: grid; justify-items: center; gap: 14px; width: min(680px, 100%); margin: auto; text-align: center; }
-    .training-dashboard .dashboard-label { padding: 6px 10px; border-radius: 999px; background: #eafafa; color: #087f8c; font-size: .9rem; font-weight: 950; }
-    .training-dashboard strong { color: var(--coral); font-size: clamp(3rem, 8vw, 5.4rem); line-height: 1; }
-    .training-dashboard p { max-width: 560px; margin: 0; color: #44546a; font-size: 1rem; line-height: 1.6; }
-    .dashboard-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; width: 100%; }
-    .dashboard-stats span { display: grid; gap: 4px; padding: 14px; border: 1px solid #e7eef5; border-radius: 12px; background: white; }
-    .dashboard-stats b { color: var(--ink); font-size: 1.35rem; }
-    .dashboard-stats small { color: var(--muted); font-size: .8rem; font-weight: 900; }
-    .training-nav { display: none; }
-    #trainPrev:disabled { opacity: .45; cursor: not-allowed; }
-    #training.training-finished .training-shell { grid-template-columns: 1fr; }
-    #training.training-finished .training-sidebar,
-    #training.training-finished .training-card > .row,
-    #training.training-finished #trainFeedback { display: none; }
-    #training.training-finished .training-card { grid-template-rows: auto 1fr; min-height: calc(100vh - 170px); }
-    #training.training-finished .training-text { min-height: 0; }
-    .result-action-rail { position: sticky; top: 14px; z-index: 4; display: flex; justify-content: flex-end; gap: 6px; width: fit-content; max-width: 100%; margin: 0 0 16px auto; padding: 7px; border: 1px solid #dbe8ef; border-radius: 14px; background: rgba(255,255,255,.96); box-shadow: 0 12px 30px rgba(20,60,90,.1); backdrop-filter: blur(8px); }
-    .tool-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 0 12px; border: 0; border-radius: 9px; background: transparent; color: #164e73; font-size: .92rem; font-weight: 900; transition: background .15s ease, color .15s ease, transform .15s ease; }
-    .tool-btn::before { font-size: .9rem; }
-    .tool-btn::before { display: grid; place-items: center; width: 25px; height: 25px; border-radius: 7px; background: #eaf7fb; color: #087f8c; font-size: 1.05rem; line-height: 1; }
-    .tool-btn:hover { background: #eef8fc; color: #075985; transform: translateY(-1px); }
-    #copyResult::before { content: "⧉"; }
-    #copyResult.copied::before { content: "✓"; background: #dcfce7; color: #15803d; }
-    #shareResult::before { content: "↗"; }
-    #downloadCard { background: linear-gradient(135deg, #087f8c, #0f67c7); color: white; }
-    #downloadCard::before { content: "▣"; background: rgba(255,255,255,.18); color: white; }
-    #downloadCard:hover { background: linear-gradient(135deg, #076b76, #0b55a8); color: white; }
-    #reportScam::before { content: "!"; background: #fff1f2; color: #dc2626; font-weight: 950; }
-    .rescue-panel { margin-top: 16px; padding: 20px; border: 1px solid #dbe8ef; border-radius: 12px; background: #fbfdff; }
-    .rescue-panel summary { display: flex; align-items: center; justify-content: space-between; gap: 10px; list-style: none; pointer-events: none; }
-    .rescue-panel summary::-webkit-details-marker { display: none; }
-    .rescue-options { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 16px; }
-    .rescue-btn { display: flex; align-items: center; gap: 12px; min-height: 58px; padding: 12px 14px; border: 1px solid #d8e3ea; border-radius: 9px; background: white; color: #334155; font-weight: 900; text-align: left; }
-    .rescue-btn:hover { border-color: #69a7b5; background: #f2fbfc; }
-    .rescue-check { position: relative; flex: 0 0 auto; width: 24px; height: 24px; border: 2px solid #8fa5b3; border-radius: 5px; background: white; }
-    .rescue-btn.selected { border-color: #0f8d98; background: #eafafa; color: #075d65; box-shadow: 0 0 0 3px rgba(15,141,152,.1); }
-    .rescue-btn.selected .rescue-check { border-color: #0f8d98; background: #0f8d98; }
-    .rescue-btn.selected .rescue-check::after { content: "✓"; position: absolute; inset: 0; display: grid; place-items: center; color: white; font-size: .9rem; }
-    .rescue-submit { width: 100%; min-height: 56px; margin-top: 12px; border: 0; border-radius: 9px; background: linear-gradient(135deg, #087f8c, #0f67c7); color: white; font-weight: 950; }
-    .rescue-submit:disabled { opacity: .45; cursor: not-allowed; }
-    .rescue-output { margin-top: 12px; display: grid; gap: 8px; }
-    .rescue-output div { padding: 10px; border-radius: 12px; background: #fffaf7; border: 1px solid #ffe0d8; }
-    #shareCanvas { position: fixed; left: -9999px; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
-    .tool-toast { min-height: 24px; margin-top: 8px; color: #0f766e; font-size: .9rem; font-weight: 800; }
-    summary { cursor: pointer; font-weight: 900; }
-    #faq { width: 100%; max-width: none; min-height: calc(100vh - 56px); padding: 10px 0 28px; }
-    #faq h1 { margin: 8px 0 10px; font-size: clamp(2rem, 4vw, 3rem); }
-    .faq-intro, .faq-ask { display: none; }
-    .faq-note { max-width: 980px; margin: 0 0 24px; font-size: 1.08rem; }
-    .faq-grid { display: grid; grid-template-columns: 1fr; gap: 16px; width: 100%; }
-    .faq-item { width: 100%; padding: 0; overflow: hidden; border: 1px solid var(--line); border-radius: 12px; background: white; box-shadow: 0 16px 38px rgba(44,34,28,.07); }
-    .faq-item summary { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 16px; min-height: 88px; padding: 23px 28px; color: var(--ink); font-size: 1.2rem; line-height: 1.35; list-style: none; }
-    .faq-item summary::-webkit-details-marker { display: none; }
-    .faq-item summary::after { content: "+"; display: grid; place-items: center; flex: 0 0 auto; width: 34px; height: 34px; border-radius: 10px; background: #fff0ec; color: var(--coral); font-size: 1.25rem; font-weight: 950; }
-    .faq-item summary::before { content: "FAQ"; display: inline-flex; align-items: center; min-height: 28px; padding: 3px 9px; border-radius: 8px; background: #effaf8; color: #0f766e; font-size: .78rem; font-weight: 950; }
-    .faq-item:nth-child(2) summary::before { content: "Kết quả"; }
-    .faq-item:nth-child(3) summary::before { content: "Link"; }
-    .faq-item:nth-child(4) summary::before { content: "Tiền"; }
-    .faq-item:nth-child(5) summary::before { content: "OTP"; }
-    .faq-item:nth-child(6) summary::before { content: "Riêng tư"; }
-    .faq-item:nth-child(7) summary::before { content: "Hỗ trợ"; }
-    .faq-item:nth-child(8) summary::before { content: "Lưu ý"; }
-    .faq-item[open] summary { border-bottom: 1px solid var(--line); color: #7c2d12; }
-    .faq-item[open] summary::after { content: "−"; }
-    .faq-item p { margin: 0; min-height: 118px; padding: 26px 30px 30px; color: var(--muted); font-size: 1.12rem; line-height: 1.8; }
-    .dot { display: inline-block; width: 12px; height: 12px; margin-right: 8px; border-radius: 50%; }
-    .safe { background: var(--green); }
-    .suspicious { background: var(--orange); }
-    .danger { background: var(--red); }
-    .pill.safe, .pill.suspicious, .pill.danger { color: white; }
-    .pill.suspicious { background: var(--orange); color: #172033; }
-    .pill.safe { background: var(--green); }
-    .pill.danger { background: var(--red); }
-    .bottom-nav { position: fixed; bottom: 34px; left: 50%; z-index: 10; display: grid; grid-template-columns: repeat(5, 1fr); width: min(100vw, 520px); padding: 8px 4px calc(10px + env(safe-area-inset-bottom)); border-top: 1px solid var(--line); border-radius: 24px 24px 0 0; background: rgba(255,255,255,.96); box-shadow: 0 -20px 50px rgba(20,27,39,.08); transform: translateX(-50%); }
-    .nav { border: 0; border-radius: 14px; background: transparent; min-height: 58px; color: #7b8496; font-weight: 900; transition: background .15s ease, color .15s ease, transform .15s ease; }
-    .nav:hover, .nav:focus-visible { background: #fff8f4; color: var(--coral); transform: translateY(-1px); }
-    .nav.active { color: var(--coral); }
-    .history-timer-icon { display: inline-block; flex: 0 0 auto; width: 26px; height: 26px; color: inherit; stroke: currentColor; fill: none; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; vertical-align: middle; }
-    .mobile-timer { display: inline-block; width: 24px; height: 24px; margin-bottom: 1px; background: currentColor; vertical-align: middle; -webkit-mask: var(--timer-icon) center/contain no-repeat; mask: var(--timer-icon) center/contain no-repeat; }
-    .mobile-book { display: inline-block; width: 23px; height: 20px; margin-bottom: 1px; border-bottom: 2px solid currentColor; background: linear-gradient(currentColor,currentColor) 1px 5px/5px 13px no-repeat, linear-gradient(currentColor,currentColor) 9px 1px/5px 17px no-repeat, linear-gradient(currentColor,currentColor) 17px 7px/5px 11px no-repeat; vertical-align: middle; }
-    .legal-footer { position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; display: flex; align-items: center; justify-content: center; gap: 9px; padding: 8px 16px calc(8px + env(safe-area-inset-bottom)); border-top: 1px solid rgba(238,226,220,.85); background: rgba(255,255,255,.94); color: #6b7280; text-align: center; font-size: 0; line-height: 1.35; backdrop-filter: blur(10px); }
-    .legal-icon { display: inline-grid; place-items: center; flex: 0 0 auto; width: 24px; height: 24px; border-radius: 8px; background: #effaf8; color: #0f766e; font-size: .88rem; }
-    .legal-copy { max-width: 980px; font-size: .86rem; }
-    .loading { position: fixed; inset: 0; z-index: 40; display: none; place-items: center; background: rgba(255,255,255,.72); backdrop-filter: blur(6px); }
-    .loading.show { display: grid; }
-    .loader-card { display: grid; gap: 12px; place-items: center; width: min(320px, 86vw); padding: 28px; border: 1px solid var(--line); border-radius: 22px; background: white; box-shadow: 0 24px 70px rgba(20,27,39,.18); text-align: center; }
-    .spinner { width: 54px; height: 54px; border: 6px solid #e5f4f2; border-top-color: #0f77d8; border-radius: 50%; animation: spin .8s linear infinite; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .chat-toggle { position: fixed; right: 18px; bottom: 126px; z-index: 21; min-width: 104px; min-height: 50px; padding: 0 18px; border: 0; border-radius: 14px; background: linear-gradient(135deg, #0f77d8, #10b7a6); color: white; font-weight: 950; box-shadow: 0 18px 38px rgba(15,119,216,.24); cursor: grab; touch-action: none; user-select: none; transition: opacity .15s ease, transform .15s ease, box-shadow .15s ease; }
-    .chat-toggle:hover { transform: translateY(-1px); box-shadow: 0 20px 42px rgba(15,119,216,.28); }
-    .chat-toggle.dragging { cursor: grabbing; transform: scale(.98); box-shadow: 0 12px 28px rgba(15,119,216,.2); }
-    .chat-open .chat-toggle { opacity: 0; pointer-events: none; transform: translateY(8px); }
-    .chat-drawer { position: fixed; inset: 0 0 34px auto; z-index: 20; display: grid; grid-template-rows: auto 1fr auto; width: min(460px, 100vw); padding: 24px; background: rgba(255,255,255,.99); border-left: 1px solid var(--line); box-shadow: -18px 0 50px rgba(20,27,39,.14); transform: translateX(105%); }
-    .chat-drawer.open { transform: translateX(0); }
-    .chat-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--line); }
-    .chat-head h2 { margin: 0; font-size: 1.2rem; }
-    .chat-close { width: 42px; height: 42px; border: 0; border-radius: 14px; background: #fff0ec; color: var(--coral); font-weight: 950; }
-    .chat-log { display: grid; align-content: start; gap: 12px; overflow-y: auto; padding: 18px 2px; }
-    .chat-msg { padding: 16px; border: 1px solid var(--line); border-radius: 15px; background: #fffaf7; line-height: 1.6; }
-    .chat-msg.user { margin-left: 28px; background: #effaf8; border-color: #c9eee8; }
-    .chat-msg.ai { margin-right: 28px; }
-    .chat-msg ul { margin: 8px 0 0; padding-left: 20px; color: var(--muted); }
-    .chat-form { display: grid; gap: 9px; padding-top: 14px; border-top: 1px solid var(--line); }
-    .chat-composer { display: grid; grid-template-columns: 54px minmax(0, 1fr) 58px; align-items: start; gap: 8px; padding: 10px; border: 1px solid #d7dde8; border-radius: 18px; background: white; box-shadow: 0 8px 24px rgba(20,27,39,.07); }
-    #chatQuestion { min-height: 170px; max-height: 310px; padding: 8px 10px 14px; border: 0; border-radius: 12px; resize: vertical; box-shadow: none; line-height: 1.45; white-space: pre-wrap; overflow-wrap: anywhere; word-break: break-word; }
-    .chat-file { display: grid; place-items: center; min-height: 46px; padding: 0 6px; border: 1px solid #ffd6cd; border-radius: 12px; background: #fff7f2; color: #7c2d12; font-size: .78rem; font-weight: 900; cursor: pointer; text-align: center; }
-    .chat-file input { display: none; }
-    .chat-send { min-height: 46px; padding: 0 8px; border: 0; border-radius: 12px; background: linear-gradient(135deg, #0f77d8, #10b7a6); color: white; font-weight: 950; }
-    .chat-meta { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 0 4px; }
-    #chatFileName { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    #chatTimer { flex: 0 0 auto; color: #0f766e; font-weight: 800; }
-    #chatCharacterCount { margin-left: auto; color: #7b8798; font-weight: 850; }
-    #chatCharacterCount.danger { color: #b91c1c; }
-    #chatFileName:empty, #chatTimer:empty { display: none; }
-
-    @media (min-width: 980px) {
-      .app { display: grid; grid-template-columns: 290px minmax(0, 1fr); padding-bottom: 34px; }
-      .app.chat-open { padding-right: 460px; }
-      .sidebar { position: sticky; top: 0; display: grid; grid-template-rows: auto auto 1fr; align-content: start; gap: 22px; height: 100vh; padding: 28px 20px; border-right: 1px solid var(--line); background: rgba(255,255,255,.96); box-shadow: 10px 0 34px rgba(44,34,28,.06); }
-      .sidebar .brand { font-size: 1.35rem; padding: 0 8px; }
-      .sidebar .logo { width: 54px; height: 54px; }
-      .side-nav { display: flex; flex-direction: column; gap: 8px; padding-bottom: 18px; border-bottom: 1px solid var(--line); }
-      .side-nav .nav { display: flex; align-items: center; gap: 13px; min-height: 54px; padding: 0 14px; border-radius: 12px; text-align: left; font-size: 1rem; color: #334155; }
-      .side-nav .nav::before { display: grid; place-items: center; flex: 0 0 auto; width: 32px; height: 32px; color: inherit; font-size: 1.18rem; line-height: 1; font-weight: 950; }
-      .side-nav .nav:nth-child(1) { order: 1; }
-      .side-nav .nav:nth-child(2) { order: 2; }
-      .side-nav .nav:nth-child(4) { order: 3; }
-      .side-nav .nav:nth-child(5) { order: 4; }
-      .side-nav .nav:nth-child(3) { order: 5; }
-      .side-nav .nav:nth-child(1)::before { content: ""; width: 32px; height: 32px; background: currentColor; clip-path: polygon(50% 9%, 89% 43%, 78% 43%, 78% 88%, 58% 88%, 58% 64%, 42% 64%, 42% 88%, 22% 88%, 22% 43%, 11% 43%); }
-      .side-nav .nav:nth-child(2)::before { content: ""; width: 32px; height: 32px; border: 2px solid currentColor; border-radius: 50%; background: radial-gradient(circle at 50% 50%, currentColor 0 2px, transparent 2.5px), linear-gradient(currentColor,currentColor) 50% 30%/2px 9px no-repeat, linear-gradient(currentColor,currentColor) 50% 50%/8px 2px no-repeat; transform: scale(.84); }
-      .side-nav .nav:nth-child(3)::before { content: "?"; }
-      .side-nav .nav:nth-child(4)::before { content: ""; width: 23px; height: 20px; border: 0; border-bottom: 2px solid currentColor; border-radius: 0; background: linear-gradient(currentColor,currentColor) 1px 5px/5px 13px no-repeat, linear-gradient(currentColor,currentColor) 9px 1px/5px 17px no-repeat, linear-gradient(currentColor,currentColor) 17px 7px/5px 11px no-repeat; transform: none; }
-      .side-nav .nav:nth-child(5)::before { content: "✓"; }
-      .side-nav .nav:nth-child(1)::before { content: ""; width: 32px; height: 32px; background: currentColor; clip-path: polygon(50% 9%, 89% 43%, 78% 43%, 78% 88%, 58% 88%, 58% 64%, 42% 64%, 42% 88%, 22% 88%, 22% 43%, 11% 43%); }
-      .side-nav .nav:nth-child(2)::before { content: ""; width: 32px; height: 32px; border: 2px solid currentColor; border-radius: 50%; background: radial-gradient(circle at 50% 50%, currentColor 0 2px, transparent 2.5px), linear-gradient(currentColor,currentColor) 50% 30%/2px 9px no-repeat, linear-gradient(currentColor,currentColor) 50% 50%/8px 2px no-repeat; transform: scale(.84); }
-      .side-nav .nav:nth-child(1)::before { transform: scale(.86); }
-      .side-nav .nav:nth-child(2)::before { display: none; content: none; }
-      .side-nav .nav:nth-child(3)::before { font-size: 1.26rem; }
-      .side-nav .nav:nth-child(4)::before { width: 32px; height: 32px; border-bottom-width: 3px; background: linear-gradient(currentColor,currentColor) 5px 9px/5px 17px no-repeat, linear-gradient(currentColor,currentColor) 14px 4px/5px 22px no-repeat, linear-gradient(currentColor,currentColor) 23px 11px/5px 15px no-repeat; }
-      .side-nav .nav:nth-child(5)::before { content: "✓"; font-size: 1.36rem; }
-      .side-nav .nav.active { background: #fff0ec; color: var(--coral); }
-      .nav-ico { display: grid; place-items: center; width: 25px; height: 25px; color: inherit; font-weight: 950; }
-      .side-history { display: grid; align-content: start; gap: 12px; min-height: 0; }
-      .side-history-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 40px; padding: 0 6px; border: 0; border-radius: 10px; background: transparent; color: var(--ink); font-weight: 950; text-align: left; }
-      .side-history-head:hover { background: #fff8f4; }
-      .side-history-head small { color: var(--muted); font-size: 1rem; font-weight: 950; transition: transform .15s ease; }
-      .side-history.collapsed { gap: 4px; }
-      .side-history.collapsed .side-recent,
-      .side-history.collapsed .side-all { display: none; }
-      .side-history.collapsed .side-history-head small { transform: rotate(180deg); }
-      .side-recent { display: grid; gap: 8px; overflow: auto; padding-right: 2px; }
-      .side-recent-item { display: grid; grid-template-columns: 8px 1fr auto; align-items: center; gap: 8px; width: 100%; min-height: 46px; padding: 8px 6px; border: 0; border-radius: 10px; background: transparent; text-align: left; }
-      .side-recent-item:hover { background: #fff8f4; }
-      .side-dot { width: 6px; height: 6px; border-radius: 50%; background: #cbd5e1; }
-      .side-title { overflow: hidden; color: #334155; font-size: .82rem; font-weight: 900; text-overflow: ellipsis; white-space: nowrap; }
-      .side-badge { padding: 4px 7px; border-radius: 999px; font-size: .72rem; font-weight: 950; white-space: nowrap; }
-      .side-badge.danger { background: #fee2e2; color: #dc2626; }
-      .side-badge.suspicious { background: #fef3c7; color: #b45309; }
-      .side-badge.safe { background: #dcfce7; color: #15803d; }
-      .side-empty { padding: 12px 6px; color: var(--muted); font-size: .9rem; line-height: 1.5; }
-      .side-all { min-height: 44px; border: 1px solid var(--line); border-radius: 10px; background: white; color: #334155; font-size: .86rem; font-weight: 900; }
-      .mobile-head, .bottom-nav { display: none; }
-      .chat-toggle { bottom: 58px; }
-      .chat-drawer { bottom: 34px; }
-      .tabs { grid-template-columns: repeat(4, 1fr); }
-      .main { width: min(calc(100% - 36px), 1540px); }
-      .result-main { grid-template-columns: auto minmax(0, 1fr); }
-      .grid { grid-template-columns: minmax(0, 1.1fr) minmax(360px, .9fr); }
-      .checks { grid-template-columns: 1fr; }
-      .chat-open .main { width: min(100%, calc(100vw - 730px)); }
-      .chat-open .grid { grid-template-columns: 1fr; }
-      .chat-open .faq-grid { grid-template-columns: 1fr; }
-      .result { width: 100%; max-width: none; padding-right: 156px; }
-      #resultCard { width: 100%; }
-      .result-action-rail { position: fixed; top: 50%; right: 20px; flex-direction: column; align-items: stretch; width: 132px; margin: 0; padding: 10px; gap: 8px; transform: translateY(-50%); }
-      .result-action-rail .tool-btn { justify-content: flex-start; width: 100%; min-height: 50px; }
-      .chat-open .result { padding-right: 0; }
-      .chat-open .result-action-rail { position: sticky; top: 12px; right: auto; flex-direction: row; align-items: center; justify-content: flex-start; width: 100%; margin: 0 0 14px; padding: 8px; gap: 8px; transform: none; }
-      .chat-open .result-action-rail .tool-btn { justify-content: center; width: auto; min-width: 112px; min-height: 46px; padding: 0 12px; }
-    }
-
-    @media (max-width: 979px) {
-      body { font-size: 18px; }
-      .result { padding: 12px; }
-      #resultCard { padding: 12px !important; }
-      .result-main, .grid { grid-template-columns: 1fr; }
-      .app { padding-bottom: 0; }
-      .main { width: min(100% - 20px, 1180px); padding-bottom: 24px; }
-      .checker { padding: 16px; }
-      .samples { grid-template-columns: 1fr; }
-      .result-action-rail { position: static; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); width: 100%; margin: 0 0 16px; padding: 8px; }
-      .tool-btn { width: 100%; min-height: 48px; padding: 0 8px; }
-      .rescue-options { grid-template-columns: 1fr; }
-      .upload { min-height: 250px; }
-      .chat-drawer { left: 0; right: 0; width: 100vw; max-width: 100vw; padding: 18px; }
-      .chat-composer { grid-template-columns: 48px minmax(0, 1fr) 52px; }
-      #chatQuestion { min-height: 150px; }
-      .faq-grid { grid-template-columns: 1fr; }
-      .library-tools { display: grid; grid-template-columns: 1fr 1fr; padding: 8px; }
-      .filter-btn { width: 100%; min-width: 0; }
-      .library-item summary { min-height: 72px; padding: 18px; }
-      .library-body { padding: 16px 18px 18px; }
-      #training { min-height: calc(100vh - 150px); }
-      .training-shell { grid-template-columns: 1fr; }
-      .training-sidebar { min-height: 0; padding: 14px; }
-      .train-map { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; }
-      .train-chip { flex: 0 0 54px; width: 54px; height: 42px; aspect-ratio: auto; }
-      .training-card { min-height: calc(100vh - 270px); padding: 18px; gap: 14px; border-radius: 12px; }
-      .training-text { min-height: 250px; padding: 22px; font-size: 1.18rem; line-height: 1.65; }
-      #training .row { grid-template-columns: 1fr 1fr; }
-      #training .choice-btn, #training #trainPrev, #training #trainNext { width: 100%; min-height: 62px; border-radius: 12px; }
-      #trainScam { order: 1; }
-      #trainSafe { order: 2; }
-      #trainPrev { order: 3; }
-      #trainNext { order: 4; }
-      #trainFeedback { min-height: 74px; padding: 14px; }
-      .bottom-nav { bottom: 0; width: 100%; border-radius: 18px 18px 0 0; }
-      .bottom-nav .nav { min-height: 56px; font-size: .82rem; }
-      .legal-footer { position: static; justify-content: flex-start; margin: 8px 12px 92px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 12px; background: #fffaf7; font-size: .82rem; line-height: 1.45; text-align: left; }
-      .pdf-preview-card { height: min(88vh, 720px); padding: 12px; }
-      .pdf-preview-head { align-items: flex-start; flex-direction: column; }
-      .pdf-preview-actions { width: 100%; }
-      .pdf-preview-actions button { flex: 1; }
-      .chat-toggle { bottom: 92px; }
-      .chat-drawer { bottom: 0; }
-    }
-  </style>
-</head>
-<body>
-  <div class="app">
-    <!-- Desktop navigation. It is hidden on phones by CSS. -->
-    <aside class="sidebar">
-      <div class="brand"><span class="logo" aria-hidden="true"><svg viewBox="0 0 96 96" role="img"><path d="M42 8 15 18v20c0 20 11 36 27 43 16-7 27-23 27-43V18L42 8Z" fill="#eaf6ff" stroke="#1595e8" stroke-width="5" stroke-linejoin="round"/><path d="M42 18 25 24v14c0 13 7 24 17 30 10-6 17-17 17-30V24l-17-6Z" fill="#2b83e6"/><path d="m33 41 7 7 15-18" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/><circle cx="62" cy="62" r="16" fill="#fff" stroke="#27415f" stroke-width="5"/><path d="m74 74 12 12" stroke="#27415f" stroke-width="6" stroke-linecap="round"/><path d="M62 51 51 70h22L62 51Z" fill="#fff" stroke="#ef4444" stroke-width="4" stroke-linejoin="round"/><path d="M62 57v6" stroke="#ef4444" stroke-width="4" stroke-linecap="round"/><circle cx="62" cy="68" r="2.2" fill="#ef4444"/></svg></span><span class="brand-name"><span>Scam</span><span class="teal">Check</span></span></div>
-      <nav class="side-nav">
-        <button class="nav active" data-page="home">Trang chủ</button>
-        <button class="nav" data-page="history"><svg class="history-timer-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M9 2h6"></path><path d="M12 2v3"></path><circle cx="12" cy="13" r="8"></circle><path d="M12 13V9"></path><path d="M12 13l4 2"></path></svg><span>Lịch sử</span></button>
-        <button class="nav" data-page="faq">Hỏi đáp</button>
-        <button class="nav" data-page="library">Thư viện lừa đảo</button>
-        <button class="nav" data-page="training">Luyện tập</button>
-      </nav>
-      <div class="side-history">
-        <button class="side-history-head" id="sideHistoryToggle" type="button" aria-expanded="true"><span>Lịch sử gần đây</span><small>⌃</small></button>
-        <div id="sideHistoryList" class="side-recent"></div>
-        <button class="side-all" data-page="history">Xem tất cả lịch sử</button>
-      </div>
-    </aside>
-
-    <main class="main">
-      <!-- Phone header. The desktop sidebar replaces it on large screens. -->
-      <header class="mobile-head">
-        <div class="brand"><span class="logo" aria-hidden="true"><svg viewBox="0 0 96 96" role="img"><path d="M42 8 15 18v20c0 20 11 36 27 43 16-7 27-23 27-43V18L42 8Z" fill="#eaf6ff" stroke="#1595e8" stroke-width="5" stroke-linejoin="round"/><path d="M42 18 25 24v14c0 13 7 24 17 30 10-6 17-17 17-30V24l-17-6Z" fill="#2b83e6"/><path d="m33 41 7 7 15-18" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/><circle cx="62" cy="62" r="16" fill="#fff" stroke="#27415f" stroke-width="5"/><path d="m74 74 12 12" stroke="#27415f" stroke-width="6" stroke-linecap="round"/><path d="M62 51 51 70h22L62 51Z" fill="#fff" stroke="#ef4444" stroke-width="4" stroke-linejoin="round"/><path d="M62 57v6" stroke="#ef4444" stroke-width="4" stroke-linecap="round"/><circle cx="62" cy="68" r="2.2" fill="#ef4444"/></svg></span><span class="brand-name"><span>Scam</span><span class="teal">Check</span></span></div>
-      </header>
-
-      <!-- Main checker: image, link, text, and voice all use the same AI button. -->
-      <section id="home" class="page active">
-        <div class="hero">
-          <h1>Kiểm tra lừa đảo <span class="accent">an toàn</span> và nhanh chóng</h1>
-          <p>Dán tin nhắn, đường link, ảnh chụp màn hình hoặc nói bằng giọng nói. ScamCheck sẽ phân tích và đưa ra điểm rủi ro dễ hiểu.</p>
-        </div>
-
-        <div class="card checker">
-          <div class="tabs">
-            <button class="tab active" data-mode="image">Ảnh chụp</button>
-            <button class="tab" data-mode="link">Đường link</button>
-            <button class="tab" data-mode="text">Văn bản</button>
-            <button class="tab" data-mode="voice">Giọng nói</button>
-          </div>
-
-          <div class="panel active" data-panel="image">
-            <label class="upload" id="uploadBox">
-              <div style="font-size:2.3rem">⇧</div>
-              <strong id="uploadTitle">Bấm vào đây để tải ảnh</strong>
-              <span class="small" id="uploadHint">Ảnh chụp tin nhắn, email, link hoặc màn hình đáng ngờ</span>
-              <input id="imageInput" type="file" accept="image/*" capture="environment">
-            </label>
-          </div>
-
-          <div class="panel" data-panel="link">
-            <input id="linkInput" type="url" placeholder="Dán đường link đáng ngờ vào đây...">
-            <div id="linkCharacterCount" class="char-meter" aria-live="polite">0 / 7.000 ký tự</div>
-            <p class="hint">Ví dụ: link nhận thưởng, giao hàng, ngân hàng, tuyển dụng hoặc trang yêu cầu nhập OTP.</p>
-          </div>
-
-          <div class="panel" data-panel="text">
-            <textarea id="message" maxlength="30000" placeholder="Dán tin nhắn, email hoặc nội dung đáng ngờ vào đây..."></textarea>
-            <div id="messageCharacterCount" class="char-meter" aria-live="polite">0 / 7.000 ký tự</div>
-            <div class="samples" id="samples">
-              {% for sample in samples %}
-                <button class="sample" data-sample="{{ sample.text }}">{{ sample.label }}</button>
-              {% endfor %}
-            </div>
-          </div>
-
-          <div class="panel" data-panel="voice">
-            <button id="recordBtn" class="secondary"><span class="record-icon"></span>Ghi giọng nói</button>
-            <p id="voiceStatus" class="hint" aria-live="polite">Micro chỉ hoạt động trên HTTPS hoặc localhost và chỉ bật sau khi bác bấm nút ghi.</p>
-            <textarea id="voiceText" maxlength="30000" placeholder="Nội dung giọng nói sẽ hiện ở đây..."></textarea>
-            <div id="voiceCharacterCount" class="char-meter" aria-live="polite">0 / 7.000 ký tự</div>
-          </div>
-
-          <div id="error" class="error"></div>
-          <button id="analyzeBtn" class="primary">Phân tích với AI</button>
-        </div>
-      </section>
-
-      <!-- Gemini analysis appears here after Python returns a result. -->
-      <section id="analysis" class="page result">
-        <div class="topbar">
-          <button id="backHome" class="plain">← Quay lại kiểm tra</button>
-          <span class="pill">Kết quả phân tích</span>
-        </div>
-        <div id="resultBox" class="card" style="padding:18px"></div>
-      </section>
-
-      <!-- The browser stores and reopens checks locally with pagination. -->
-      <section id="history" class="page simple">
-        <div class="simple-head">
-          <h1>Lịch sử kiểm tra</h1>
-          <button id="clearHistory" class="plain clear-history-button" hidden><span aria-hidden="true">🗑</span> Xóa hết</button>
-        </div>
-        <p class="hint">Lịch sử được lưu trên thiết bị này. Bấm vào một kết quả để xem lại đầy đủ.</p>
-        <div id="historyList" class="history-list"></div>
-        <div id="historyPagination" class="history-pagination" aria-label="Trang lịch sử"></div>
-      </section>
-
-      <!-- Static questions and answers; no Gemini request is needed. -->
-      <section id="faq" class="page simple">
-        <h1>Hỏi đáp</h1>
-        <p class="hint faq-intro">Bác có thể hỏi về tin nhắn vừa kiểm tra, việc đã bấm link, gửi tiền, cung cấp thông tin hoặc bất kỳ điều gì còn lo lắng.</p>
-        <p class="hint faq-note">Những câu hỏi thường gặp khi bác nhận được tin nhắn, đường link, email hoặc ảnh chụp đáng ngờ.</p>
-        <div class="faq-grid">
-          <details class="faq-item"><summary>ScamCheck dùng để làm gì?</summary><p>ScamCheck giúp bác kiểm tra nhanh tin nhắn, đường link, email hoặc ảnh chụp đáng ngờ. Ứng dụng đọc nội dung và đưa ra mức rủi ro, các dấu hiệu cần chú ý cùng ba bước nên làm tiếp. Bác có thể dùng công cụ trước khi bấm đường link, chuyển tiền hoặc trả lời người gửi. Kết quả được giải thích bằng tiếng Việt đơn giản để bác dễ hiểu vì sao nội dung có thể nguy hiểm. ScamCheck không đánh giá bác và cũng không làm bác phải lo sợ thêm. Mục tiêu chính là giúp bác có thêm thời gian kiểm tra kỹ trước khi quyết định.</p></details>
-          <details class="faq-item"><summary>Kết quả An toàn, Nghi ngờ, Nguy hiểm nghĩa là gì?</summary><p>An toàn nghĩa là AI chưa thấy dấu hiệu lừa đảo rõ ràng trong nội dung bác đã gửi. Tuy vậy, bác vẫn nên kiểm tra người gửi nếu tin nhắn liên quan đến tiền, mật khẩu hoặc thông tin cá nhân. Nghi ngờ nghĩa là còn chi tiết chưa thể xác minh, chẳng hạn đường link lạ, lời hứa quá hấp dẫn hoặc yêu cầu làm gấp. Trong trường hợp này, bác nên hỏi người thân và liên hệ tổ chức qua kênh chính thức. Nguy hiểm nghĩa là nội dung có nhiều dấu hiệu lừa đảo đáng tin cậy. Khi thấy mức này, bác không nên bấm link, gửi tiền, trả lời hay cung cấp mã OTP.</p></details>
-          <details class="faq-item"><summary>Nếu bác đã bấm vào link thì sao?</summary><p>Bác hãy đóng trang đó và không nhập thêm bất kỳ thông tin nào. Chỉ bấm vào link chưa chắc đã làm mất tiền, vì vậy bác hãy bình tĩnh và nhớ lại mình đã cung cấp những gì. Nếu đã nhập mật khẩu, bác nên mở ứng dụng hoặc trang web chính thức để đổi mật khẩu ngay. Bác cũng nên đăng xuất các thiết bị lạ và bật xác thực hai bước nếu dịch vụ hỗ trợ. Nếu đã nhập OTP, thông tin thẻ hoặc tài khoản ngân hàng, hãy gọi ngay số hỗ trợ in trên thẻ hoặc trong ứng dụng chính thức. Cuối cùng, bác nên chụp màn hình và giữ lại đường link để cung cấp cho ngân hàng hoặc cơ quan chức năng khi cần.</p></details>
-          <details class="faq-item"><summary>Nếu bác đã chuyển tiền thì làm gì?</summary><p>Bác hãy gọi ngân hàng càng sớm càng tốt để yêu cầu tra soát và hỗ trợ chặn giao dịch. Khi gọi, bác cần chuẩn bị số tiền, thời gian chuyển, số tài khoản nhận và mã giao dịch. Hãy giữ lại ảnh chụp tin nhắn, biên lai, tên tài khoản và mọi cuộc gọi liên quan. Bác không nên xóa cuộc trò chuyện hoặc chặn người gửi trước khi đã lưu đủ bằng chứng. Sau đó, bác nên trình báo cơ quan công an để được hướng dẫn chính thức. Tuyệt đối không chuyển thêm tiền dù người gửi nói đó là phí hoàn tiền, phí mở khóa hoặc cách lấy lại khoản tiền cũ.</p></details>
-          <details class="faq-item"><summary>Có nên cung cấp mã OTP không?</summary><p>Không, bác tuyệt đối không đọc, chụp hoặc gửi mã OTP cho người khác. OTP là mã dùng một lần để xác nhận đăng nhập hoặc giao dịch và có thể cho phép người khác lấy tiền khỏi tài khoản. Mật khẩu, mã PIN, số bảo mật sau thẻ và thông tin đăng nhập cũng phải được giữ kín. Ngân hàng, công an hoặc nhân viên giao hàng thật sẽ không yêu cầu bác đọc OTP qua điện thoại hay tin nhắn. Nếu ai đó thúc giục bác cung cấp mã ngay, bác nên dừng cuộc gọi và tự liên hệ đơn vị đó qua số chính thức. Nếu đã lỡ cung cấp mã, hãy khóa thẻ hoặc tài khoản và gọi ngân hàng ngay lập tức.</p></details>
-          <details class="faq-item"><summary>Lịch sử có bị gửi lên mạng không?</summary><p>Lịch sử kiểm tra được lưu trong trình duyệt trên chính thiết bị bác đang dùng. ScamCheck hiển thị lịch sử theo từng trang để bác có thể mở lại mà không cần gọi AI lần nữa. Điện thoại hoặc máy tính khác sẽ không tự nhìn thấy lịch sử này. Lịch sử cũng không được dùng để tạo tài khoản vì ScamCheck không có hệ thống đăng nhập. Khi xóa dữ liệu trình duyệt, các kết quả đã lưu có thể biến mất. Bác cũng có thể chủ động xóa toàn bộ lịch sử bất cứ lúc nào tại trang Lịch sử.</p></details>
-          <details class="faq-item"><summary>Khi nào nên hỏi người thân hoặc ngân hàng?</summary><p>Bác nên hỏi ngay khi tin nhắn có đường link lạ, yêu cầu chuyển tiền, xin OTP, dọa khóa tài khoản hoặc thúc giục làm gấp. Một dấu hiệu quan trọng khác là người gửi yêu cầu bác giữ bí mật và không được kể với gia đình. Bác nên gọi người thân trước khi thực hiện bất kỳ hành động tài chính nào mà mình chưa chắc chắn. Khi cần xác minh với ngân hàng, hãy dùng số điện thoại trên thẻ, trong ứng dụng hoặc trên trang web chính thức. Không gọi số được gửi kèm trong tin nhắn đáng ngờ vì số đó có thể thuộc về kẻ lừa đảo. Việc xác minh trước thường chỉ mất vài phút nhưng có thể giúp bác tránh mất tiền và thông tin cá nhân.</p></details>
-          <details class="faq-item"><summary>ScamCheck có thay thế công an hoặc ngân hàng không?</summary><p>Không, ScamCheck là công cụ giáo dục hỗ trợ bác nhận biết dấu hiệu rủi ro. Kết quả AI dựa trên nội dung được cung cấp và không phải kết luận điều tra chính thức. Công cụ cũng không thể khóa tài khoản, thu hồi giao dịch hoặc xác định chắc chắn danh tính người gửi. Khi bị mất tiền, đe dọa hoặc lộ tài khoản, bác cần liên hệ ngay ngân hàng và cơ quan công an. Bác nên làm theo hướng dẫn của các đơn vị chính thức nếu hướng dẫn đó khác với gợi ý của ứng dụng. ScamCheck phù hợp nhất để giúp bác phát hiện sớm, dừng lại và chuẩn bị thông tin trước khi nhờ hỗ trợ.</p></details>
-        </div>
-        <div class="faq-ask">
-          <textarea id="faqQuestion" maxlength="1200" placeholder="Ví dụ: Tôi đã bấm vào đường link nhưng chưa nhập mật khẩu. Bây giờ tôi nên làm gì?"></textarea>
-          <div class="faq-actions">
-            <span class="hint">AI sẽ dùng kết quả và lịch sử kiểm tra trên thiết bị này để hiểu câu hỏi.</span>
-            <button id="faqAskBtn" class="primary">Hỏi ScamCheck AI</button>
-          </div>
-        </div>
-      </section>
-
-      <!-- Python supplies the scam-library data through /api/library. -->
-      <section id="library" class="page simple">
-        <h1>Thư viện kiểu lừa đảo</h1>
-        <p class="hint">Chọn nhóm để xem những kiểu lừa đảo thường gặp và ví dụ minh họa.</p>
-        <div id="libraryFilters" class="library-tools"></div>
-        <div id="libraryList" class="library-list"></div>
-      </section>
-
-      <!-- Practice questions are loaded from Python and scored in the browser. -->
-      <section id="training" class="page simple">
-        <h1>Chế độ luyện tập</h1>
-        <div class="training-shell">
-          <aside class="training-sidebar" aria-label="Danh sách câu hỏi">
-            <div id="trainMap" class="train-map"></div>
-            <button id="trainSubmit" class="training-submit" type="button">Nộp bài</button>
-          </aside>
-        <div class="training-card">
-          <strong id="trainProgress">Câu 1/10</strong>
-          <div id="trainText" class="training-text"></div>
-          <div class="row">
-            <button id="trainPrev" class="plain" type="button">‹ Câu trước</button>
-            <button id="trainScam" class="choice-btn">Lừa đảo</button>
-            <button id="trainSafe" class="choice-btn">An toàn</button>
-            <button id="trainNext" class="plain">Câu tiếp theo</button>
-          </div>
-          <p id="trainFeedback" class="hint"></p>
-        </div>
-        </div>
-      </section>
-    </main>
-
-    <nav class="bottom-nav">
-      <button class="nav active" data-page="home">⌂<br>Trang chủ</button>
-      <button class="nav" data-page="history"><svg class="history-timer-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M9 2h6"></path><path d="M12 2v3"></path><circle cx="12" cy="13" r="8"></circle><path d="M12 13V9"></path><path d="M12 13l4 2"></path></svg><br>Lịch sử</button>
-      <button class="nav" data-page="faq">?<br>Hỏi đáp</button>
-      <button class="nav" data-page="library"><span class="mobile-book" aria-hidden="true"></span><br>Thư viện</button>
-      <button class="nav" data-page="training">✓<br>Luyện tập</button>
-    </nav>
-
-    <button id="chatToggle" class="chat-toggle">Hỏi AI</button>
-    <div id="loading" class="loading" aria-live="polite">
-      <div class="loader-card">
-        <div class="spinner"></div>
-        <strong>Đang phân tích với AI...</strong>
-        <span class="hint">Vui lòng chờ trong giây lát.</span>
-      </div>
-    </div>
-    <!-- Optional follow-up conversation using the previous analysis as context. -->
-    <aside id="chatDrawer" class="chat-drawer" aria-label="Hỏi AI thêm">
-      <div class="chat-head">
-        <div>
-          <h2>Hỏi AI thêm</h2>
-          <span class="small">Gửi câu hỏi, ảnh hoặc file mới về vụ việc.</span>
-        </div>
-        <button id="chatClose" class="chat-close">×</button>
-      </div>
-      <div id="chatLog" class="chat-log">
-        <div class="chat-msg ai">Bác có thể hỏi thêm: “Tôi đã bấm link rồi thì làm gì?” hoặc tải ảnh/file mới để AI xem tiếp.</div>
-      </div>
-      <div class="chat-form">
-        <div class="chat-composer">
-          <label class="chat-file" title="Tải tệp để AI xem thêm">
-            <span>Tệp</span>
-            <input id="chatFile" type="file" accept="image/*,.txt,.json,.csv,text/plain,application/json,text/csv">
-          </label>
-          <textarea id="chatQuestion" rows="1" maxlength="30000" placeholder="Nhắn cho ScamCheck AI..."></textarea>
-          <button id="chatSend" class="chat-send">Gửi</button>
-        </div>
-        <div class="chat-meta">
-          <span id="chatFileName" class="small"></span>
-          <span id="chatCharacterCount" class="small" aria-live="polite">0 / 7.000 ký tự</span>
-          <span id="chatTimer" class="small" aria-live="polite"></span>
-        </div>
-      </div>
-    </aside>
-    <footer class="legal-footer" aria-label="Ghi chú giáo dục">
-      <span class="legal-icon" aria-hidden="true">🎓</span>
-      <span class="legal-copy">ScamCheck là công cụ giáo dục do học sinh phát triển. Kết quả chỉ mang tính tham khảo và không thay thế cảnh báo chính thức từ ngân hàng hoặc cơ quan chức năng.</span>
-    </footer>
-  </div>
-  <!-- These files live directly in /static, so keep the paths in sync with the project tree. -->
-  <script src="{{ url_for('static', filename='helpers.js') }}"></script>
-  <script src="{{ url_for('static', filename='navigation.js') }}?v=routes2"></script>
-  <script src="{{ url_for('static', filename='history.js') }}?v=permanent1"></script>
-  <script src="{{ url_for('static', filename='analyze.js') }}?v=share2"></script>
-  <script src="{{ url_for('static', filename='voice.js') }}?v=trust2"></script>
-  <script src="{{ url_for('static', filename='chat.js') }}?v=corner1"></script>
-  <script src="{{ url_for('static', filename='extras.js') }}?v=pdf-preview1"></script>
-  <script src="{{ url_for('static', filename='app.js') }}?v=state3"></script>
-
-</body>
-</html>
+{
+  "check-1782407247467": {
+    "checked_text": "I'm a fake police from cambodia, give me 10 billion i need to fund for charity",
+    "danger_score_percent": 95,
+    "evidence": [
+      {
+        "quote": "I'm a fake police from cambodia",
+        "why": "Đối tượng tự nhận mình là cảnh sát giả mạo, thừa nhận hành vi lừa đảo. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra. Nếu còn phân vân, bác nên hỏi người thân hoặc liên hệ trực tiếp tổ chức thật bằng số điện thoại chính thức. Việc kiểm tra chậm lại vài phút thường an toàn hơn nhiều so với làm theo một yêu cầu gấp trong tin nhắn."
+      },
+      {
+        "quote": "give me 10 billion",
+        "why": "Yêu cầu một khoản tiền cực lớn, vượt quá khả năng và sự hợp lý thông thường. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra. Nếu còn phân vân, bác nên hỏi người thân hoặc liên hệ trực tiếp tổ chức thật bằng số điện thoại chính thức. Việc kiểm tra chậm lại vài phút thường an toàn hơn nhiều so với làm theo một yêu cầu gấp trong tin nhắn."
+      },
+      {
+        "quote": "i need to fund for charity",
+        "why": "Lý do làm từ thiện được đưa ra một cách tùy tiện và không có bằng chứng xác thực, thường là chiêu bài để đánh vào lòng thương. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra. Nếu còn phân vân, bác nên hỏi người thân hoặc liên hệ trực tiếp tổ chức thật bằng số điện thoại chính thức. Việc kiểm tra chậm lại vài phút thường an toàn hơn nhiều so với làm theo một yêu cầu gấp trong tin nhắn."
+      }
+    ],
+    "explanation": "Đối tượng tự xưng là cảnh sát từ Campuchia và yêu cầu một khoản tiền khổng lồ (10 tỷ) để làm từ thiện. Đây là dấu hiệu điển hình của lừa đảo, không có cơ quan thực thi pháp luật nào yêu cầu tiền trực tiếp từ người dân qua tin nhắn với lý do như vậy. Yêu cầu này mang tính chất ép buộc và không có căn cứ.",
+    "html": "\n<div id=\"resultCard\" style=\"--risk-color:#ef4444;padding:18px\" data-score=\"95\">\n  <section class=\"result-head\"><span class=\"pill danger\" id=\"scorePill\">Nguy hiểm · 95% rủi ro</span><h2>Phân tích kỹ thuật</h2><p class=\"hint\">Đây là một vụ lừa đảo rõ ràng, yêu cầu chuyển một khoản tiền lớn với lý do không đáng tin cậy.</p><p>Đối tượng tự xưng là cảnh sát từ Campuchia và yêu cầu một khoản tiền khổng lồ (10 tỷ) để làm từ thiện. Đây là dấu hiệu điển hình của lừa đảo, không có cơ quan thực thi pháp luật nào yêu cầu tiền trực tiếp từ người dân qua tin nhắn với lý do như vậy. Yêu cầu này mang tính chất ép buộc và không có căn cứ.</p></section>\n  <div class=\"result-main\"><div id=\"scoreRing\" class=\"ring\" style=\"--score:95%\"><strong id=\"scoreText\">95%</strong><small>rủi ro</small></div><div><h2 id=\"zoneTitle\">Nguy hiểm</h2><p class=\"hint\">Không có điểm không chắc chắn nào, đây là hành vi lừa đảo có chủ đích.</p></div></div>\n  <div class=\"grid\"><div class=\"box\"><h3>Dấu hiệu phát hiện</h3><div class=\"evidence\"><div><strong>I&#x27;m a fake police from cambodia</strong><p>Đối tượng tự nhận mình là cảnh sát giả mạo, thừa nhận hành vi lừa đảo. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra. Nếu còn phân vân, bác nên hỏi người thân hoặc liên hệ trực tiếp tổ chức thật bằng số điện thoại chính thức. Việc kiểm tra chậm lại vài phút thường an toàn hơn nhiều so với làm theo một yêu cầu gấp trong tin nhắn.</p></div><div><strong>give me 10 billion</strong><p>Yêu cầu một khoản tiền cực lớn, vượt quá khả năng và sự hợp lý thông thường. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra. Nếu còn phân vân, bác nên hỏi người thân hoặc liên hệ trực tiếp tổ chức thật bằng số điện thoại chính thức. Việc kiểm tra chậm lại vài phút thường an toàn hơn nhiều so với làm theo một yêu cầu gấp trong tin nhắn.</p></div><div><strong>i need to fund for charity</strong><p>Lý do làm từ thiện được đưa ra một cách tùy tiện và không có bằng chứng xác thực, thường là chiêu bài để đánh vào lòng thương. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra. Nếu còn phân vân, bác nên hỏi người thân hoặc liên hệ trực tiếp tổ chức thật bằng số điện thoại chính thức. Việc kiểm tra chậm lại vài phút thường an toàn hơn nhiều so với làm theo một yêu cầu gấp trong tin nhắn.</p></div></div></div><div class=\"box\"><h3>Nên làm gì tiếp?</h3><div class=\"checks\"><button class='action-btn' data-action='0'><span>Không phản hồi</span><span>→</span></button><button class='action-btn' data-action='1'><span>Chặn và báo cáo</span><span>→</span></button><button class='action-btn' data-action='2'><span>Cảnh báo người thân</span><span>→</span></button></div></div></div>\n  <div class=\"box original-text\"><h3>Tin gốc đã tô vàng</h3><p><mark>I&#x27;m a fake police from cambodia</mark>, <mark>give me 10 billion</mark> <mark>i need to fund for charity</mark></p></div>\n  \n        <section class=\"support-card\" aria-label=\"Cô tâm lý nhắc nhẹ\">\n          <div class=\"support-icon\" aria-hidden=\"true\">♡</div>\n          <div>\n            <h3>Cô tâm lý nhắc nhẹ</h3>\n            <p>Bác ơi, tin nhắn này có dấu hiệu không an toàn rồi ạ. Kẻ xấu thường dùng chiêu bài đánh vào lòng trắc ẩn, như việc nói cần tiền làm từ thiện để bác dễ tin tưởng. Để an tâm, bác cứ bình tĩnh tìm số điện thoại chính thức của tổ chức đó để kiểm tra lại thông tin nhé.</p>\n          </div>\n        </section>\n</div>",
+    "next_actions": [
+      {
+        "id": "step_1",
+        "label": "Không phản hồi",
+        "prompt": "Tuyệt đối không trả lời tin nhắn hoặc tương tác với đối tượng."
+      },
+      {
+        "id": "step_2",
+        "label": "Chặn và báo cáo",
+        "prompt": "Chặn số điện thoại/tài khoản của đối tượng và báo cáo lên nhà cung cấp dịch vụ hoặc cơ quan chức năng nếu có thể."
+      },
+      {
+        "id": "step_3",
+        "label": "Cảnh báo người thân",
+        "prompt": "Chia sẻ thông tin về vụ việc để cảnh báo bạn bè và gia đình về các hình thức lừa đảo tương tự."
+      }
+    ],
+    "rescue_options": [
+      {
+        "id": "1",
+        "label": "Báo cáo với cơ quan công an",
+        "detail": "Nếu bạn nhận được các yêu cầu tương tự hoặc nghi ngờ có dấu hiệu lừa đảo, hãy liên hệ cơ quan công an địa phương để được hỗ trợ và xử lý."
+      },
+      {
+        "id": "2",
+        "label": "Tìm hiểu về các hình thức lừa đảo",
+        "detail": "Chủ động tìm hiểu các phương thức lừa đảo phổ biến để nâng cao cảnh giác và tránh trở thành nạn nhân."
+      }
+    ],
+    "risk": "danger",
+    "source": "gemini",
+    "summary": "Đây là một vụ lừa đảo rõ ràng, yêu cầu chuyển một khoản tiền lớn với lý do không đáng tin cậy.",
+    "uncertainty": "Không có điểm không chắc chắn nào, đây là hành vi lừa đảo có chủ đích.",
+    "verdict_label": "Nguy hiểm",
+    "zone_title": "Nguy hiểm",
+    "id": "check-1782407247467",
+    "time": "2026-06-25T17:07:27.467Z",
+    "inputText": "I'm a fake police from cambodia, give me 10 billion i need to fund for charity",
+    "share_id": "check-1782407247467",
+    "share_url": "/analysis/check-1782407247467",
+    "psychology": "Bác ơi, tin nhắn này có dấu hiệu không an toàn rồi ạ. Kẻ xấu thường dùng chiêu bài đánh vào lòng trắc ẩn, như việc nói cần tiền làm từ thiện để bác dễ tin tưởng. Để an tâm, bác cứ bình tĩnh tìm số điện thoại chính thức của tổ chức đó để kiểm tra lại thông tin nhé."
+  },
+  "check-1782409435957": {
+    "checked_text": "Chúng tôi là cán bộ thuộc cơ quan điều tra và đang xử lý một vụ án rửa tiền có liên quan đến tài khoản đứng tên bạn. Bạn phải giữ bí mật, không được thông báo cho gia đình và chuyển toàn bộ số tiền vào tài khoản tạm giữ để chứng minh tài sản hợp pháp. Nếu không thực hiện trong hai giờ tới, hồ sơ sẽ được chuyển sang khởi tố và bạn phải chịu trách nhiệm trước pháp luật. Hãy gọi lại số điện thoại trong tin nhắn ngay để được cán bộ hướng dẫn từng bước chuyển khoản.",
+    "danger_score_percent": 100,
+    "evidence": [
+      {
+        "quote": "Chúng tôi là cán bộ thuộc cơ quan điều tra và đang xử lý một vụ án rửa tiền có liên quan đến tài khoản đứng tên bạn.",
+        "why": "Mạo danh cơ quan nhà nước để tạo uy tín giả và đe dọa người nhận, đây là dấu hiệu lừa đảo phổ biến. Yêu cầu chuyển tiền hoặc đóng phí trước thường được dùng để chiếm tiền rồi tiếp tục đòi thêm khoản khác. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra. Nếu còn phân vân, bác nên hỏi người thân hoặc liên hệ trực tiếp tổ chức thật bằng số điện thoại chính thức."
+      },
+      {
+        "quote": "Bạn phải giữ bí mật, không được thông báo cho gia đình và chuyển toàn bộ số tiền vào tài khoản tạm giữ để chứng minh tài sản hợp pháp.",
+        "why": "Yêu cầu giữ bí mật và chuyển tiền vào tài khoản lạ là dấu hiệu lừa đảo nhằm cô lập nạn nhân và chiếm đoạt tài sản. Yêu cầu chuyển tiền hoặc đóng phí trước thường được dùng để chiếm tiền rồi tiếp tục đòi thêm khoản khác. Lời đe dọa hậu quả khiến bác dễ làm theo hướng dẫn mà chưa kịp hỏi người thân hoặc tổ chức thật. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra."
+      },
+      {
+        "quote": "Nếu không thực hiện trong hai giờ tới, hồ sơ sẽ được chuyển sang khởi tố và bạn phải chịu trách nhiệm trước pháp luật.",
+        "why": "Tạo áp lực thời gian và đe dọa pháp lý để buộc nạn nhân hành động gấp rút mà không kịp suy nghĩ, không có thời gian kiểm chứng. Yêu cầu chuyển tiền hoặc đóng phí trước thường được dùng để chiếm tiền rồi tiếp tục đòi thêm khoản khác. Lời đe dọa hậu quả khiến bác dễ làm theo hướng dẫn mà chưa kịp hỏi người thân hoặc tổ chức thật. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra."
+      },
+      {
+        "quote": "Hãy gọi lại số điện thoại trong tin nhắn ngay để được cán bộ hướng dẫn từng bước chuyển khoản.",
+        "why": "Hướng dẫn nạn nhân liên hệ để nhận chỉ dẫn chuyển tiền, hoàn tất hành vi lừa đảo. Yêu cầu chuyển tiền hoặc đóng phí trước thường được dùng để chiếm tiền rồi tiếp tục đòi thêm khoản khác. Áp lực thời gian làm người nhận khó bình tĩnh kiểm tra nguồn chính thức trước khi hành động. Lời đe dọa hậu quả khiến bác dễ làm theo hướng dẫn mà chưa kịp hỏi người thân hoặc tổ chức thật."
+      }
+    ],
+    "explanation": "Tin nhắn mạo danh cơ quan điều tra để đe dọa và tạo áp lực tâm lý. Yêu cầu chuyển tiền vào tài khoản lạ để \"chứng minh tài sản\" là chiêu trò lừa đảo phổ biến. Việc thúc giục gấp rút và cấm thông báo cho người thân là dấu hiệu rõ ràng của lừa đảo. Các cơ quan chức năng không bao giờ yêu cầu chuyển tiền vào tài khoản cá nhân hoặc tài khoản \"tạm giữ\" qua điện thoại/tin nhắn.",
+    "html": "\n<div id=\"resultCard\" style=\"--risk-color:#ef4444;padding:18px\" data-score=\"100\">\n  <section class=\"result-head\"><span class=\"pill danger\" id=\"scorePill\">Nguy hiểm · 100% rủi ro</span><h2>Phân tích kỹ thuật</h2><p class=\"hint\">Đây là một tin nhắn lừa đảo mạo danh cơ quan điều tra nhằm chiếm đoạt tài sản.</p><p>Tin nhắn mạo danh cơ quan điều tra để đe dọa và tạo áp lực tâm lý. Yêu cầu chuyển tiền vào tài khoản lạ để &quot;chứng minh tài sản&quot; là chiêu trò lừa đảo phổ biến. Việc thúc giục gấp rút và cấm thông báo cho người thân là dấu hiệu rõ ràng của lừa đảo. Các cơ quan chức năng không bao giờ yêu cầu chuyển tiền vào tài khoản cá nhân hoặc tài khoản &quot;tạm giữ&quot; qua điện thoại/tin nhắn.</p></section>\n  <div class=\"result-main\"><div id=\"scoreRing\" class=\"ring\" style=\"--score:100%\"><strong id=\"scoreText\">100%</strong><small>rủi ro</small></div><div><h2 id=\"zoneTitle\">Nguy hiểm</h2><p class=\"hint\">Tin nhắn không cung cấp số điện thoại cụ thể để gọi lại, đây là một thiếu sót trong nội dung tin nhắn gốc. Cần xác minh xem người nhận đã thực hiện bất kỳ hành động nào theo yêu cầu hay chưa.</p></div></div>\n  <div class=\"grid\"><div class=\"box\"><h3>Dấu hiệu phát hiện</h3><div class=\"evidence\"><div><strong>Chúng tôi là cán bộ thuộc cơ quan điều tra và đang xử lý một vụ án rửa tiền có liên quan đến tài khoản đứng tên bạn.</strong><p>Mạo danh cơ quan nhà nước để tạo uy tín giả và đe dọa người nhận, đây là dấu hiệu lừa đảo phổ biến. Yêu cầu chuyển tiền hoặc đóng phí trước thường được dùng để chiếm tiền rồi tiếp tục đòi thêm khoản khác. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra. Nếu còn phân vân, bác nên hỏi người thân hoặc liên hệ trực tiếp tổ chức thật bằng số điện thoại chính thức.</p></div><div><strong>Bạn phải giữ bí mật, không được thông báo cho gia đình và chuyển toàn bộ số tiền vào tài khoản tạm giữ để chứng minh tài sản hợp pháp.</strong><p>Yêu cầu giữ bí mật và chuyển tiền vào tài khoản lạ là dấu hiệu lừa đảo nhằm cô lập nạn nhân và chiếm đoạt tài sản. Yêu cầu chuyển tiền hoặc đóng phí trước thường được dùng để chiếm tiền rồi tiếp tục đòi thêm khoản khác. Lời đe dọa hậu quả khiến bác dễ làm theo hướng dẫn mà chưa kịp hỏi người thân hoặc tổ chức thật. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra.</p></div><div><strong>Nếu không thực hiện trong hai giờ tới, hồ sơ sẽ được chuyển sang khởi tố và bạn phải chịu trách nhiệm trước pháp luật.</strong><p>Tạo áp lực thời gian và đe dọa pháp lý để buộc nạn nhân hành động gấp rút mà không kịp suy nghĩ, không có thời gian kiểm chứng. Yêu cầu chuyển tiền hoặc đóng phí trước thường được dùng để chiếm tiền rồi tiếp tục đòi thêm khoản khác. Lời đe dọa hậu quả khiến bác dễ làm theo hướng dẫn mà chưa kịp hỏi người thân hoặc tổ chức thật. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra.</p></div><div><strong>Hãy gọi lại số điện thoại trong tin nhắn ngay để được cán bộ hướng dẫn từng bước chuyển khoản.</strong><p>Hướng dẫn nạn nhân liên hệ để nhận chỉ dẫn chuyển tiền, hoàn tất hành vi lừa đảo. Yêu cầu chuyển tiền hoặc đóng phí trước thường được dùng để chiếm tiền rồi tiếp tục đòi thêm khoản khác. Áp lực thời gian làm người nhận khó bình tĩnh kiểm tra nguồn chính thức trước khi hành động. Lời đe dọa hậu quả khiến bác dễ làm theo hướng dẫn mà chưa kịp hỏi người thân hoặc tổ chức thật.</p></div></div></div><div class=\"box\"><h3>Nên làm gì tiếp?</h3><div class=\"checks\"><button class='action-btn' data-action='0'><span>Không làm theo</span><span>→</span></button><button class='action-btn' data-action='1'><span>Kiểm tra thông tin</span><span>→</span></button><button class='action-btn' data-action='2'><span>Báo cáo lừa đảo</span><span>→</span></button></div></div></div>\n  <div class=\"box original-text\"><h3>Tin gốc đã tô vàng</h3><p><mark>Chúng tôi là cán bộ thuộc cơ quan điều tra và đang xử lý một vụ án rửa tiền có liên quan đến tài khoản đứng tên bạn.</mark> Bạn phải giữ bí mật, không được thông báo cho gia đình và chuyển toàn bộ số tiền vào tài khoản tạm giữ để chứng minh tài sản hợp pháp. <mark>Nếu không thực hiện trong hai giờ tới, hồ sơ sẽ được chuyển sang khởi tố và bạn phải chịu trách nhiệm trước pháp luật.</mark> <mark>Hãy gọi lại số điện thoại trong tin nhắn ngay để được cán bộ hướng dẫn từng bước chuyển khoản.</mark></p></div>\n  \n        <section class=\"support-card\" aria-label=\"Cô tâm lý nhắc nhẹ\">\n          <div class=\"support-icon\" aria-hidden=\"true\">♡</div>\n          <div>\n            <h3>Cô tâm lý nhắc nhẹ</h3>\n            <p>Bác ơi, tin nhắn này có dấu hiệu lừa đảo rất rõ ràng, bác đừng lo lắng nhé. Các cơ quan chức năng không bao giờ yêu cầu bác chuyển tiền vào tài khoản lạ hay giữ bí mật đâu ạ. Bác cứ bình tĩnh, không làm theo yêu cầu trong tin nhắn và tuyệt đối không cung cấp thông tin cá nhân hay chuyển tiền bác nhé.</p>\n          </div>\n        </section>\n</div>",
+    "next_actions": [
+      {
+        "id": "step_1",
+        "label": "Không làm theo",
+        "prompt": "Tuyệt đối không gọi lại số điện thoại hoặc chuyển bất kỳ khoản tiền nào theo yêu cầu trong tin nhắn."
+      },
+      {
+        "id": "step_2",
+        "label": "Kiểm tra thông tin",
+        "prompt": "Nếu lo lắng, hãy liên hệ trực tiếp với cơ quan công an địa phương hoặc tổng đài 113 để xác minh thông tin, không dùng số điện thoại từ tin nhắn."
+      },
+      {
+        "id": "step_3",
+        "label": "Báo cáo lừa đảo",
+        "prompt": "Báo cáo tin nhắn này cho nhà mạng hoặc cơ quan chức năng để giúp ngăn chặn các vụ lừa đảo tương tự."
+      }
+    ],
+    "rescue_options": [
+      {
+        "id": "bao_cao_cong_an",
+        "label": "Báo cáo Công an",
+        "detail": "Liên hệ cơ quan công an gần nhất hoặc đường dây nóng của Bộ Công an để trình báo về tin nhắn lừa đảo này."
+      },
+      {
+        "id": "lien_he_ngan_hang",
+        "label": "Liên hệ Ngân hàng",
+        "detail": "Nếu đã lỡ chuyển tiền, hãy ngay lập tức liên hệ ngân hàng của bạn để yêu cầu hỗ trợ và phong tỏa giao dịch."
+      },
+      {
+        "id": "thong_bao_nguoi_than",
+        "label": "Thông báo người thân",
+        "detail": "Chia sẻ thông tin về tin nhắn này với gia đình và bạn bè để họ cảnh giác và không mắc bẫy tương tự."
+      }
+    ],
+    "risk": "danger",
+    "source": "gemini",
+    "summary": "Đây là một tin nhắn lừa đảo mạo danh cơ quan điều tra nhằm chiếm đoạt tài sản.",
+    "uncertainty": "Tin nhắn không cung cấp số điện thoại cụ thể để gọi lại, đây là một thiếu sót trong nội dung tin nhắn gốc. Cần xác minh xem người nhận đã thực hiện bất kỳ hành động nào theo yêu cầu hay chưa.",
+    "verdict_label": "Nguy hiểm",
+    "zone_title": "Nguy hiểm",
+    "id": "check-1782409435957",
+    "time": "2026-06-25T17:43:55.957Z",
+    "inputText": "Chúng tôi là cán bộ thuộc cơ quan điều tra và đang xử lý một vụ án rửa tiền có liên quan đến tài khoản đứng tên bạn. Bạn phải giữ bí mật, không được thông báo cho gia đình và chuyển toàn bộ số tiền vào tài khoản tạm giữ để chứng minh tài sản hợp pháp. Nếu không thực hiện trong hai giờ tới, hồ sơ sẽ được chuyển sang khởi tố và bạn phải chịu trách nhiệm trước pháp luật. Hãy gọi lại số điện thoại trong tin nhắn ngay để được cán bộ hướng dẫn từng bước chuyển khoản.",
+    "share_id": "check-1782409435957",
+    "share_url": "/analysis/check-1782409435957",
+    "psychology": "Bác ơi, tin nhắn này có dấu hiệu lừa đảo rất rõ ràng, bác đừng lo lắng nhé. Các cơ quan chức năng không bao giờ yêu cầu bác chuyển tiền vào tài khoản lạ hay giữ bí mật đâu ạ. Bác cứ bình tĩnh, không làm theo yêu cầu trong tin nhắn và tuyệt đối không cung cấp thông tin cá nhân hay chuyển tiền bác nhé."
+  },
+  "check-1782409708846": {
+    "checked_text": "487841168_1079113217581049_8520200124653311859_n.jpg",
+    "danger_score_percent": 0,
+    "evidence": [
+      {
+        "quote": "Nhóm người trẻ đang vui vẻ",
+        "why": "Bức ảnh cho thấy nhiều người trẻ đang cười và tạo dáng, thể hiện một hoạt động xã hội bình thường, không có dấu hiệu bất thường hay đe dọa. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra. Nếu còn phân vân, bác nên hỏi người thân hoặc liên hệ trực tiếp tổ chức thật bằng số điện thoại chính thức. Việc kiểm tra chậm lại vài phút thường an toàn hơn nhiều so với làm theo một yêu cầu gấp trong tin nhắn."
+      },
+      {
+        "quote": "Không có văn bản hay liên kết",
+        "why": "Bức ảnh chỉ chứa hình ảnh, không có bất kỳ chữ viết, đường dẫn web hay mã QR nào có thể dẫn đến nội dung độc hại hoặc lừa đảo. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra. Nếu còn phân vân, bác nên hỏi người thân hoặc liên hệ trực tiếp tổ chức thật bằng số điện thoại chính thức. Việc kiểm tra chậm lại vài phút thường an toàn hơn nhiều so với làm theo một yêu cầu gấp trong tin nhắn."
+      },
+      {
+        "quote": "Không có yêu cầu thông tin/tiền bạc",
+        "why": "Không có bất kỳ dấu hiệu nào cho thấy có yêu cầu cung cấp thông tin cá nhân, mật khẩu, OTP hay chuyển tiền, là những dấu hiệu phổ biến của lừa đảo. Yêu cầu chuyển tiền hoặc đóng phí trước thường được dùng để chiếm tiền rồi tiếp tục đòi thêm khoản khác. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra. Nếu còn phân vân, bác nên hỏi người thân hoặc liên hệ trực tiếp tổ chức thật bằng số điện thoại chính thức."
+      }
+    ],
+    "explanation": "Bức ảnh chụp một nhóm người trẻ đang vui vẻ chụp ảnh cùng nhau, có thể trong một buồng chụp ảnh hoặc không gian giải trí. Nội dung hoàn toàn là hình ảnh cá nhân, không có văn bản, liên kết, yêu cầu thông tin cá nhân, chuyển tiền hay bất kỳ yếu tố nào thường thấy trong các chiêu trò lừa đảo. Do đó, rủi ro lừa đảo là cực kỳ thấp.",
+    "html": "\n<div id=\"resultCard\" style=\"--risk-color:#22c55e;padding:18px\" data-score=\"0\">\n  <section class=\"result-head\"><span class=\"pill safe\" id=\"scorePill\">An toàn · 0% rủi ro</span><h2>Phân tích kỹ thuật</h2><p class=\"hint\">Bức ảnh này là một khoảnh khắc đời thường của một nhóm bạn và không chứa bất kỳ dấu hiệu lừa đảo nào.</p><p>Bức ảnh chụp một nhóm người trẻ đang vui vẻ chụp ảnh cùng nhau, có thể trong một buồng chụp ảnh hoặc không gian giải trí. Nội dung hoàn toàn là hình ảnh cá nhân, không có văn bản, liên kết, yêu cầu thông tin cá nhân, chuyển tiền hay bất kỳ yếu tố nào thường thấy trong các chiêu trò lừa đảo. Do đó, rủi ro lừa đảo là cực kỳ thấp.</p></section>\n  <div class=\"result-main\"><div id=\"scoreRing\" class=\"ring\" style=\"--score:0%\"><strong id=\"scoreText\">0%</strong><small>rủi ro</small></div><div><h2 id=\"zoneTitle\">An toàn</h2><p class=\"hint\">Không có thông tin bổ sung nào từ bức ảnh có thể làm thay đổi đánh giá rủi ro lừa đảo.</p></div></div>\n  <div class=\"grid\"><div class=\"box\"><h3>Dấu hiệu phát hiện</h3><div class=\"evidence\"><div><strong>Nhóm người trẻ đang vui vẻ</strong><p>Bức ảnh cho thấy nhiều người trẻ đang cười và tạo dáng, thể hiện một hoạt động xã hội bình thường, không có dấu hiệu bất thường hay đe dọa. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra. Nếu còn phân vân, bác nên hỏi người thân hoặc liên hệ trực tiếp tổ chức thật bằng số điện thoại chính thức. Việc kiểm tra chậm lại vài phút thường an toàn hơn nhiều so với làm theo một yêu cầu gấp trong tin nhắn.</p></div><div><strong>Không có văn bản hay liên kết</strong><p>Bức ảnh chỉ chứa hình ảnh, không có bất kỳ chữ viết, đường dẫn web hay mã QR nào có thể dẫn đến nội dung độc hại hoặc lừa đảo. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra. Nếu còn phân vân, bác nên hỏi người thân hoặc liên hệ trực tiếp tổ chức thật bằng số điện thoại chính thức. Việc kiểm tra chậm lại vài phút thường an toàn hơn nhiều so với làm theo một yêu cầu gấp trong tin nhắn.</p></div><div><strong>Không có yêu cầu thông tin/tiền bạc</strong><p>Không có bất kỳ dấu hiệu nào cho thấy có yêu cầu cung cấp thông tin cá nhân, mật khẩu, OTP hay chuyển tiền, là những dấu hiệu phổ biến của lừa đảo. Yêu cầu chuyển tiền hoặc đóng phí trước thường được dùng để chiếm tiền rồi tiếp tục đòi thêm khoản khác. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra. Nếu còn phân vân, bác nên hỏi người thân hoặc liên hệ trực tiếp tổ chức thật bằng số điện thoại chính thức.</p></div></div></div><div class=\"box\"><h3>Nên làm gì tiếp?</h3><div class=\"checks\"><button class='action-btn' data-action='0'><span>Kiểm tra ngữ cảnh</span><span>→</span></button><button class='action-btn' data-action='1'><span>Xác minh người gửi</span><span>→</span></button><button class='action-btn' data-action='2'><span>Bảo mật thông tin</span><span>→</span></button></div></div></div>\n  <div class=\"box original-text\"><h3>Tin gốc đã tô vàng</h3><p>487841168_1079113217581049_8520200124653311859_n.jpg</p></div>\n  \n</div>",
+    "next_actions": [
+      {
+        "id": "step_1",
+        "label": "Kiểm tra ngữ cảnh",
+        "prompt": "Nếu bức ảnh này được gửi kèm tin nhắn, hãy xem xét nội dung tin nhắn để hiểu rõ hơn mục đích của người gửi."
+      },
+      {
+        "id": "step_2",
+        "label": "Xác minh người gửi",
+        "prompt": "Đảm bảo bạn biết rõ người đã gửi bức ảnh này và tin tưởng họ để tránh những hiểu lầm không đáng có."
+      },
+      {
+        "id": "step_3",
+        "label": "Bảo mật thông tin",
+        "prompt": "Luôn cẩn trọng khi chia sẻ hình ảnh hoặc thông tin cá nhân trực tuyến, ngay cả với bạn bè, để bảo vệ quyền riêng tư của mình."
+      }
+    ],
+    "rescue_options": [],
+    "risk": "safe",
+    "source": "gemini",
+    "summary": "Bức ảnh này là một khoảnh khắc đời thường của một nhóm bạn và không chứa bất kỳ dấu hiệu lừa đảo nào.",
+    "uncertainty": "Không có thông tin bổ sung nào từ bức ảnh có thể làm thay đổi đánh giá rủi ro lừa đảo.",
+    "verdict_label": "An toàn",
+    "zone_title": "An toàn",
+    "id": "check-1782409708846",
+    "time": "2026-06-25T17:48:28.846Z",
+    "inputText": "487841168_1079113217581049_8520200124653311859_n.jpg",
+    "share_id": "check-1782409708846"
+  },
+  "check-1782410827692": {
+    "checked_text": "babe ur a abi otch",
+    "danger_score_percent": 5,
+    "evidence": [
+      {
+        "quote": "babe ur a abi otch",
+        "why": "Đây là toàn bộ nội dung tin nhắn, thể hiện rõ ràng ngôn ngữ thô tục và xúc phạm. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra. Nếu còn phân vân, bác nên hỏi người thân hoặc liên hệ trực tiếp tổ chức thật bằng số điện thoại chính thức. Việc kiểm tra chậm lại vài phút thường an toàn hơn nhiều so với làm theo một yêu cầu gấp trong tin nhắn."
+      },
+      {
+        "quote": "Không có yêu cầu thông tin cá nhân/tài chính",
+        "why": "Tin nhắn không chứa bất kỳ yêu cầu nào về thông tin cá nhân, tài chính, hoặc các yếu tố thường thấy trong các chiêu trò lừa đảo. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra. Nếu còn phân vân, bác nên hỏi người thân hoặc liên hệ trực tiếp tổ chức thật bằng số điện thoại chính thức. Việc kiểm tra chậm lại vài phút thường an toàn hơn nhiều so với làm theo một yêu cầu gấp trong tin nhắn."
+      }
+    ],
+    "explanation": "Nội dung chỉ là một câu chửi bới, không chứa bất kỳ yếu tố nào liên quan đến lừa đảo như yêu cầu tiền bạc, thông tin cá nhân, liên kết độc hại hay tải ứng dụng. Mục đích của tin nhắn dường như là quấy rối hoặc xúc phạm cá nhân. Do đó, rủi ro lừa đảo từ tin nhắn này là cực kỳ thấp.",
+    "html": "\n<div id=\"resultCard\" style=\"--risk-color:#22c55e;padding:18px\" data-score=\"5\">\n  <section class=\"result-head\"><span class=\"pill safe\" id=\"scorePill\">An toàn · 5% rủi ro</span><h2>Phân tích kỹ thuật</h2><p class=\"hint\">Tin nhắn này chứa ngôn ngữ xúc phạm và không có dấu hiệu lừa đảo.</p><p>Nội dung chỉ là một câu chửi bới, không chứa bất kỳ yếu tố nào liên quan đến lừa đảo như yêu cầu tiền bạc, thông tin cá nhân, liên kết độc hại hay tải ứng dụng. Mục đích của tin nhắn dường như là quấy rối hoặc xúc phạm cá nhân. Do đó, rủi ro lừa đảo từ tin nhắn này là cực kỳ thấp.</p></section>\n  <div class=\"result-main\"><div id=\"scoreRing\" class=\"ring\" style=\"--score:5%\"><strong id=\"scoreText\">5%</strong><small>rủi ro</small></div><div><h2 id=\"zoneTitle\">An toàn</h2><p class=\"hint\">Không rõ người gửi tin nhắn này là ai và mối quan hệ của họ với người nhận. Ngữ cảnh cụ thể của cuộc trò chuyện có thể làm rõ hơn ý định của người gửi.</p></div></div>\n  <div class=\"grid\"><div class=\"box\"><h3>Dấu hiệu phát hiện</h3><div class=\"evidence\"><div><strong>babe ur a abi otch</strong><p>Đây là toàn bộ nội dung tin nhắn, thể hiện rõ ràng ngôn ngữ thô tục và xúc phạm. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra. Nếu còn phân vân, bác nên hỏi người thân hoặc liên hệ trực tiếp tổ chức thật bằng số điện thoại chính thức. Việc kiểm tra chậm lại vài phút thường an toàn hơn nhiều so với làm theo một yêu cầu gấp trong tin nhắn.</p></div><div><strong>Không có yêu cầu thông tin cá nhân/tài chính</strong><p>Tin nhắn không chứa bất kỳ yêu cầu nào về thông tin cá nhân, tài chính, hoặc các yếu tố thường thấy trong các chiêu trò lừa đảo. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra. Nếu còn phân vân, bác nên hỏi người thân hoặc liên hệ trực tiếp tổ chức thật bằng số điện thoại chính thức. Việc kiểm tra chậm lại vài phút thường an toàn hơn nhiều so với làm theo một yêu cầu gấp trong tin nhắn.</p></div></div></div><div class=\"box\"><h3>Nên làm gì tiếp?</h3><div class=\"checks\"><button class='action-btn' data-action='0'><span>Chặn người gửi</span><span>→</span></button><button class='action-btn' data-action='1'><span>Báo cáo</span><span>→</span></button><button class='action-btn' data-action='2'><span>Xem xét ngữ cảnh</span><span>→</span></button></div></div></div>\n  <div class=\"box original-text\"><h3>Tin gốc đã tô vàng</h3><p>babe ur a abi otch</p></div>\n  \n</div>",
+    "next_actions": [
+      {
+        "id": "step_1",
+        "label": "Chặn người gửi",
+        "prompt": "Nếu đây là tin nhắn không mong muốn, hãy chặn người gửi để tránh bị quấy rối thêm."
+      },
+      {
+        "id": "step_2",
+        "label": "Báo cáo",
+        "prompt": "Tùy thuộc vào nền tảng, bạn có thể báo cáo tin nhắn này là quấy rối hoặc ngôn ngữ không phù hợp."
+      },
+      {
+        "id": "step_3",
+        "label": "Xem xét ngữ cảnh",
+        "prompt": "Nếu bạn biết người gửi, hãy xem xét ngữ cảnh của cuộc trò chuyện để hiểu rõ hơn lý do tin nhắn này được gửi."
+      }
+    ],
+    "rescue_options": [
+      {
+        "id": "1",
+        "label": "Chặn liên lạc",
+        "detail": "Chặn số điện thoại hoặc tài khoản mạng xã hội của người gửi để ngăn chặn các tin nhắn tương tự trong tương lai."
+      },
+      {
+        "id": "2",
+        "label": "Báo cáo nền tảng",
+        "detail": "Sử dụng tính năng báo cáo của ứng dụng nhắn tin hoặc mạng xã hội để thông báo về hành vi quấy rối hoặc ngôn ngữ xúc phạm."
+      },
+      {
+        "id": "3",
+        "label": "Lưu giữ bằng chứng",
+        "detail": "Chụp ảnh màn hình tin nhắn để làm bằng chứng nếu cần thiết cho các hành động tiếp theo."
+      }
+    ],
+    "risk": "safe",
+    "source": "gemini",
+    "summary": "Tin nhắn này chứa ngôn ngữ xúc phạm và không có dấu hiệu lừa đảo.",
+    "uncertainty": "Không rõ người gửi tin nhắn này là ai và mối quan hệ của họ với người nhận. Ngữ cảnh cụ thể của cuộc trò chuyện có thể làm rõ hơn ý định của người gửi.",
+    "verdict_label": "An toàn",
+    "zone_title": "An toàn",
+    "id": "check-1782410827692",
+    "time": "2026-06-25T18:07:07.692Z",
+    "inputText": "babe ur a abi otch",
+    "share_id": "check-1782410827692"
+  },
+  "check-1782411940448": {
+    "checked_text": "hello!",
+    "danger_score_percent": 0,
+    "evidence": [
+      {
+        "quote": "hello!",
+        "why": "Đây là một lời chào xã giao đơn giản, không mang bất kỳ thông tin cụ thể nào về mục đích giao tiếp. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra. Nếu còn phân vân, bác nên hỏi người thân hoặc liên hệ trực tiếp tổ chức thật bằng số điện thoại chính thức. Việc kiểm tra chậm lại vài phút thường an toàn hơn nhiều so với làm theo một yêu cầu gấp trong tin nhắn."
+      }
+    ],
+    "explanation": "Tin nhắn chỉ bao gồm một lời chào 'hello!', không chứa bất kỳ thông tin nào có thể gây hiểu lầm hoặc yêu cầu hành động bất thường. Không có link lạ, yêu cầu cung cấp thông tin cá nhân, hay đề cập đến tiền bạc.",
+    "html": "\n<div id=\"resultCard\" style=\"--risk-color:#22c55e;padding:18px\" data-score=\"0\">\n  <section class=\"result-head\"><span class=\"pill safe\" id=\"scorePill\">An toàn · 0% rủi ro</span><h2>Phân tích kỹ thuật</h2><p class=\"hint\">Tin nhắn chỉ là lời chào hỏi thông thường, không có dấu hiệu rủi ro.</p><p>Tin nhắn chỉ bao gồm một lời chào &#x27;hello!&#x27;, không chứa bất kỳ thông tin nào có thể gây hiểu lầm hoặc yêu cầu hành động bất thường. Không có link lạ, yêu cầu cung cấp thông tin cá nhân, hay đề cập đến tiền bạc.</p></section>\n  <div class=\"result-main\"><div id=\"scoreRing\" class=\"ring\" style=\"--score:0%\"><strong id=\"scoreText\">0%</strong><small>rủi ro</small></div><div><h2 id=\"zoneTitle\">An toàn</h2><p class=\"hint\">Cần thêm ngữ cảnh để hiểu mục đích của người gửi.</p></div></div>\n  <div class=\"grid\"><div class=\"box\"><h3>Dấu hiệu phát hiện</h3><div class=\"evidence\"><div><strong>hello!</strong><p>Đây là một lời chào xã giao đơn giản, không mang bất kỳ thông tin cụ thể nào về mục đích giao tiếp. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra. Nếu còn phân vân, bác nên hỏi người thân hoặc liên hệ trực tiếp tổ chức thật bằng số điện thoại chính thức. Việc kiểm tra chậm lại vài phút thường an toàn hơn nhiều so với làm theo một yêu cầu gấp trong tin nhắn.</p></div></div></div><div class=\"box\"><h3>Nên làm gì tiếp?</h3><div class=\"checks\"><button class='action-btn' data-action='0'><span>Phản hồi</span><span>→</span></button><button class='action-btn' data-action='1'><span>Kiểm tra người gửi</span><span>→</span></button><button class='action-btn' data-action='2'><span>Cung cấp thêm ngữ cảnh</span><span>→</span></button></div></div></div>\n  <div class=\"box original-text\"><h3>Tin gốc đã tô vàng</h3><p>hello!</p></div>\n  \n</div>",
+    "next_actions": [
+      {
+        "id": "step_1",
+        "label": "Phản hồi",
+        "prompt": "Bạn có thể trả lời lại tin nhắn để biết thêm thông tin hoặc bỏ qua nếu không quen biết."
+      },
+      {
+        "id": "step_2",
+        "label": "Kiểm tra người gửi",
+        "prompt": "Nếu có thể, hãy kiểm tra thông tin người gửi để xác định mối quan hệ hoặc nguồn gốc của tin nhắn."
+      },
+      {
+        "id": "step_3",
+        "label": "Cung cấp thêm ngữ cảnh",
+        "prompt": "Nếu bạn biết người gửi hoặc có ngữ cảnh trước đó, hãy cung cấp thêm thông tin để đánh giá chính xác hơn."
+      }
+    ],
+    "rescue_options": [],
+    "risk": "safe",
+    "source": "gemini",
+    "summary": "Tin nhắn chỉ là lời chào hỏi thông thường, không có dấu hiệu rủi ro.",
+    "uncertainty": "Cần thêm ngữ cảnh để hiểu mục đích của người gửi.",
+    "verdict_label": "An toàn",
+    "zone_title": "An toàn",
+    "id": "check-1782411940448",
+    "time": "2026-06-25T18:25:40.448Z",
+    "inputText": "hello!",
+    "share_id": "check-1782411940448"
+  },
+  "check-1782412288439": {
+    "checked_text": "Chúc mừng quý khách đã được chọn là người nhận giải thưởng đặc biệt trị giá 50 triệu đồng trong chương trình tri ân khách hàng. Để xác nhận giải, quý khách cần gửi ảnh căn cước công dân và chuyển 300.000 đồng phí hồ sơ trong vòng 30 phút. Sau khi nhận phí, ban tổ chức cam kết chuyển toàn bộ tiền thưởng vào tài khoản ngân hàng của quý khách ngay trong ngày. Nếu quá thời hạn trên, giải thưởng sẽ tự động bị hủy và chuyển cho người nhận khác.",
+    "danger_score_percent": 98,
+    "evidence": [
+      {
+        "quote": "gửi ảnh căn cước công dân",
+        "why": "Yêu cầu cung cấp thông tin cá nhân nhạy cảm như CCCD có thể bị kẻ gian lợi dụng để mạo danh, mở tài khoản trái phép hoặc thực hiện các hành vi lừa đảo khác. Đây là nhóm thông tin nhạy cảm, người lạ hoặc nhân viên thật không nên yêu cầu bác gửi qua tin nhắn. Yêu cầu chuyển tiền hoặc đóng phí trước thường được dùng để chiếm tiền rồi tiếp tục đòi thêm khoản khác. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra."
+      },
+      {
+        "quote": "chuyển 300.000 đồng phí hồ sơ",
+        "why": "Yêu cầu chuyển tiền trước để nhận giải thưởng là dấu hiệu điển hình của lừa đảo 'phí trước', nơi kẻ gian thu tiền từ nạn nhân mà không bao giờ trao giải. Yêu cầu chuyển tiền hoặc đóng phí trước thường được dùng để chiếm tiền rồi tiếp tục đòi thêm khoản khác. Lời đe dọa hậu quả khiến bác dễ làm theo hướng dẫn mà chưa kịp hỏi người thân hoặc tổ chức thật. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra."
+      },
+      {
+        "quote": "trong vòng 30 phút. Nếu quá thời hạn trên, giải thưởng sẽ tự động bị hủy",
+        "why": "Tạo áp lực thời gian gấp rút là chiến thuật phổ biến của kẻ lừa đảo nhằm khiến nạn nhân hoảng sợ, không có đủ thời gian suy nghĩ, kiểm tra thông tin và đưa ra quyết định vội vàng. Áp lực thời gian làm người nhận khó bình tĩnh kiểm tra nguồn chính thức trước khi hành động. Lời đe dọa hậu quả khiến bác dễ làm theo hướng dẫn mà chưa kịp hỏi người thân hoặc tổ chức thật. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra."
+      },
+      {
+        "quote": "giải thưởng đặc biệt trị giá 50 triệu đồng",
+        "why": "Mồi nhử hấp dẫn với giá trị lớn không có cơ sở rõ ràng, được dùng để thu hút sự chú ý và lòng tham của nạn nhân, khiến họ dễ dàng rơi vào bẫy. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra. Nếu còn phân vân, bác nên hỏi người thân hoặc liên hệ trực tiếp tổ chức thật bằng số điện thoại chính thức. Việc kiểm tra chậm lại vài phút thường an toàn hơn nhiều so với làm theo một yêu cầu gấp trong tin nhắn."
+      }
+    ],
+    "explanation": "Tin nhắn yêu cầu cung cấp thông tin cá nhân nhạy cảm như ảnh căn cước công dân và chuyển khoản một khoản phí nhỏ để nhận giải thưởng lớn. Việc tạo áp lực thời gian gấp rút (30 phút) là dấu hiệu phổ biến của lừa đảo nhằm khiến nạn nhân không kịp suy nghĩ. Các chương trình tri ân hợp pháp thường không yêu cầu phí hay thông tin cá nhân để nhận giải thưởng. Đây là chiêu trò 'phí trước' để chiếm đoạt tiền và thông tin của nạn nhân.",
+    "html": "\n<div id=\"resultCard\" style=\"--risk-color:#ef4444;padding:18px\" data-score=\"98\">\n  <section class=\"result-head\"><span class=\"pill danger\" id=\"scorePill\">Nguy hiểm · 98% rủi ro</span><h2>Phân tích kỹ thuật</h2><p class=\"hint\">Đây là một tin nhắn lừa đảo có rủi ro rất cao, sử dụng chiêu trò tặng thưởng để chiếm đoạt thông tin cá nhân và tiền bạc.</p><p>Tin nhắn yêu cầu cung cấp thông tin cá nhân nhạy cảm như ảnh căn cước công dân và chuyển khoản một khoản phí nhỏ để nhận giải thưởng lớn. Việc tạo áp lực thời gian gấp rút (30 phút) là dấu hiệu phổ biến của lừa đảo nhằm khiến nạn nhân không kịp suy nghĩ. Các chương trình tri ân hợp pháp thường không yêu cầu phí hay thông tin cá nhân để nhận giải thưởng. Đây là chiêu trò &#x27;phí trước&#x27; để chiếm đoạt tiền và thông tin của nạn nhân.</p></section>\n  <div class=\"result-main\"><div id=\"scoreRing\" class=\"ring\" style=\"--score:98%\"><strong id=\"scoreText\">98%</strong><small>rủi ro</small></div><div><h2 id=\"zoneTitle\">Nguy hiểm</h2><p class=\"hint\">Không có thông tin về tổ chức đứng ra trao giải, tên chương trình cụ thể hoặc cách thức liên hệ chính thức. Cần xác minh tính hợp lệ của chương trình tri ân này từ các kênh chính thức của nhà cung cấp dịch vụ mà quý khách đang sử dụng (nếu có).</p></div></div>\n  <div class=\"grid\"><div class=\"box\"><h3>Dấu hiệu phát hiện</h3><div class=\"evidence\"><div><strong>gửi ảnh căn cước công dân</strong><p>Yêu cầu cung cấp thông tin cá nhân nhạy cảm như CCCD có thể bị kẻ gian lợi dụng để mạo danh, mở tài khoản trái phép hoặc thực hiện các hành vi lừa đảo khác. Đây là nhóm thông tin nhạy cảm, người lạ hoặc nhân viên thật không nên yêu cầu bác gửi qua tin nhắn. Yêu cầu chuyển tiền hoặc đóng phí trước thường được dùng để chiếm tiền rồi tiếp tục đòi thêm khoản khác. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra.</p></div><div><strong>chuyển 300.000 đồng phí hồ sơ</strong><p>Yêu cầu chuyển tiền trước để nhận giải thưởng là dấu hiệu điển hình của lừa đảo &#x27;phí trước&#x27;, nơi kẻ gian thu tiền từ nạn nhân mà không bao giờ trao giải. Yêu cầu chuyển tiền hoặc đóng phí trước thường được dùng để chiếm tiền rồi tiếp tục đòi thêm khoản khác. Lời đe dọa hậu quả khiến bác dễ làm theo hướng dẫn mà chưa kịp hỏi người thân hoặc tổ chức thật. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra.</p></div><div><strong>trong vòng 30 phút. Nếu quá thời hạn trên, giải thưởng sẽ tự động bị hủy</strong><p>Tạo áp lực thời gian gấp rút là chiến thuật phổ biến của kẻ lừa đảo nhằm khiến nạn nhân hoảng sợ, không có đủ thời gian suy nghĩ, kiểm tra thông tin và đưa ra quyết định vội vàng. Áp lực thời gian làm người nhận khó bình tĩnh kiểm tra nguồn chính thức trước khi hành động. Lời đe dọa hậu quả khiến bác dễ làm theo hướng dẫn mà chưa kịp hỏi người thân hoặc tổ chức thật. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra.</p></div><div><strong>giải thưởng đặc biệt trị giá 50 triệu đồng</strong><p>Mồi nhử hấp dẫn với giá trị lớn không có cơ sở rõ ràng, được dùng để thu hút sự chú ý và lòng tham của nạn nhân, khiến họ dễ dàng rơi vào bẫy. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra. Nếu còn phân vân, bác nên hỏi người thân hoặc liên hệ trực tiếp tổ chức thật bằng số điện thoại chính thức. Việc kiểm tra chậm lại vài phút thường an toàn hơn nhiều so với làm theo một yêu cầu gấp trong tin nhắn.</p></div></div></div><div class=\"box\"><h3>Nên làm gì tiếp?</h3><div class=\"checks\"><button class='action-btn' data-action='0'><span>Bỏ qua tin nhắn</span><span>→</span></button><button class='action-btn' data-action='1'><span>Không cung cấp thông tin</span><span>→</span></button><button class='action-btn' data-action='2'><span>Chặn người gửi</span><span>→</span></button></div></div></div>\n  <div class=\"box original-text\"><h3>Tin gốc đã tô vàng</h3><p>Chúc mừng quý khách đã được chọn là người nhận <mark>giải thưởng đặc biệt trị giá 50 triệu đồng</mark> trong chương trình tri ân khách hàng. Để xác nhận giải, quý khách cần <mark>gửi ảnh căn cước công dân</mark> và <mark>chuyển 300.000 đồng phí hồ sơ</mark> trong vòng 30 phút. Sau khi nhận phí, ban tổ chức cam kết chuyển toàn bộ tiền thưởng vào tài khoản ngân hàng của quý khách <mark>ngay</mark> trong ngày. Nếu quá thời hạn trên, giải thưởng sẽ tự động bị hủy và chuyển cho người nhận khác.</p></div>\n  \n        <section class=\"support-card\" aria-label=\"Cô tâm lý nhắc nhẹ\">\n          <div class=\"support-icon\" aria-hidden=\"true\">♡</div>\n          <div>\n            <h3>Cô tâm lý nhắc nhẹ</h3>\n            <p>Cô chào bác, tin nhắn này đang dùng chiêu tạo áp lực thời gian để bác vội vàng làm theo đó. Bác cứ bình tĩnh, đừng lo mất giải thưởng mà hãy tự mình liên hệ kênh chính thức của tổ chức đó để kiểm tra lại nhé.</p>\n          </div>\n        </section>\n</div>",
+    "next_actions": [
+      {
+        "id": "step_1",
+        "label": "Bỏ qua tin nhắn",
+        "prompt": "Không phản hồi hoặc thực hiện bất kỳ yêu cầu nào từ tin nhắn này."
+      },
+      {
+        "id": "step_2",
+        "label": "Không cung cấp thông tin",
+        "prompt": "Tuyệt đối không gửi ảnh CCCD, chuyển tiền hoặc cung cấp bất kỳ thông tin cá nhân nào khác."
+      },
+      {
+        "id": "step_3",
+        "label": "Chặn người gửi",
+        "prompt": "Chặn số điện thoại hoặc tài khoản gửi tin nhắn này để tránh nhận thêm các tin nhắn lừa đảo tương tự."
+      }
+    ],
+    "rescue_options": [
+      {
+        "id": "1",
+        "label": "Không thực hiện yêu cầu",
+        "detail": "Tuyệt đối không gửi ảnh CCCD, không chuyển tiền và không cung cấp bất kỳ thông tin cá nhân nào theo yêu cầu của tin nhắn."
+      },
+      {
+        "id": "2",
+        "label": "Cảnh báo người thân",
+        "detail": "Chia sẻ thông tin về tin nhắn lừa đảo này với bạn bè và người thân để họ cảnh giác và tránh bị lừa đảo tương tự."
+      },
+      {
+        "id": "3",
+        "label": "Báo cáo cơ quan chức năng",
+        "detail": "Nếu bạn đã lỡ cung cấp thông tin hoặc chuyển tiền, hãy liên hệ ngay với cơ quan công an gần nhất hoặc Cục An toàn thông tin để được hỗ trợ và hướng dẫn các bước tiếp theo."
+      }
+    ],
+    "risk": "danger",
+    "source": "gemini",
+    "summary": "Đây là một tin nhắn lừa đảo có rủi ro rất cao, sử dụng chiêu trò tặng thưởng để chiếm đoạt thông tin cá nhân và tiền bạc.",
+    "uncertainty": "Không có thông tin về tổ chức đứng ra trao giải, tên chương trình cụ thể hoặc cách thức liên hệ chính thức. Cần xác minh tính hợp lệ của chương trình tri ân này từ các kênh chính thức của nhà cung cấp dịch vụ mà quý khách đang sử dụng (nếu có).",
+    "verdict_label": "Nguy hiểm",
+    "zone_title": "Nguy hiểm",
+    "id": "check-1782412288439",
+    "time": "2026-06-25T18:31:28.439Z",
+    "inputText": "Chúc mừng quý khách đã được chọn là người nhận giải thưởng đặc biệt trị giá 50 triệu đồng trong chương trình tri ân khách hàng. Để xác nhận giải, quý khách cần gửi ảnh căn cước công dân và chuyển 300.000 đồng phí hồ sơ trong vòng 30 phút. Sau khi nhận phí, ban tổ chức cam kết chuyển toàn bộ tiền thưởng vào tài khoản ngân hàng của quý khách ngay trong ngày. Nếu quá thời hạn trên, giải thưởng sẽ tự động bị hủy và chuyển cho người nhận khác.",
+    "share_id": "check-1782412288439",
+    "share_url": "/analysis/check-1782412288439",
+    "psychology": "Cô chào bác, tin nhắn này đang dùng chiêu tạo áp lực thời gian để bác vội vàng làm theo đó. Bác cứ bình tĩnh, đừng lo mất giải thưởng mà hãy tự mình liên hệ kênh chính thức của tổ chức đó để kiểm tra lại nhé."
+  },
+  "check-1782414848343": {
+    "checked_text": "alo Máy tính này nó nóng",
+    "danger_score_percent": 5,
+    "evidence": [
+      {
+        "quote": "alo Máy tính này nó nóng",
+        "why": "Đây là một câu nói mô tả tình trạng kỹ thuật thông thường của một thiết bị, không mang tính chất lừa đảo hay yêu cầu hành động khẩn cấp. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra. Nếu còn phân vân, bác nên hỏi người thân hoặc liên hệ trực tiếp tổ chức thật bằng số điện thoại chính thức. Việc kiểm tra chậm lại vài phút thường an toàn hơn nhiều so với làm theo một yêu cầu gấp trong tin nhắn."
+      },
+      {
+        "quote": "alo Máy tính này nó nóng",
+        "why": "Tin nhắn không chứa các yếu tố thường gặp trong lừa đảo như link lạ, yêu cầu tiền bạc, thông tin cá nhân (OTP, CCCD), tải ứng dụng hay đe dọa. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra. Nếu còn phân vân, bác nên hỏi người thân hoặc liên hệ trực tiếp tổ chức thật bằng số điện thoại chính thức. Việc kiểm tra chậm lại vài phút thường an toàn hơn nhiều so với làm theo một yêu cầu gấp trong tin nhắn."
+      }
+    ],
+    "explanation": "Nội dung \"alo Máy tính này nó nóng\" là một câu nói thông thường, không chứa bất kỳ dấu hiệu lừa đảo nào. Không có yêu cầu cung cấp thông tin cá nhân, mật khẩu, OTP hay chuyển tiền. Tin nhắn không chứa liên kết lạ, tệp đính kèm độc hại hay lời đe dọa. Đây chỉ là một thông báo đơn giản về tình trạng thiết bị.",
+    "html": "\n<div id=\"resultCard\" style=\"--risk-color:#22c55e;padding:18px\" data-score=\"5\">\n  <section class=\"result-head\"><span class=\"pill safe\" id=\"scorePill\">An toàn · 5% rủi ro</span><h2>Phân tích kỹ thuật</h2><p class=\"hint\">Tin nhắn này có rủi ro rất thấp vì nội dung chỉ là một câu nói đời thường về tình trạng máy tính.</p><p>Nội dung &quot;alo Máy tính này nó nóng&quot; là một câu nói thông thường, không chứa bất kỳ dấu hiệu lừa đảo nào. Không có yêu cầu cung cấp thông tin cá nhân, mật khẩu, OTP hay chuyển tiền. Tin nhắn không chứa liên kết lạ, tệp đính kèm độc hại hay lời đe dọa. Đây chỉ là một thông báo đơn giản về tình trạng thiết bị.</p></section>\n  <div class=\"result-main\"><div id=\"scoreRing\" class=\"ring\" style=\"--score:5%\"><strong id=\"scoreText\">5%</strong><small>rủi ro</small></div><div><h2 id=\"zoneTitle\">An toàn</h2><p class=\"hint\">Điều cần xác minh là người gửi tin nhắn này là ai và ngữ cảnh của cuộc trò chuyện. Nếu người gửi là người lạ, vẫn cần thận trọng với các tin nhắn tiếp theo.</p></div></div>\n  <div class=\"grid\"><div class=\"box\"><h3>Dấu hiệu phát hiện</h3><div class=\"evidence\"><div><strong>alo Máy tính này nó nóng</strong><p>Đây là một câu nói mô tả tình trạng kỹ thuật thông thường của một thiết bị, không mang tính chất lừa đảo hay yêu cầu hành động khẩn cấp. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra. Nếu còn phân vân, bác nên hỏi người thân hoặc liên hệ trực tiếp tổ chức thật bằng số điện thoại chính thức. Việc kiểm tra chậm lại vài phút thường an toàn hơn nhiều so với làm theo một yêu cầu gấp trong tin nhắn.</p></div><div><strong>alo Máy tính này nó nóng</strong><p>Tin nhắn không chứa các yếu tố thường gặp trong lừa đảo như link lạ, yêu cầu tiền bạc, thông tin cá nhân (OTP, CCCD), tải ứng dụng hay đe dọa. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra. Nếu còn phân vân, bác nên hỏi người thân hoặc liên hệ trực tiếp tổ chức thật bằng số điện thoại chính thức. Việc kiểm tra chậm lại vài phút thường an toàn hơn nhiều so với làm theo một yêu cầu gấp trong tin nhắn.</p></div></div></div><div class=\"box\"><h3>Nên làm gì tiếp?</h3><div class=\"checks\"><button class='action-btn' data-action='0'><span>Xác định người gửi</span><span>→</span></button><button class='action-btn' data-action='1'><span>Đánh giá ngữ cảnh</span><span>→</span></button><button class='action-btn' data-action='2'><span>Không hành động vội vàng</span><span>→</span></button></div></div></div>\n  <div class=\"box original-text\"><h3>Tin gốc đã tô vàng</h3><p>alo Máy tính này nó nóng</p></div>\n  \n</div>",
+    "next_actions": [
+      {
+        "id": "step_1",
+        "label": "Xác định người gửi",
+        "prompt": "Hãy kiểm tra xem người gửi tin nhắn này là ai. Nếu là người lạ, hãy cẩn trọng với các tin nhắn tiếp theo."
+      },
+      {
+        "id": "step_2",
+        "label": "Đánh giá ngữ cảnh",
+        "prompt": "Xem xét tin nhắn này xuất hiện trong ngữ cảnh nào. Đây có phải là một phần của cuộc trò chuyện đang diễn ra không?"
+      },
+      {
+        "id": "step_3",
+        "label": "Không hành động vội vàng",
+        "prompt": "Không cần thực hiện bất kỳ hành động khẩn cấp nào dựa trên tin nhắn này vì nội dung không có yếu tố rủi ro."
+      }
+    ],
+    "rescue_options": [],
+    "risk": "safe",
+    "source": "gemini",
+    "summary": "Tin nhắn này có rủi ro rất thấp vì nội dung chỉ là một câu nói đời thường về tình trạng máy tính.",
+    "uncertainty": "Điều cần xác minh là người gửi tin nhắn này là ai và ngữ cảnh của cuộc trò chuyện. Nếu người gửi là người lạ, vẫn cần thận trọng với các tin nhắn tiếp theo.",
+    "verdict_label": "An toàn",
+    "zone_title": "An toàn",
+    "id": "check-1782414848343",
+    "time": "2026-06-25T19:14:08.343Z",
+    "inputText": "alo Máy tính này nó nóng",
+    "share_id": "check-1782414848343"
+  },
+  "check-1782415359171": {
+    "checked_text": "bắt mày",
+    "danger_score_percent": 75,
+    "evidence": [
+      {
+        "quote": "bắt mày",
+        "why": "Đây là một lời đe dọa trực tiếp, mang tính chất gây hấn và áp lực, phù hợp với tiêu chí rủi ro cao về \"đe dọa hoặc tạo áp lực gấp\". Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra. Nếu còn phân vân, bác nên hỏi người thân hoặc liên hệ trực tiếp tổ chức thật bằng số điện thoại chính thức. Việc kiểm tra chậm lại vài phút thường an toàn hơn nhiều so với làm theo một yêu cầu gấp trong tin nhắn."
+      },
+      {
+        "quote": "(Toàn bộ nội dung tin nhắn)",
+        "why": "Tin nhắn cực kỳ ngắn gọn và thiếu mọi ngữ cảnh, không có thông tin về người gửi, lý do hay mục đích, làm tăng tính đáng ngờ và khó xác định ý đồ. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra. Nếu còn phân vân, bác nên hỏi người thân hoặc liên hệ trực tiếp tổ chức thật bằng số điện thoại chính thức. Việc kiểm tra chậm lại vài phút thường an toàn hơn nhiều so với làm theo một yêu cầu gấp trong tin nhắn."
+      }
+    ],
+    "explanation": "Nội dung \"bắt mày\" là một lời đe dọa rõ ràng, gây áp lực và lo lắng cho người nhận. Việc thiếu thông tin về người gửi và mục đích khiến tin nhắn trở nên đáng ngờ và khó xác định ý đồ thực sự. Mặc dù không có yêu cầu tài chính hay link độc hại, đây có thể là bước đầu của một âm mưu lừa đảo hoặc quấy rối. Cần hết sức thận trọng và không phản hồi nếu không biết rõ người gửi.",
+    "html": "\n<div id=\"resultCard\" style=\"--risk-color:#f59e0b;padding:18px\" data-score=\"75\">\n  <section class=\"result-head\"><span class=\"pill suspicious\" id=\"scorePill\">Nghi ngờ · 75% rủi ro</span><h2>Phân tích kỹ thuật</h2><p class=\"hint\">Tin nhắn này chứa lời đe dọa trực tiếp và thiếu ngữ cảnh, tiềm ẩn rủi ro cao về quấy rối hoặc ý đồ xấu.</p><p>Nội dung &quot;bắt mày&quot; là một lời đe dọa rõ ràng, gây áp lực và lo lắng cho người nhận. Việc thiếu thông tin về người gửi và mục đích khiến tin nhắn trở nên đáng ngờ và khó xác định ý đồ thực sự. Mặc dù không có yêu cầu tài chính hay link độc hại, đây có thể là bước đầu của một âm mưu lừa đảo hoặc quấy rối. Cần hết sức thận trọng và không phản hồi nếu không biết rõ người gửi.</p></section>\n  <div class=\"result-main\"><div id=\"scoreRing\" class=\"ring\" style=\"--score:75%\"><strong id=\"scoreText\">75%</strong><small>rủi ro</small></div><div><h2 id=\"zoneTitle\">Nghi ngờ</h2><p class=\"hint\">Không rõ danh tính người gửi và mối quan hệ của họ với người nhận. Mục đích chính xác của lời đe dọa này là gì và liệu có phải là một phần của âm mưu lừa đảo hay quấy rối hay không.</p></div></div>\n  <div class=\"grid\"><div class=\"box\"><h3>Dấu hiệu phát hiện</h3><div class=\"evidence\"><div><strong>bắt mày</strong><p>Đây là một lời đe dọa trực tiếp, mang tính chất gây hấn và áp lực, phù hợp với tiêu chí rủi ro cao về &quot;đe dọa hoặc tạo áp lực gấp&quot;. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra. Nếu còn phân vân, bác nên hỏi người thân hoặc liên hệ trực tiếp tổ chức thật bằng số điện thoại chính thức. Việc kiểm tra chậm lại vài phút thường an toàn hơn nhiều so với làm theo một yêu cầu gấp trong tin nhắn.</p></div><div><strong>(Toàn bộ nội dung tin nhắn)</strong><p>Tin nhắn cực kỳ ngắn gọn và thiếu mọi ngữ cảnh, không có thông tin về người gửi, lý do hay mục đích, làm tăng tính đáng ngờ và khó xác định ý đồ. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra. Nếu còn phân vân, bác nên hỏi người thân hoặc liên hệ trực tiếp tổ chức thật bằng số điện thoại chính thức. Việc kiểm tra chậm lại vài phút thường an toàn hơn nhiều so với làm theo một yêu cầu gấp trong tin nhắn.</p></div></div></div><div class=\"box\"><h3>Nên làm gì tiếp?</h3><div class=\"checks\"><button class='action-btn' data-action='0'><span>Không phản hồi</span><span>→</span></button><button class='action-btn' data-action='1'><span>Chặn người gửi</span><span>→</span></button><button class='action-btn' data-action='2'><span>Lưu giữ bằng chứng</span><span>→</span></button></div></div></div>\n  <div class=\"box original-text\"><h3>Tin gốc đã tô vàng</h3><p>bắt mày</p></div>\n  \n        <section class=\"support-card\" aria-label=\"Cô tâm lý nhắc nhẹ\">\n          <div class=\"support-icon\" aria-hidden=\"true\">♡</div>\n          <div>\n            <h3>Cô tâm lý nhắc nhẹ</h3>\n            <p>Bác ơi, tin nhắn &#x27;bắt mày&#x27; này đang dùng chiêu đe dọa trực tiếp để làm bác lo lắng đó. Cô khuyên bác cứ bình tĩnh, đừng vội phản hồi mà hãy hỏi người thân xem sao nhé.</p>\n          </div>\n        </section>\n</div>",
+    "next_actions": [
+      {
+        "id": "step_1",
+        "label": "Không phản hồi",
+        "prompt": "Tránh phản hồi tin nhắn này để không cung cấp thêm thông tin hoặc khuyến khích người gửi tiếp tục quấy rối."
+      },
+      {
+        "id": "step_2",
+        "label": "Chặn người gửi",
+        "prompt": "Chặn số điện thoại hoặc tài khoản gửi tin nhắn để ngăn chặn các liên lạc tiếp theo từ người này."
+      },
+      {
+        "id": "step_3",
+        "label": "Lưu giữ bằng chứng",
+        "prompt": "Chụp ảnh màn hình hoặc lưu lại tin nhắn để làm bằng chứng nếu cần báo cáo cho cơ quan chức năng."
+      }
+    ],
+    "rescue_options": [
+      {
+        "id": "1",
+        "label": "Báo cáo nền tảng",
+        "detail": "Nếu tin nhắn được gửi qua một ứng dụng nhắn tin hoặc mạng xã hội, hãy sử dụng tính năng báo cáo của nền tảng đó để thông báo về hành vi quấy rối hoặc đe dọa."
+      },
+      {
+        "id": "2",
+        "label": "Chia sẻ với người thân",
+        "detail": "Kể cho gia đình hoặc bạn bè thân thiết về tin nhắn này để nhận được sự hỗ trợ và lời khuyên, đặc biệt nếu bạn cảm thấy lo lắng hoặc bị đe dọa."
+      },
+      {
+        "id": "3",
+        "label": "Liên hệ cơ quan chức năng",
+        "detail": "Nếu cảm thấy bị đe dọa nghiêm trọng hoặc tin rằng đây là một phần của hành vi phạm pháp, hãy cân nhắc liên hệ với công an địa phương để được tư vấn và hỗ trợ."
+      }
+    ],
+    "risk": "suspicious",
+    "source": "gemini",
+    "summary": "Tin nhắn này chứa lời đe dọa trực tiếp và thiếu ngữ cảnh, tiềm ẩn rủi ro cao về quấy rối hoặc ý đồ xấu.",
+    "uncertainty": "Không rõ danh tính người gửi và mối quan hệ của họ với người nhận. Mục đích chính xác của lời đe dọa này là gì và liệu có phải là một phần của âm mưu lừa đảo hay quấy rối hay không.",
+    "verdict_label": "Nghi ngờ",
+    "zone_title": "Nghi ngờ",
+    "id": "check-1782415359171",
+    "time": "2026-06-25T19:22:39.171Z",
+    "inputText": "bắt mày",
+    "share_id": "check-1782415359171",
+    "share_url": "/analysis/check-1782415359171",
+    "psychology": "Bác ơi, tin nhắn 'bắt mày' này đang dùng chiêu đe dọa trực tiếp để làm bác lo lắng đó. Cô khuyên bác cứ bình tĩnh, đừng vội phản hồi mà hãy hỏi người thân xem sao nhé."
+  },
+  "check-1782429792590": {
+    "checked_text": "I love you",
+    "danger_score_percent": 0,
+    "evidence": [
+      {
+        "quote": "I love you",
+        "why": "Đây là một lời bày tỏ tình cảm cá nhân, không chứa đựng bất kỳ yêu cầu hay thông tin đáng ngờ nào. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra. Nếu còn phân vân, bác nên hỏi người thân hoặc liên hệ trực tiếp tổ chức thật bằng số điện thoại chính thức. Việc kiểm tra chậm lại vài phút thường an toàn hơn nhiều so với làm theo một yêu cầu gấp trong tin nhắn.",
+        "explanation": ""
+      }
+    ],
+    "explanation": "Nội dung tin nhắn là lời bày tỏ tình cảm thông thường. Không có bất kỳ yếu tố nào liên quan đến yêu cầu cung cấp thông tin nhạy cảm, chuyển tiền, hay các dấu hiệu lừa đảo khác. Nguồn gốc tin nhắn không được xác định nhưng bản thân nội dung không mang tính đe dọa hay lừa đảo.",
+    "html": "\n<div id=\"resultCard\" style=\"--risk-color:#22c55e;padding:18px\" data-score=\"0\">\n  <section class=\"result-head\"><span class=\"pill safe\" id=\"scorePill\">An toàn · 0% rủi ro</span><h2>Phân tích kỹ thuật</h2><p class=\"hint\">Tin nhắn thể hiện tình cảm cá nhân, không có dấu hiệu lừa đảo.</p><p>Nội dung tin nhắn là lời bày tỏ tình cảm thông thường. Không có bất kỳ yếu tố nào liên quan đến yêu cầu cung cấp thông tin nhạy cảm, chuyển tiền, hay các dấu hiệu lừa đảo khác. Nguồn gốc tin nhắn không được xác định nhưng bản thân nội dung không mang tính đe dọa hay lừa đảo.</p></section>\n  <div class=\"result-main\"><div id=\"scoreRing\" class=\"ring\" style=\"--score:0%\"><strong id=\"scoreText\">0%</strong><small>rủi ro</small></div><div><h2 id=\"zoneTitle\">An toàn</h2><p class=\"hint\">Không có thông tin nào cần xác minh thêm dựa trên nội dung tin nhắn.</p></div></div>\n  <div class=\"grid\"><div class=\"box\"><h3>Dấu hiệu phát hiện</h3><div class=\"evidence\"><div><strong>I love you</strong><p>Đây là một lời bày tỏ tình cảm cá nhân, không chứa đựng bất kỳ yêu cầu hay thông tin đáng ngờ nào. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra. Nếu còn phân vân, bác nên hỏi người thân hoặc liên hệ trực tiếp tổ chức thật bằng số điện thoại chính thức. Việc kiểm tra chậm lại vài phút thường an toàn hơn nhiều so với làm theo một yêu cầu gấp trong tin nhắn.</p></div></div></div><div class=\"box\"><h3>Nên làm gì tiếp?</h3><div class=\"checks\"><button class='action-btn' data-action='0'><span>Phản hồi tin nhắn</span><span>→</span></button><button class='action-btn' data-action='1'><span>Kiểm tra người gửi</span><span>→</span></button><button class='action-btn' data-action='2'><span>Bỏ qua nếu không quan tâm</span><span>→</span></button></div></div></div>\n  <div class=\"box original-text\"><h3>Tin gốc đã tô vàng</h3><p>I love you</p></div>\n  \n</div>",
+    "next_actions": [
+      {
+        "id": "step_1",
+        "label": "Phản hồi tin nhắn",
+        "prompt": "Nếu bạn muốn, hãy trả lời tin nhắn này theo cách bạn thấy phù hợp."
+      },
+      {
+        "id": "step_2",
+        "label": "Kiểm tra người gửi",
+        "prompt": "Nếu bạn không chắc chắn về người gửi, hãy xem xét lịch sử trò chuyện hoặc hỏi trực tiếp họ."
+      },
+      {
+        "id": "step_3",
+        "label": "Bỏ qua nếu không quan tâm",
+        "prompt": "Nếu tin nhắn này không liên quan hoặc bạn không muốn tiếp tục, bạn có thể bỏ qua nó."
+      }
+    ],
+    "rescue_options": [],
+    "risk": "safe",
+    "source": "gemini",
+    "summary": "Tin nhắn thể hiện tình cảm cá nhân, không có dấu hiệu lừa đảo.",
+    "uncertainty": "Không có thông tin nào cần xác minh thêm dựa trên nội dung tin nhắn.",
+    "verdict_label": "An toàn",
+    "zone_title": "An toàn",
+    "id": "check-1782429792590",
+    "time": "2026-06-25T23:23:12.590Z",
+    "inputText": "I love you",
+    "share_id": "check-1782429792590"
+  },
+  "check-1782445999529": {
+    "checked_text": "Chúng tôi là cán bộ thuộc cơ quan điều tra và đang xử lý một vụ án rửa tiền có liên quan đến tài khoản đứng tên bạn. Bạn phải giữ bí mật, không được thông báo cho gia đình và chuyển toàn bộ số tiền vào tài khoản tạm giữ để chứng minh tài sản hợp pháp. Nếu không thực hiện trong hai giờ tới, hồ sơ sẽ được chuyển sang khởi tố và bạn phải chịu trách nhiệm trước pháp luật. Hãy gọi lại số điện thoại trong tin nhắn ngay để được cán bộ hướng dẫn từng bước chuyển khoản.",
+    "danger_score_percent": 100,
+    "evidence": [
+      {
+        "explanation": "",
+        "quote": "Chúng tôi là cán bộ thuộc cơ quan điều tra và đang xử lý một vụ án rửa tiền có liên quan đến tài khoản đứng tên bạn.",
+        "why": "Đây là hành vi mạo danh cơ quan nhà nước để tạo sự uy hiếp và tin tưởng giả mạo. Cơ quan điều tra không bao giờ làm việc qua tin nhắn hoặc điện thoại để yêu cầu chuyển tiền. Yêu cầu chuyển tiền hoặc đóng phí trước thường được dùng để chiếm tiền rồi tiếp tục đòi thêm khoản khác. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra. Nếu còn phân vân, bác nên hỏi người thân hoặc liên hệ trực tiếp tổ chức thật bằng số điện thoại chính thức."
+      },
+      {
+        "explanation": "",
+        "quote": "Bạn phải giữ bí mật, không được thông báo cho gia đình và chuyển toàn bộ số tiền vào tài khoản tạm giữ để chứng minh tài sản hợp pháp.",
+        "why": "Yêu cầu giữ bí mật nhằm cô lập nạn nhân, ngăn cản họ tìm kiếm lời khuyên từ người thân hoặc xác minh thông tin. Yêu cầu chuyển tiền vào 'tài khoản tạm giữ' là chiêu trò phổ biến để chiếm đoạt tiền. Yêu cầu chuyển tiền hoặc đóng phí trước thường được dùng để chiếm tiền rồi tiếp tục đòi thêm khoản khác. Lời đe dọa hậu quả khiến bác dễ làm theo hướng dẫn mà chưa kịp hỏi người thân hoặc tổ chức thật. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra."
+      },
+      {
+        "explanation": "",
+        "quote": "Nếu không thực hiện trong hai giờ tới, hồ sơ sẽ được chuyển sang khởi tố và bạn phải chịu trách nhiệm trước pháp luật.",
+        "why": "Tạo áp lực thời gian cực kỳ gấp rút và đe dọa pháp lý nghiêm trọng nhằm khiến nạn nhân hoảng sợ, mất khả năng phán đoán và làm theo yêu cầu của kẻ lừa đảo. Yêu cầu chuyển tiền hoặc đóng phí trước thường được dùng để chiếm tiền rồi tiếp tục đòi thêm khoản khác. Lời đe dọa hậu quả khiến bác dễ làm theo hướng dẫn mà chưa kịp hỏi người thân hoặc tổ chức thật. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra."
+      },
+      {
+        "explanation": "",
+        "quote": "Hãy gọi lại số điện thoại trong tin nhắn ngay để được cán bộ hướng dẫn từng bước chuyển khoản.",
+        "why": "Kẻ lừa đảo muốn nạn nhân liên hệ trực tiếp để dễ dàng thao túng và hướng dẫn các bước chuyển tiền, hoàn tất hành vi lừa đảo. Yêu cầu chuyển tiền hoặc đóng phí trước thường được dùng để chiếm tiền rồi tiếp tục đòi thêm khoản khác. Áp lực thời gian làm người nhận khó bình tĩnh kiểm tra nguồn chính thức trước khi hành động. Lời đe dọa hậu quả khiến bác dễ làm theo hướng dẫn mà chưa kịp hỏi người thân hoặc tổ chức thật."
+      }
+    ],
+    "explanation": "Tin nhắn này có mức độ rủi ro cực kỳ cao vì nó mạo danh cơ quan nhà nước để tạo sự tin cậy giả mạo. Kẻ lừa đảo sử dụng các chiêu trò tâm lý như đe dọa khởi tố, yêu cầu giữ bí mật và tạo áp lực thời gian gấp rút (hai giờ) để nạn nhân hoảng sợ và không có thời gian suy nghĩ. Mục đích cuối cùng là yêu cầu chuyển tiền vào một tài khoản không rõ ràng, đây là dấu hiệu rõ ràng của hành vi lừa đảo chiếm đoạt tài sản.",
+    "html": "\n<div id=\"resultCard\" style=\"--risk-color:#ef4444;padding:18px\" data-score=\"100\">\n  <section class=\"result-head\"><span class=\"pill danger\" id=\"scorePill\">Nguy hiểm · 100% rủi ro</span><h2>Phân tích kỹ thuật</h2><p class=\"hint\">Đây là một tin nhắn lừa đảo mạo danh cơ quan điều tra, sử dụng các chiêu trò đe dọa, tạo áp lực và yêu cầu chuyển tiền để chiếm đoạt tài sản.</p><p>Tin nhắn này có mức độ rủi ro cực kỳ cao vì nó mạo danh cơ quan nhà nước để tạo sự tin cậy giả mạo. Kẻ lừa đảo sử dụng các chiêu trò tâm lý như đe dọa khởi tố, yêu cầu giữ bí mật và tạo áp lực thời gian gấp rút (hai giờ) để nạn nhân hoảng sợ và không có thời gian suy nghĩ. Mục đích cuối cùng là yêu cầu chuyển tiền vào một tài khoản không rõ ràng, đây là dấu hiệu rõ ràng của hành vi lừa đảo chiếm đoạt tài sản.</p></section>\n  <div class=\"result-main\"><div id=\"scoreRing\" class=\"ring\" style=\"--score:100%\"><strong id=\"scoreText\">100%</strong><small>rủi ro</small></div><div><h2 id=\"zoneTitle\">Nguy hiểm</h2><p class=\"hint\">Thông tin về số điện thoại được nhắc đến trong tin nhắn không được cung cấp, do đó không thể kiểm tra trực tiếp số điện thoại này. Danh tính thật của người gửi tin nhắn và tài khoản &#x27;tạm giữ&#x27; là hoàn toàn không xác định.</p></div></div>\n  <div class=\"grid\"><div class=\"box\"><h3>Dấu hiệu phát hiện</h3><div class=\"evidence\"><div><strong>Chúng tôi là cán bộ thuộc cơ quan điều tra và đang xử lý một vụ án rửa tiền có liên quan đến tài khoản đứng tên bạn.</strong><p>Đây là hành vi mạo danh cơ quan nhà nước để tạo sự uy hiếp và tin tưởng giả mạo. Cơ quan điều tra không bao giờ làm việc qua tin nhắn hoặc điện thoại để yêu cầu chuyển tiền. Yêu cầu chuyển tiền hoặc đóng phí trước thường được dùng để chiếm tiền rồi tiếp tục đòi thêm khoản khác. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra. Nếu còn phân vân, bác nên hỏi người thân hoặc liên hệ trực tiếp tổ chức thật bằng số điện thoại chính thức.</p></div><div><strong>Bạn phải giữ bí mật, không được thông báo cho gia đình và chuyển toàn bộ số tiền vào tài khoản tạm giữ để chứng minh tài sản hợp pháp.</strong><p>Yêu cầu giữ bí mật nhằm cô lập nạn nhân, ngăn cản họ tìm kiếm lời khuyên từ người thân hoặc xác minh thông tin. Yêu cầu chuyển tiền vào &#x27;tài khoản tạm giữ&#x27; là chiêu trò phổ biến để chiếm đoạt tiền. Yêu cầu chuyển tiền hoặc đóng phí trước thường được dùng để chiếm tiền rồi tiếp tục đòi thêm khoản khác. Lời đe dọa hậu quả khiến bác dễ làm theo hướng dẫn mà chưa kịp hỏi người thân hoặc tổ chức thật. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra.</p></div><div><strong>Nếu không thực hiện trong hai giờ tới, hồ sơ sẽ được chuyển sang khởi tố và bạn phải chịu trách nhiệm trước pháp luật.</strong><p>Tạo áp lực thời gian cực kỳ gấp rút và đe dọa pháp lý nghiêm trọng nhằm khiến nạn nhân hoảng sợ, mất khả năng phán đoán và làm theo yêu cầu của kẻ lừa đảo. Yêu cầu chuyển tiền hoặc đóng phí trước thường được dùng để chiếm tiền rồi tiếp tục đòi thêm khoản khác. Lời đe dọa hậu quả khiến bác dễ làm theo hướng dẫn mà chưa kịp hỏi người thân hoặc tổ chức thật. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra.</p></div><div><strong>Hãy gọi lại số điện thoại trong tin nhắn ngay để được cán bộ hướng dẫn từng bước chuyển khoản.</strong><p>Kẻ lừa đảo muốn nạn nhân liên hệ trực tiếp để dễ dàng thao túng và hướng dẫn các bước chuyển tiền, hoàn tất hành vi lừa đảo. Yêu cầu chuyển tiền hoặc đóng phí trước thường được dùng để chiếm tiền rồi tiếp tục đòi thêm khoản khác. Áp lực thời gian làm người nhận khó bình tĩnh kiểm tra nguồn chính thức trước khi hành động. Lời đe dọa hậu quả khiến bác dễ làm theo hướng dẫn mà chưa kịp hỏi người thân hoặc tổ chức thật.</p></div></div></div><div class=\"box\"><h3>Nên làm gì tiếp?</h3><div class=\"checks\"><button class='action-btn' data-action='0'><span>Không liên hệ</span><span>→</span></button><button class='action-btn' data-action='1'><span>Không chuyển tiền</span><span>→</span></button><button class='action-btn' data-action='2'><span>Xác minh thông tin</span><span>→</span></button></div></div></div>\n  <div class=\"box original-text\"><h3>Tin gốc đã tô vàng</h3><p><mark>Chúng tôi là cán bộ thuộc cơ quan điều tra và đang xử lý một vụ án rửa tiền có liên quan đến tài khoản đứng tên bạn.</mark> Bạn phải giữ bí mật, không được thông báo cho gia đình và chuyển toàn bộ số tiền vào tài khoản tạm giữ để chứng minh tài sản hợp pháp. <mark>Nếu không thực hiện trong hai giờ tới, hồ sơ sẽ được chuyển sang khởi tố và bạn phải chịu trách nhiệm trước pháp luật.</mark> <mark>Hãy gọi lại số điện thoại trong tin nhắn ngay để được cán bộ hướng dẫn từng bước chuyển khoản.</mark></p></div>\n  \n        <section class=\"support-card\" aria-label=\"Cô tâm lý nhắc nhẹ\">\n          <div class=\"support-icon\" aria-hidden=\"true\">♡</div>\n          <div>\n            <h3>Cô tâm lý nhắc nhẹ</h3>\n            <p>Bác ơi, tin nhắn này đang dùng chiến thuật tạo áp lực thời gian và đe dọa pháp lý để bác hoảng sợ đó. Bác cứ bình tĩnh nhé, đừng vội làm theo bất cứ yêu cầu nào. Để kiểm tra lại cho chắc chắn, bác hãy tự mình liên hệ trực tiếp với cơ quan công an hoặc ngân hàng qua số điện thoại chính thức trên website, chứ đừng gọi lại số trong tin nhắn nha bác.</p>\n          </div>\n        </section>\n</div>",
+    "next_actions": [
+      {
+        "id": "step_1",
+        "label": "Không liên hệ",
+        "prompt": "Tuyệt đối không gọi lại số điện thoại được nhắc đến trong tin nhắn hoặc bất kỳ số nào mà kẻ lừa đảo cung cấp."
+      },
+      {
+        "id": "step_2",
+        "label": "Không chuyển tiền",
+        "prompt": "Không thực hiện bất kỳ giao dịch chuyển tiền nào theo yêu cầu của tin nhắn này, vì đây là hành vi lừa đảo."
+      },
+      {
+        "id": "step_3",
+        "label": "Xác minh thông tin",
+        "prompt": "Nếu có bất kỳ lo lắng nào, hãy liên hệ trực tiếp với cơ quan công an hoặc ngân hàng của bạn qua các kênh chính thức (số điện thoại trên website chính thức, đến trực tiếp trụ sở) để xác minh, không dùng thông tin từ tin nhắn này."
+      }
+    ],
+    "rescue_options": [
+      {
+        "id": "report_police",
+        "label": "Báo cáo cơ quan công an",
+        "detail": "Liên hệ ngay với cơ quan công an gần nhất hoặc gọi đường dây nóng phòng chống tội phạm công nghệ cao để trình báo về tin nhắn lừa đảo này."
+      },
+      {
+        "id": "inform_family",
+        "label": "Thông báo cho người thân",
+        "detail": "Chia sẻ thông tin về tin nhắn này với gia đình và bạn bè để họ cảnh giác và hỗ trợ bạn trong trường hợp cần thiết."
+      },
+      {
+        "id": "block_sender",
+        "label": "Chặn người gửi",
+        "detail": "Chặn số điện thoại hoặc tài khoản đã gửi tin nhắn này để tránh bị làm phiền hoặc tiếp tục bị lừa đảo."
+      }
+    ],
+    "risk": "danger",
+    "source": "gemini",
+    "summary": "Đây là một tin nhắn lừa đảo mạo danh cơ quan điều tra, sử dụng các chiêu trò đe dọa, tạo áp lực và yêu cầu chuyển tiền để chiếm đoạt tài sản.",
+    "uncertainty": "Thông tin về số điện thoại được nhắc đến trong tin nhắn không được cung cấp, do đó không thể kiểm tra trực tiếp số điện thoại này. Danh tính thật của người gửi tin nhắn và tài khoản 'tạm giữ' là hoàn toàn không xác định.",
+    "verdict_label": "Nguy hiểm",
+    "zone_title": "Nguy hiểm",
+    "id": "check-1782445999529",
+    "time": "2026-06-26T03:53:19.529Z",
+    "inputText": "Chúng tôi là cán bộ thuộc cơ quan điều tra và đang xử lý một vụ án rửa tiền có liên quan đến tài khoản đứng tên bạn. Bạn phải giữ bí mật, không được thông báo cho gia đình và chuyển toàn bộ số tiền vào tài khoản tạm giữ để chứng minh tài sản hợp pháp. Nếu không thực hiện trong hai giờ tới, hồ sơ sẽ được chuyển sang khởi tố và bạn phải chịu trách nhiệm trước pháp luật. Hãy gọi lại số điện thoại trong tin nhắn ngay để được cán bộ hướng dẫn từng bước chuyển khoản.",
+    "share_id": "check-1782445999529",
+    "share_url": "/analysis/check-1782445999529",
+    "psychology": "Bác ơi, tin nhắn này đang dùng chiến thuật tạo áp lực thời gian và đe dọa pháp lý để bác hoảng sợ đó. Bác cứ bình tĩnh nhé, đừng vội làm theo bất cứ yêu cầu nào. Để kiểm tra lại cho chắc chắn, bác hãy tự mình liên hệ trực tiếp với cơ quan công an hoặc ngân hàng qua số điện thoại chính thức trên website, chứ đừng gọi lại số trong tin nhắn nha bác."
+  },
+  "check-1782448612244": {
+    "checked_text": "Kính gửi quý khách, hệ thống phát hiện tài khoản ngân hàng của quý khách vừa đăng nhập từ một thiết bị lạ và sẽ bị khóa sau 24 giờ. Để tiếp tục sử dụng dịch vụ, vui lòng truy cập http://vietcornbank-secure.com, nhập thông tin đăng nhập và mã OTP để xác minh danh tính. Nếu không hoàn thành ngay hôm nay, toàn bộ giao dịch và số dư trong tài khoản có thể bị tạm ngưng. Nhân viên hỗ trợ sẽ không chịu trách nhiệm nếu quý khách bỏ qua thông báo khẩn cấp này.",
+    "danger_score_percent": 98,
+    "evidence": [
+      {
+        "explanation": "",
+        "quote": "http://vietcornbank-secure.com",
+        "why": "Tên miền vietcornbank-secure.com có thể giả mạo vietcombank. Đường dẫn lạ có thể dẫn đến trang giả mạo để lấy mật khẩu, mã OTP hoặc thông tin thẻ. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra. Nếu còn phân vân, bác nên hỏi người thân hoặc liên hệ trực tiếp tổ chức thật bằng số điện thoại chính thức."
+      },
+      {
+        "explanation": "",
+        "quote": "http://vietcornbank-secure.com",
+        "why": "Tên miền này cố tình sai chính tả \"vietcornbank\" thay vì \"vietcombank\" và thêm \"-secure\" để tạo cảm giác an toàn giả mạo, là dấu hiệu rõ ràng của lừa đảo phishing. Đường dẫn lạ có thể dẫn đến trang giả mạo để lấy mật khẩu, mã OTP hoặc thông tin thẻ. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra. Nếu còn phân vân, bác nên hỏi người thân hoặc liên hệ trực tiếp tổ chức thật bằng số điện thoại chính thức."
+      },
+      {
+        "explanation": "",
+        "quote": "nhập thông tin đăng nhập và mã OTP để xác minh danh tính.",
+        "why": "Ngân hàng không bao giờ yêu cầu khách hàng nhập thông tin đăng nhập và mã OTP qua một đường link không chính thức hoặc trong tình huống khẩn cấp như vậy. Đây là cách kẻ lừa đảo chiếm đoạt tài khoản. Đây là nhóm thông tin nhạy cảm, người lạ hoặc nhân viên thật không nên yêu cầu bác gửi qua tin nhắn. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra. Nếu còn phân vân, bác nên hỏi người thân hoặc liên hệ trực tiếp tổ chức thật bằng số điện thoại chính thức."
+      },
+      {
+        "explanation": "",
+        "quote": "tài khoản ngân hàng của quý khách vừa đăng nhập từ một thiết bị lạ và sẽ bị khóa sau 24 giờ. ... Nếu không hoàn thành ngay hôm nay, toàn bộ giao dịch và số dư trong tài khoản có th",
+        "why": "Kẻ lừa đảo thường dùng các thông báo khẩn cấp, đe dọa khóa tài khoản hoặc mất tiền để tạo áp lực, khiến nạn nhân hoảng sợ và hành động vội vàng mà không kịp suy nghĩ hay kiểm tra. Áp lực thời gian làm người nhận khó bình tĩnh kiểm tra nguồn chính thức trước khi hành động. Lời đe dọa hậu quả khiến bác dễ làm theo hướng dẫn mà chưa kịp hỏi người thân hoặc tổ chức thật. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra."
+      }
+    ],
+    "explanation": "Tin nhắn tạo áp lực tâm lý bằng cách đe dọa khóa tài khoản và tạm ngưng giao dịch nếu không hành động ngay. Yêu cầu truy cập một đường link giả mạo để nhập thông tin đăng nhập và mã OTP, đây là hành vi lừa đảo phổ biến. Tên miền \"vietcornbank-secure.com\" là giả mạo, cố tình sai chính tả để đánh lừa người dùng. Việc yêu cầu OTP qua link lạ là dấu hiệu rõ ràng của lừa đảo.",
+    "html": "\n<div id=\"resultCard\" style=\"--risk-color:#ef4444;padding:18px\" data-score=\"98\">\n  <section class=\"result-head\"><span class=\"pill danger\" id=\"scorePill\">Nguy hiểm · 98% rủi ro</span><h2>Phân tích kỹ thuật</h2><p class=\"hint\">Đây là một tin nhắn lừa đảo (phishing) có nguy cơ rất cao nhằm chiếm đoạt thông tin tài khoản ngân hàng của bạn.</p><p>Tin nhắn tạo áp lực tâm lý bằng cách đe dọa khóa tài khoản và tạm ngưng giao dịch nếu không hành động ngay. Yêu cầu truy cập một đường link giả mạo để nhập thông tin đăng nhập và mã OTP, đây là hành vi lừa đảo phổ biến. Tên miền &quot;vietcornbank-secure.com&quot; là giả mạo, cố tình sai chính tả để đánh lừa người dùng. Việc yêu cầu OTP qua link lạ là dấu hiệu rõ ràng của lừa đảo.</p></section>\n  <div class=\"result-main\"><div id=\"scoreRing\" class=\"ring\" style=\"--score:98%\"><strong id=\"scoreText\">98%</strong><small>rủi ro</small></div><div><h2 id=\"zoneTitle\">Nguy hiểm</h2><p class=\"hint\">Hiện tại, chưa rõ người gửi tin nhắn này là ai và họ đã thu thập được thông tin gì về bạn trước đó. Cần xác minh xem bạn đã từng truy cập hay nhập thông tin vào đường link này chưa.</p></div></div>\n  <div class=\"grid\"><div class=\"box\"><h3>Dấu hiệu phát hiện</h3><div class=\"evidence\"><div><strong>http://vietcornbank-secure.com</strong><p>Tên miền vietcornbank-secure.com có thể giả mạo vietcombank. Đường dẫn lạ có thể dẫn đến trang giả mạo để lấy mật khẩu, mã OTP hoặc thông tin thẻ. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra. Nếu còn phân vân, bác nên hỏi người thân hoặc liên hệ trực tiếp tổ chức thật bằng số điện thoại chính thức.</p></div><div><strong>http://vietcornbank-secure.com</strong><p>Tên miền này cố tình sai chính tả &quot;vietcornbank&quot; thay vì &quot;vietcombank&quot; và thêm &quot;-secure&quot; để tạo cảm giác an toàn giả mạo, là dấu hiệu rõ ràng của lừa đảo phishing. Đường dẫn lạ có thể dẫn đến trang giả mạo để lấy mật khẩu, mã OTP hoặc thông tin thẻ. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra. Nếu còn phân vân, bác nên hỏi người thân hoặc liên hệ trực tiếp tổ chức thật bằng số điện thoại chính thức.</p></div><div><strong>nhập thông tin đăng nhập và mã OTP để xác minh danh tính.</strong><p>Ngân hàng không bao giờ yêu cầu khách hàng nhập thông tin đăng nhập và mã OTP qua một đường link không chính thức hoặc trong tình huống khẩn cấp như vậy. Đây là cách kẻ lừa đảo chiếm đoạt tài khoản. Đây là nhóm thông tin nhạy cảm, người lạ hoặc nhân viên thật không nên yêu cầu bác gửi qua tin nhắn. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra. Nếu còn phân vân, bác nên hỏi người thân hoặc liên hệ trực tiếp tổ chức thật bằng số điện thoại chính thức.</p></div><div><strong>tài khoản ngân hàng của quý khách vừa đăng nhập từ một thiết bị lạ và sẽ bị khóa sau 24 giờ. ... Nếu không hoàn thành ngay hôm nay, toàn bộ giao dịch và số dư trong tài khoản có th</strong><p>Kẻ lừa đảo thường dùng các thông báo khẩn cấp, đe dọa khóa tài khoản hoặc mất tiền để tạo áp lực, khiến nạn nhân hoảng sợ và hành động vội vàng mà không kịp suy nghĩ hay kiểm tra. Áp lực thời gian làm người nhận khó bình tĩnh kiểm tra nguồn chính thức trước khi hành động. Lời đe dọa hậu quả khiến bác dễ làm theo hướng dẫn mà chưa kịp hỏi người thân hoặc tổ chức thật. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra.</p></div></div></div><div class=\"box\"><h3>Nên làm gì tiếp?</h3><div class=\"checks\"><button class='action-btn' data-action='0'><span>Không truy cập link</span><span>→</span></button><button class='action-btn' data-action='1'><span>Liên hệ ngân hàng chính thức</span><span>→</span></button><button class='action-btn' data-action='2'><span>Báo cáo tin nhắn</span><span>→</span></button></div></div></div>\n  <div class=\"box original-text\"><h3>Tin gốc đã tô vàng</h3><p>Kính gửi quý khách, hệ thống phát hiện tài khoản ngân hàng của quý khách vừa đăng nhập từ một thiết bị lạ và sẽ bị khóa sau 24 giờ. Để tiếp tục sử dụng dịch vụ, vui lòng truy cập <mark>http://vietcornbank-secure.com,</mark> <mark>nhập thông tin đăng nhập và mã OTP để xác minh danh tính.</mark> Nếu không hoàn thành <mark>ngay</mark> hôm nay, toàn bộ giao dịch và số dư trong tài khoản có thể bị tạm ngưng. Nhân viên hỗ trợ sẽ không chịu trách nhiệm nếu quý khách bỏ qua thông báo <mark>khẩn cấp</mark> này.</p></div>\n  \n        <section class=\"support-card\" aria-label=\"Cô tâm lý nhắc nhẹ\">\n          <div class=\"support-icon\" aria-hidden=\"true\">♡</div>\n          <div>\n            <h3>Cô tâm lý nhắc nhẹ</h3>\n            <p>Cô thấy tin nhắn này đang dùng chiến thuật tạo áp lực thời gian, khiến bác dễ lo lắng và hành động vội vàng đó. Bác cứ bình tĩnh nhé, đừng vội làm theo, hãy gọi điện trực tiếp đến tổng đài chính thức của ngân hàng để kiểm tra thông tin cho chắc chắn.</p>\n          </div>\n        </section>\n</div>",
+    "next_actions": [
+      {
+        "id": "step_1",
+        "label": "Không truy cập link",
+        "prompt": "Tuyệt đối không nhấp vào đường link \"http://vietcornbank-secure.com\" hoặc bất kỳ link nào trong tin nhắn."
+      },
+      {
+        "id": "step_2",
+        "label": "Liên hệ ngân hàng chính thức",
+        "prompt": "Gọi điện trực tiếp đến tổng đài chính thức của ngân hàng (số in trên thẻ hoặc website chính thức) để xác minh thông tin."
+      },
+      {
+        "id": "step_3",
+        "label": "Báo cáo tin nhắn",
+        "prompt": "Chuyển tiếp tin nhắn này đến tổng đài hoặc bộ phận an ninh mạng của ngân hàng để họ có biện pháp xử lý."
+      }
+    ],
+    "rescue_options": [
+      {
+        "id": "bao_cao_lua_dao",
+        "label": "Báo cáo lừa đảo",
+        "detail": "Chuyển tiếp tin nhắn này đến số điện thoại hoặc email báo cáo lừa đảo của ngân hàng hoặc cơ quan chức năng (ví dụ: Cục An toàn thông tin)."
+      },
+      {
+        "id": "doi_mat_khau_ngay",
+        "label": "Đổi mật khẩu ngay lập tức",
+        "detail": "Nếu bạn lỡ truy cập link và nhập bất kỳ thông tin nào, hãy đổi mật khẩu tài khoản ngân hàng của bạn ngay lập tức thông qua ứng dụng hoặc website chính thức của ngân hàng."
+      },
+      {
+        "id": "kiem_tra_giao_dich",
+        "label": "Kiểm tra giao dịch tài khoản",
+        "detail": "Đăng nhập vào ứng dụng ngân hàng chính thức để kiểm tra lịch sử giao dịch và số dư, đảm bảo không có hoạt động bất thường."
+      },
+      {
+        "id": "chan_so_dien_thoai",
+        "label": "Chặn số điện thoại gửi tin nhắn",
+        "detail": "Chặn số điện thoại đã gửi tin nhắn lừa đảo này để tránh nhận thêm các tin nhắn tương tự trong tương lai."
+      }
+    ],
+    "risk": "danger",
+    "source": "gemini",
+    "summary": "Đây là một tin nhắn lừa đảo (phishing) có nguy cơ rất cao nhằm chiếm đoạt thông tin tài khoản ngân hàng của bạn.",
+    "uncertainty": "Hiện tại, chưa rõ người gửi tin nhắn này là ai và họ đã thu thập được thông tin gì về bạn trước đó. Cần xác minh xem bạn đã từng truy cập hay nhập thông tin vào đường link này chưa.",
+    "verdict_label": "Nguy hiểm",
+    "zone_title": "Nguy hiểm",
+    "id": "check-1782448612244",
+    "time": "2026-06-26T04:36:52.244Z",
+    "inputText": "Kính gửi quý khách, hệ thống phát hiện tài khoản ngân hàng của quý khách vừa đăng nhập từ một thiết bị lạ và sẽ bị khóa sau 24 giờ. Để tiếp tục sử dụng dịch vụ, vui lòng truy cập http://vietcornbank-secure.com, nhập thông tin đăng nhập và mã OTP để xác minh danh tính. Nếu không hoàn thành ngay hôm nay, toàn bộ giao dịch và số dư trong tài khoản có thể bị tạm ngưng. Nhân viên hỗ trợ sẽ không chịu trách nhiệm nếu quý khách bỏ qua thông báo khẩn cấp này.",
+    "share_id": "check-1782448612244",
+    "share_url": "/analysis/check-1782448612244",
+    "psychology": "Cô thấy tin nhắn này đang dùng chiến thuật tạo áp lực thời gian, khiến bác dễ lo lắng và hành động vội vàng đó. Bác cứ bình tĩnh nhé, đừng vội làm theo, hãy gọi điện trực tiếp đến tổng đài chính thức của ngân hàng để kiểm tra thông tin cho chắc chắn."
+  },
+  "check-1782454677399": {
+    "checked_text": "Chúng tôi là cán bộ thuộc cơ quan điều tra và đang xử lý một vụ án rửa tiền có liên quan đến tài khoản đứng tên bạn. Bạn phải giữ bí mật, không được thông báo cho gia đình và chuyển toàn bộ số tiền vào tài khoản tạm giữ để chứng minh tài sản hợp pháp. Nếu không thực hiện trong hai giờ tới, hồ sơ sẽ được chuyển sang khởi tố và bạn phải chịu trách nhiệm trước pháp luật. Hãy gọi lại số điện thoại trong tin nhắn ngay để được cán bộ hướng dẫn từng bước chuyển khoản.",
+    "danger_score_percent": 95,
+    "evidence": [
+      {
+        "explanation": "",
+        "quote": "Chúng tôi là cán bộ thuộc cơ quan điều tra và đang xử lý một vụ án rửa tiền có liên quan đến tài khoản đứng tên bạn.",
+        "why": "Mạo danh cơ quan chức năng để tạo uy tín và sự sợ hãi. Yêu cầu chuyển tiền hoặc đóng phí trước thường được dùng để chiếm tiền rồi tiếp tục đòi thêm khoản khác. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra. Nếu còn phân vân, bác nên hỏi người thân hoặc liên hệ trực tiếp tổ chức thật bằng số điện thoại chính thức."
+      },
+      {
+        "explanation": "",
+        "quote": "Bạn phải giữ bí mật, không được thông báo cho gia đình và chuyển toàn bộ số tiền vào tài khoản tạm giữ để chứng minh tài sản hợp pháp.",
+        "why": "Yêu cầu giữ bí mật và chuyển tiền là dấu hiệu lừa đảo điển hình, nhằm cô lập nạn nhân và chiếm đoạt tài sản. Yêu cầu chuyển tiền hoặc đóng phí trước thường được dùng để chiếm tiền rồi tiếp tục đòi thêm khoản khác. Lời đe dọa hậu quả khiến bác dễ làm theo hướng dẫn mà chưa kịp hỏi người thân hoặc tổ chức thật. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra."
+      },
+      {
+        "explanation": "",
+        "quote": "Nếu không thực hiện trong hai giờ tới, hồ sơ sẽ được chuyển sang khởi tố và bạn phải chịu trách nhiệm trước pháp luật.",
+        "why": "Tạo áp lực thời gian gấp gáp và đe dọa pháp lý để nạn nhân hoảng loạn, không kịp suy nghĩ. Yêu cầu chuyển tiền hoặc đóng phí trước thường được dùng để chiếm tiền rồi tiếp tục đòi thêm khoản khác. Lời đe dọa hậu quả khiến bác dễ làm theo hướng dẫn mà chưa kịp hỏi người thân hoặc tổ chức thật. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra."
+      },
+      {
+        "explanation": "",
+        "quote": "Hãy gọi lại số điện thoại trong tin nhắn ngay để được cán bộ hướng dẫn từng bước chuyển khoản.",
+        "why": "Kêu gọi liên hệ lại để thực hiện hành vi lừa đảo chuyển tiền, thường là yêu cầu chuyển vào tài khoản của kẻ gian. Yêu cầu chuyển tiền hoặc đóng phí trước thường được dùng để chiếm tiền rồi tiếp tục đòi thêm khoản khác. Áp lực thời gian làm người nhận khó bình tĩnh kiểm tra nguồn chính thức trước khi hành động. Lời đe dọa hậu quả khiến bác dễ làm theo hướng dẫn mà chưa kịp hỏi người thân hoặc tổ chức thật."
+      }
+    ],
+    "explanation": "Tin nhắn mạo danh cơ quan điều tra, yêu cầu giữ bí mật và chuyển toàn bộ tiền vào tài khoản tạm giữ là hành vi lừa đảo phổ biến. Việc tạo áp lực thời gian 2 giờ và đe dọa khởi tố nhằm mục đích gây hoang mang, ép buộc nạn nhân làm theo. Cơ quan điều tra thực tế không bao giờ yêu cầu công dân chuyển tiền vào tài khoản của họ để xác minh.",
+    "html": "\n<div id=\"resultCard\" style=\"--risk-color:#ef4444;padding:18px\" data-score=\"95\">\n  <section class=\"result-head\"><span class=\"pill danger\" id=\"scorePill\">Nguy hiểm · 95% rủi ro</span><h2>Phân tích kỹ thuật</h2><p class=\"hint\">Tin nhắn này có dấu hiệu lừa đảo rất cao, yêu cầu chuyển tiền gấp để chứng minh tài sản hợp pháp và đe dọa khởi tố.</p><p>Tin nhắn mạo danh cơ quan điều tra, yêu cầu giữ bí mật và chuyển toàn bộ tiền vào tài khoản tạm giữ là hành vi lừa đảo phổ biến. Việc tạo áp lực thời gian 2 giờ và đe dọa khởi tố nhằm mục đích gây hoang mang, ép buộc nạn nhân làm theo. Cơ quan điều tra thực tế không bao giờ yêu cầu công dân chuyển tiền vào tài khoản của họ để xác minh.</p></section>\n  <div class=\"result-main\"><div id=\"scoreRing\" class=\"ring\" style=\"--score:95%\"><strong id=\"scoreText\">95%</strong><small>rủi ro</small></div><div><h2 id=\"zoneTitle\">Nguy hiểm</h2><p class=\"hint\">Cần xác minh xem người dùng có thực sự nhận được tin nhắn này hay không và liệu có bất kỳ thông tin cá nhân nào đã bị lộ hay chưa.</p></div></div>\n  <div class=\"grid\"><div class=\"box\"><h3>Dấu hiệu phát hiện</h3><div class=\"evidence\"><div><strong>Chúng tôi là cán bộ thuộc cơ quan điều tra và đang xử lý một vụ án rửa tiền có liên quan đến tài khoản đứng tên bạn.</strong><p>Mạo danh cơ quan chức năng để tạo uy tín và sự sợ hãi. Yêu cầu chuyển tiền hoặc đóng phí trước thường được dùng để chiếm tiền rồi tiếp tục đòi thêm khoản khác. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra. Nếu còn phân vân, bác nên hỏi người thân hoặc liên hệ trực tiếp tổ chức thật bằng số điện thoại chính thức.</p></div><div><strong>Bạn phải giữ bí mật, không được thông báo cho gia đình và chuyển toàn bộ số tiền vào tài khoản tạm giữ để chứng minh tài sản hợp pháp.</strong><p>Yêu cầu giữ bí mật và chuyển tiền là dấu hiệu lừa đảo điển hình, nhằm cô lập nạn nhân và chiếm đoạt tài sản. Yêu cầu chuyển tiền hoặc đóng phí trước thường được dùng để chiếm tiền rồi tiếp tục đòi thêm khoản khác. Lời đe dọa hậu quả khiến bác dễ làm theo hướng dẫn mà chưa kịp hỏi người thân hoặc tổ chức thật. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra.</p></div><div><strong>Nếu không thực hiện trong hai giờ tới, hồ sơ sẽ được chuyển sang khởi tố và bạn phải chịu trách nhiệm trước pháp luật.</strong><p>Tạo áp lực thời gian gấp gáp và đe dọa pháp lý để nạn nhân hoảng loạn, không kịp suy nghĩ. Yêu cầu chuyển tiền hoặc đóng phí trước thường được dùng để chiếm tiền rồi tiếp tục đòi thêm khoản khác. Lời đe dọa hậu quả khiến bác dễ làm theo hướng dẫn mà chưa kịp hỏi người thân hoặc tổ chức thật. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra.</p></div><div><strong>Hãy gọi lại số điện thoại trong tin nhắn ngay để được cán bộ hướng dẫn từng bước chuyển khoản.</strong><p>Kêu gọi liên hệ lại để thực hiện hành vi lừa đảo chuyển tiền, thường là yêu cầu chuyển vào tài khoản của kẻ gian. Yêu cầu chuyển tiền hoặc đóng phí trước thường được dùng để chiếm tiền rồi tiếp tục đòi thêm khoản khác. Áp lực thời gian làm người nhận khó bình tĩnh kiểm tra nguồn chính thức trước khi hành động. Lời đe dọa hậu quả khiến bác dễ làm theo hướng dẫn mà chưa kịp hỏi người thân hoặc tổ chức thật.</p></div></div></div><div class=\"box\"><h3>Nên làm gì tiếp?</h3><div class=\"checks\"><button class='action-btn' data-action='0'><span>Không liên hệ lại</span><span>→</span></button><button class='action-btn' data-action='1'><span>Xác minh thông tin</span><span>→</span></button><button class='action-btn' data-action='2'><span>Báo cáo và cảnh giác</span><span>→</span></button></div></div></div>\n  <div class=\"box original-text\"><h3>Tin gốc đã tô vàng</h3><p><mark>Chúng tôi là cán bộ thuộc cơ quan điều tra và đang xử lý một vụ án rửa tiền có liên quan đến tài khoản đứng tên bạn.</mark> Bạn phải giữ bí mật, không được thông báo cho gia đình và chuyển toàn bộ số tiền vào tài khoản tạm giữ để chứng minh tài sản hợp pháp. <mark>Nếu không thực hiện trong hai giờ tới, hồ sơ sẽ được chuyển sang khởi tố và bạn phải chịu trách nhiệm trước pháp luật.</mark> <mark>Hãy gọi lại số điện thoại trong tin nhắn ngay để được cán bộ hướng dẫn từng bước chuyển khoản.</mark></p></div>\n  \n        <section class=\"support-card\" aria-label=\"Cô tâm lý nhắc nhẹ\">\n          <div class=\"support-icon\" aria-hidden=\"true\">♡</div>\n          <div>\n            <h3>Cô tâm lý nhắc nhẹ</h3>\n            <p>Bác ơi, tin nhắn này đang dùng chiêu tạo áp lực thời gian và đe dọa để bác hoảng sợ đó ạ. Bác cứ bình tĩnh, đừng liên hệ lại số điện thoại kia, thay vào đó hãy tìm số điện thoại chính thức của cơ quan điều tra để hỏi cho rõ nhé.</p>\n          </div>\n        </section>\n</div>",
+    "next_actions": [
+      {
+        "id": "step_1",
+        "label": "Không liên hệ lại",
+        "prompt": "Tuyệt đối không gọi lại số điện thoại được cung cấp trong tin nhắn hoặc trả lời tin nhắn."
+      },
+      {
+        "id": "step_2",
+        "label": "Xác minh thông tin",
+        "prompt": "Liên hệ trực tiếp với cơ quan công an hoặc tòa án địa phương qua số điện thoại công khai trên website chính thức để hỏi về vụ việc (nếu có)."
+      },
+      {
+        "id": "step_3",
+        "label": "Báo cáo và cảnh giác",
+        "prompt": "Báo cáo tin nhắn này cho nhà mạng hoặc các nền tảng mạng xã hội để ngăn chặn lừa đảo. Cảnh giác với các yêu cầu tương tự."
+      }
+    ],
+    "rescue_options": [
+      {
+        "id": "1",
+        "label": "Báo cơ quan công an",
+        "detail": "Nếu bạn đã lỡ cung cấp thông tin cá nhân hoặc thực hiện chuyển tiền, hãy đến trình báo ngay tại cơ quan công an gần nhất."
+      },
+      {
+        "id": "2",
+        "label": "Liên hệ ngân hàng",
+        "detail": "Nếu đã chuyển tiền, hãy liên hệ ngay với ngân hàng của bạn để yêu cầu hỗ trợ phong tỏa hoặc thu hồi giao dịch (khả năng thành công thấp nhưng cần thử)."
+      },
+      {
+        "id": "3",
+        "label": "Tìm hiểu về các hình thức lừa đảo",
+        "detail": "Tìm hiểu thêm về các chiêu thức lừa đảo phổ biến để tự bảo vệ bản thân và người thân trong tương lai."
+      }
+    ],
+    "risk": "danger",
+    "source": "gemini",
+    "summary": "Tin nhắn này có dấu hiệu lừa đảo rất cao, yêu cầu chuyển tiền gấp để chứng minh tài sản hợp pháp và đe dọa khởi tố.",
+    "uncertainty": "Cần xác minh xem người dùng có thực sự nhận được tin nhắn này hay không và liệu có bất kỳ thông tin cá nhân nào đã bị lộ hay chưa.",
+    "verdict_label": "Nguy hiểm",
+    "zone_title": "Nguy hiểm",
+    "id": "check-1782454677399",
+    "time": "2026-06-26T06:17:57.400Z",
+    "inputText": "Chúng tôi là cán bộ thuộc cơ quan điều tra và đang xử lý một vụ án rửa tiền có liên quan đến tài khoản đứng tên bạn. Bạn phải giữ bí mật, không được thông báo cho gia đình và chuyển toàn bộ số tiền vào tài khoản tạm giữ để chứng minh tài sản hợp pháp. Nếu không thực hiện trong hai giờ tới, hồ sơ sẽ được chuyển sang khởi tố và bạn phải chịu trách nhiệm trước pháp luật. Hãy gọi lại số điện thoại trong tin nhắn ngay để được cán bộ hướng dẫn từng bước chuyển khoản.",
+    "share_id": "check-1782454677399",
+    "share_url": "/analysis/check-1782454677399",
+    "psychology": "Bác ơi, tin nhắn này đang dùng chiêu tạo áp lực thời gian và đe dọa để bác hoảng sợ đó ạ. Bác cứ bình tĩnh, đừng liên hệ lại số điện thoại kia, thay vào đó hãy tìm số điện thoại chính thức của cơ quan điều tra để hỏi cho rõ nhé."
+  },
+  "check-1782457820484": {
+    "checked_text": "Vietcombank thông báo tài khoản của bác bị khóa. Vui lòng xác minh ngay tại vietconbank-login.com và nhập mã OTP để mở khóa.",
+    "danger_score_percent": 95,
+    "evidence": [
+      {
+        "explanation": "",
+        "quote": "vietconbank-login.com",
+        "why": "Tên miền vietconbank-login.com gần giống vietcombank nhưng không phải miền chính thức; có thể là tên miền giả mạo hoặc sai chính tả. Đường dẫn lạ có thể dẫn đến trang giả mạo để lấy mật khẩu, mã OTP hoặc thông tin thẻ. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra. Nếu còn phân vân, bác nên hỏi người thân hoặc liên hệ trực tiếp tổ chức thật bằng số điện thoại chính thức."
+      },
+      {
+        "explanation": "",
+        "quote": "Vietcombank thông báo tài khoản của bác bị khóa.",
+        "why": "Thông báo khóa tài khoản đột ngột thường là chiêu trò lừa đảo để gây hoang mang. Lời đe dọa hậu quả khiến bác dễ làm theo hướng dẫn mà chưa kịp hỏi người thân hoặc tổ chức thật. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra. Nếu còn phân vân, bác nên hỏi người thân hoặc liên hệ trực tiếp tổ chức thật bằng số điện thoại chính thức."
+      },
+      {
+        "explanation": "",
+        "quote": "Vui lòng xác minh ngay tại vietconbank-login.com",
+        "why": "Tên miền 'vietconbank-login.com' là tên miền giả mạo, cố tình sai lệch chính tả so với tên miền chính thức của Vietcombank (vietcombank.com.vn) để đánh lừa người dùng. Đường dẫn lạ có thể dẫn đến trang giả mạo để lấy mật khẩu, mã OTP hoặc thông tin thẻ. Áp lực thời gian làm người nhận khó bình tĩnh kiểm tra nguồn chính thức trước khi hành động. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra."
+      },
+      {
+        "explanation": "",
+        "quote": "nhập mã OTP để mở khóa.",
+        "why": "Yêu cầu cung cấp mã OTP là hành vi cực kỳ nguy hiểm, kẻ gian có thể lợi dụng mã OTP để chiếm đoạt tài khoản ngân hàng và rút hết tiền. Đây là nhóm thông tin nhạy cảm, người lạ hoặc nhân viên thật không nên yêu cầu bác gửi qua tin nhắn. Lời đe dọa hậu quả khiến bác dễ làm theo hướng dẫn mà chưa kịp hỏi người thân hoặc tổ chức thật. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra."
+      }
+    ],
+    "explanation": "Tin nhắn giả mạo ngân hàng Vietcombank, yêu cầu người dùng truy cập vào một đường link lạ (vietconbank-login.com) để xác minh tài khoản bị khóa. Đường link này có dấu hiệu mạo danh tên miền của Vietcombank (vietconbank thay vì vietcombank) và yêu cầu nhập mã OTP, đây là hành vi rất nguy hiểm có thể dẫn đến mất tiền.",
+    "html": "\n<div id=\"resultCard\" style=\"--risk-color:#ef4444;padding:18px\" data-score=\"95\">\n  <section class=\"result-head\"><span class=\"pill danger\" id=\"scorePill\">Nguy hiểm · 95% rủi ro</span><h2>Phân tích kỹ thuật</h2><p class=\"hint\">Tin nhắn có dấu hiệu lừa đảo cao, mạo danh ngân hàng Vietcombank để chiếm đoạt thông tin và tiền của người dùng.</p><p>Tin nhắn giả mạo ngân hàng Vietcombank, yêu cầu người dùng truy cập vào một đường link lạ (vietconbank-login.com) để xác minh tài khoản bị khóa. Đường link này có dấu hiệu mạo danh tên miền của Vietcombank (vietconbank thay vì vietcombank) và yêu cầu nhập mã OTP, đây là hành vi rất nguy hiểm có thể dẫn đến mất tiền.</p></section>\n  <div class=\"result-main\"><div id=\"scoreRing\" class=\"ring\" style=\"--score:95%\"><strong id=\"scoreText\">95%</strong><small>rủi ro</small></div><div><h2 id=\"zoneTitle\">Nguy hiểm</h2><p class=\"hint\">Cần xác minh xem người dùng có thực sự nhận được tin nhắn này từ Vietcombank hay không và liệu tài khoản của họ có thực sự bị khóa hay không.</p></div></div>\n  <div class=\"grid\"><div class=\"box\"><h3>Dấu hiệu phát hiện</h3><div class=\"evidence\"><div><strong>vietconbank-login.com</strong><p>Tên miền vietconbank-login.com gần giống vietcombank nhưng không phải miền chính thức; có thể là tên miền giả mạo hoặc sai chính tả. Đường dẫn lạ có thể dẫn đến trang giả mạo để lấy mật khẩu, mã OTP hoặc thông tin thẻ. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra. Nếu còn phân vân, bác nên hỏi người thân hoặc liên hệ trực tiếp tổ chức thật bằng số điện thoại chính thức.</p></div><div><strong>Vietcombank thông báo tài khoản của bác bị khóa.</strong><p>Thông báo khóa tài khoản đột ngột thường là chiêu trò lừa đảo để gây hoang mang. Lời đe dọa hậu quả khiến bác dễ làm theo hướng dẫn mà chưa kịp hỏi người thân hoặc tổ chức thật. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra. Nếu còn phân vân, bác nên hỏi người thân hoặc liên hệ trực tiếp tổ chức thật bằng số điện thoại chính thức.</p></div><div><strong>Vui lòng xác minh ngay tại vietconbank-login.com</strong><p>Tên miền &#x27;vietconbank-login.com&#x27; là tên miền giả mạo, cố tình sai lệch chính tả so với tên miền chính thức của Vietcombank (vietcombank.com.vn) để đánh lừa người dùng. Đường dẫn lạ có thể dẫn đến trang giả mạo để lấy mật khẩu, mã OTP hoặc thông tin thẻ. Áp lực thời gian làm người nhận khó bình tĩnh kiểm tra nguồn chính thức trước khi hành động. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra.</p></div><div><strong>nhập mã OTP để mở khóa.</strong><p>Yêu cầu cung cấp mã OTP là hành vi cực kỳ nguy hiểm, kẻ gian có thể lợi dụng mã OTP để chiếm đoạt tài khoản ngân hàng và rút hết tiền. Đây là nhóm thông tin nhạy cảm, người lạ hoặc nhân viên thật không nên yêu cầu bác gửi qua tin nhắn. Lời đe dọa hậu quả khiến bác dễ làm theo hướng dẫn mà chưa kịp hỏi người thân hoặc tổ chức thật. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra.</p></div></div></div><div class=\"box\"><h3>Nên làm gì tiếp?</h3><div class=\"checks\"><button class='action-btn' data-action='0'><span>Không truy cập link</span><span>→</span></button><button class='action-btn' data-action='1'><span>Liên hệ ngân hàng</span><span>→</span></button><button class='action-btn' data-action='2'><span>Xóa tin nhắn</span><span>→</span></button></div></div></div>\n  <div class=\"box original-text\"><h3>Tin gốc đã tô vàng</h3><p><mark>Vietcombank thông báo tài khoản của bác bị khóa.</mark> <mark>Vui lòng xác minh ngay tại vietconbank-login.com</mark> và <mark>nhập mã OTP để mở khóa.</mark></p></div>\n  \n        <section class=\"support-card\" aria-label=\"Cô tâm lý nhắc nhẹ\">\n          <div class=\"support-icon\" aria-hidden=\"true\">♡</div>\n          <div>\n            <h3>Cô tâm lý nhắc nhẹ</h3>\n            <p>Bác ơi, tin nhắn này đang dùng chiêu &#x27;gây hoang mang&#x27; khi báo tài khoản bị khóa đột ngột để bác vội vàng làm theo đó. Bác cứ bình tĩnh nhé, đừng vội nhấp vào link lạ mà hãy gọi trực tiếp đến tổng đài chính thức của Vietcombank để kiểm tra thông tin cho chắc chắn.</p>\n          </div>\n        </section>\n</div>",
+    "next_actions": [
+      {
+        "id": "step_1",
+        "label": "Không truy cập link",
+        "prompt": "Tuyệt đối không nhấp vào đường link được cung cấp trong tin nhắn."
+      },
+      {
+        "id": "step_2",
+        "label": "Liên hệ ngân hàng",
+        "prompt": "Liên hệ trực tiếp với ngân hàng Vietcombank qua số hotline chính thức hoặc đến chi nhánh gần nhất để xác minh thông tin."
+      },
+      {
+        "id": "step_3",
+        "label": "Xóa tin nhắn",
+        "prompt": "Xóa tin nhắn đáng ngờ để tránh bị lừa lần nữa."
+      }
+    ],
+    "rescue_options": [
+      {
+        "id": "ai_option_1",
+        "label": "Báo cáo tin nhắn lừa đảo",
+        "detail": "Báo cáo tin nhắn này cho nhà mạng hoặc cơ quan chức năng để họ có biện pháp xử lý."
+      },
+      {
+        "id": "ai_option_2",
+        "label": "Khóa thẻ/tài khoản khẩn cấp",
+        "detail": "Nếu đã lỡ cung cấp thông tin, hãy liên hệ ngay ngân hàng để khóa thẻ/tài khoản khẩn cấp."
+      },
+      {
+        "id": "ai_option_3",
+        "label": "Thay đổi mật khẩu",
+        "detail": "Nếu đã truy cập link hoặc nhập thông tin, hãy thay đổi mật khẩu ngân hàng và các dịch vụ liên quan ngay lập tức."
+      }
+    ],
+    "risk": "danger",
+    "source": "gemini",
+    "summary": "Tin nhắn có dấu hiệu lừa đảo cao, mạo danh ngân hàng Vietcombank để chiếm đoạt thông tin và tiền của người dùng.",
+    "uncertainty": "Cần xác minh xem người dùng có thực sự nhận được tin nhắn này từ Vietcombank hay không và liệu tài khoản của họ có thực sự bị khóa hay không.",
+    "verdict_label": "Nguy hiểm",
+    "zone_title": "Nguy hiểm",
+    "id": "check-1782457820484",
+    "time": "2026-06-26T07:10:20.484Z",
+    "inputText": "Vietcombank thông báo tài khoản của bác bị khóa. Vui lòng xác minh ngay tại vietconbank-login.com và nhập mã OTP để mở khóa.",
+    "share_id": "check-1782457820484",
+    "share_url": "/analysis/check-1782457820484",
+    "psychology": "Bác ơi, tin nhắn này đang dùng chiêu 'gây hoang mang' khi báo tài khoản bị khóa đột ngột để bác vội vàng làm theo đó. Bác cứ bình tĩnh nhé, đừng vội nhấp vào link lạ mà hãy gọi trực tiếp đến tổng đài chính thức của Vietcombank để kiểm tra thông tin cho chắc chắn."
+  },
+  "check-1782457946321": {
+    "checked_text": "Vietconbank thông báo tài khoản của bác bị khóa. Vui lòng xác minh ngay tại vietconbank-login.com và nhập mã OTP để mở khóa.",
+    "danger_score_percent": 95,
+    "evidence": [
+      {
+        "explanation": "",
+        "quote": "vietconbank-login.com",
+        "why": "Tên miền vietconbank-login.com gần giống vietcombank nhưng không phải miền chính thức; có thể là tên miền giả mạo hoặc sai chính tả. Đường dẫn lạ có thể dẫn đến trang giả mạo để lấy mật khẩu, mã OTP hoặc thông tin thẻ. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra. Nếu còn phân vân, bác nên hỏi người thân hoặc liên hệ trực tiếp tổ chức thật bằng số điện thoại chính thức."
+      },
+      {
+        "explanation": "",
+        "quote": "Vietconbank thông báo tài khoản của bác bị khóa.",
+        "why": "Mạo danh ngân hàng Vietcombank để tạo sự hoang mang và thúc giục hành động. Lời đe dọa hậu quả khiến bác dễ làm theo hướng dẫn mà chưa kịp hỏi người thân hoặc tổ chức thật. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra. Nếu còn phân vân, bác nên hỏi người thân hoặc liên hệ trực tiếp tổ chức thật bằng số điện thoại chính thức."
+      },
+      {
+        "explanation": "",
+        "quote": "Vui lòng xác minh ngay tại vietconbank-login.com",
+        "why": "Tên miền 'vietconbank-login.com' là giả mạo, có dấu hiệu typo-squatting so với tên miền chính thức của Vietcombank. Đây là chiêu trò phổ biến để lừa người dùng truy cập vào trang web giả. Đường dẫn lạ có thể dẫn đến trang giả mạo để lấy mật khẩu, mã OTP hoặc thông tin thẻ. Áp lực thời gian làm người nhận khó bình tĩnh kiểm tra nguồn chính thức trước khi hành động. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra."
+      },
+      {
+        "explanation": "",
+        "quote": "nhập mã OTP để mở khóa.",
+        "why": "Yêu cầu cung cấp mã OTP là hành vi cực kỳ nguy hiểm, có thể dẫn đến việc kẻ gian chiếm đoạt tiền trong tài khoản. Đây là nhóm thông tin nhạy cảm, người lạ hoặc nhân viên thật không nên yêu cầu bác gửi qua tin nhắn. Lời đe dọa hậu quả khiến bác dễ làm theo hướng dẫn mà chưa kịp hỏi người thân hoặc tổ chức thật. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra."
+      }
+    ],
+    "explanation": "Tin nhắn sử dụng tên miền giả mạo 'vietconbank-login.com' thay vì tên miền chính thức của Vietcombank. Yêu cầu nhập mã OTP để mở khóa tài khoản là một dấu hiệu lừa đảo phổ biến, nhằm chiếm đoạt mã xác thực giao dịch. Ngân hàng thường không yêu cầu người dùng cung cấp thông tin nhạy cảm qua tin nhắn hoặc website lạ.",
+    "html": "\n<div id=\"resultCard\" style=\"--risk-color:#ef4444;padding:18px\" data-score=\"95\">\n  <section class=\"result-head\"><span class=\"pill danger\" id=\"scorePill\">Nguy hiểm · 95% rủi ro</span><h2>Phân tích kỹ thuật</h2><p class=\"hint\">Đây là một vụ lừa đảo giả mạo ngân hàng Vietcombank nhằm chiếm đoạt thông tin tài khoản và mã OTP.</p><p>Tin nhắn sử dụng tên miền giả mạo &#x27;vietconbank-login.com&#x27; thay vì tên miền chính thức của Vietcombank. Yêu cầu nhập mã OTP để mở khóa tài khoản là một dấu hiệu lừa đảo phổ biến, nhằm chiếm đoạt mã xác thực giao dịch. Ngân hàng thường không yêu cầu người dùng cung cấp thông tin nhạy cảm qua tin nhắn hoặc website lạ.</p></section>\n  <div class=\"result-main\"><div id=\"scoreRing\" class=\"ring\" style=\"--score:95%\"><strong id=\"scoreText\">95%</strong><small>rủi ro</small></div><div><h2 id=\"zoneTitle\">Nguy hiểm</h2><p class=\"hint\">Cần xác minh xem người dùng đã truy cập vào đường link giả mạo và cung cấp thông tin gì chưa.</p></div></div>\n  <div class=\"grid\"><div class=\"box\"><h3>Dấu hiệu phát hiện</h3><div class=\"evidence\"><div><strong>vietconbank-login.com</strong><p>Tên miền vietconbank-login.com gần giống vietcombank nhưng không phải miền chính thức; có thể là tên miền giả mạo hoặc sai chính tả. Đường dẫn lạ có thể dẫn đến trang giả mạo để lấy mật khẩu, mã OTP hoặc thông tin thẻ. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra. Nếu còn phân vân, bác nên hỏi người thân hoặc liên hệ trực tiếp tổ chức thật bằng số điện thoại chính thức.</p></div><div><strong>Vietconbank thông báo tài khoản của bác bị khóa.</strong><p>Mạo danh ngân hàng Vietcombank để tạo sự hoang mang và thúc giục hành động. Lời đe dọa hậu quả khiến bác dễ làm theo hướng dẫn mà chưa kịp hỏi người thân hoặc tổ chức thật. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra. Nếu còn phân vân, bác nên hỏi người thân hoặc liên hệ trực tiếp tổ chức thật bằng số điện thoại chính thức.</p></div><div><strong>Vui lòng xác minh ngay tại vietconbank-login.com</strong><p>Tên miền &#x27;vietconbank-login.com&#x27; là giả mạo, có dấu hiệu typo-squatting so với tên miền chính thức của Vietcombank. Đây là chiêu trò phổ biến để lừa người dùng truy cập vào trang web giả. Đường dẫn lạ có thể dẫn đến trang giả mạo để lấy mật khẩu, mã OTP hoặc thông tin thẻ. Áp lực thời gian làm người nhận khó bình tĩnh kiểm tra nguồn chính thức trước khi hành động. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra.</p></div><div><strong>nhập mã OTP để mở khóa.</strong><p>Yêu cầu cung cấp mã OTP là hành vi cực kỳ nguy hiểm, có thể dẫn đến việc kẻ gian chiếm đoạt tiền trong tài khoản. Đây là nhóm thông tin nhạy cảm, người lạ hoặc nhân viên thật không nên yêu cầu bác gửi qua tin nhắn. Lời đe dọa hậu quả khiến bác dễ làm theo hướng dẫn mà chưa kịp hỏi người thân hoặc tổ chức thật. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra.</p></div></div></div><div class=\"box\"><h3>Nên làm gì tiếp?</h3><div class=\"checks\"><button class='action-btn' data-action='0'><span>Không truy cập link</span><span>→</span></button><button class='action-btn' data-action='1'><span>Liên hệ ngân hàng</span><span>→</span></button><button class='action-btn' data-action='2'><span>Xóa tin nhắn</span><span>→</span></button></div></div></div>\n  <div class=\"box original-text\"><h3>Tin gốc đã tô vàng</h3><p><mark>Vietconbank thông báo tài khoản của bác bị khóa.</mark> <mark>Vui lòng xác minh ngay tại vietconbank-login.com</mark> và <mark>nhập mã OTP để mở khóa.</mark></p></div>\n  \n        <section class=\"support-card\" aria-label=\"Cô tâm lý nhắc nhẹ\">\n          <div class=\"support-icon\" aria-hidden=\"true\">♡</div>\n          <div>\n            <h3>Cô tâm lý nhắc nhẹ</h3>\n            <p>Bác ơi, tin nhắn này đang dùng chiêu tạo áp lực để bác vội vàng làm theo mà không suy nghĩ kỹ đó ạ. Để bình tĩnh kiểm tra, bác hãy bỏ qua đường link lạ và tự mình gọi điện thoại đến tổng đài chính thức của ngân hàng để hỏi nhé.</p>\n          </div>\n        </section>\n</div>",
+    "next_actions": [
+      {
+        "id": "step_1",
+        "label": "Không truy cập link",
+        "prompt": "Tuyệt đối không nhấp vào đường link được cung cấp trong tin nhắn."
+      },
+      {
+        "id": "step_2",
+        "label": "Liên hệ ngân hàng",
+        "prompt": "Gọi điện trực tiếp đến hotline chính thức của Vietcombank để xác minh tình trạng tài khoản."
+      },
+      {
+        "id": "step_3",
+        "label": "Xóa tin nhắn",
+        "prompt": "Xóa tin nhắn và chặn số điện thoại gửi tin nhắn để tránh bị làm phiền hoặc tiếp tục bị lừa."
+      }
+    ],
+    "rescue_options": [
+      {
+        "id": "ai_option_1",
+        "label": "Báo cáo lừa đảo",
+        "detail": "Báo cáo tin nhắn/link lừa đảo cho nhà mạng hoặc cơ quan chức năng."
+      },
+      {
+        "id": "ai_option_2",
+        "label": "Kiểm tra giao dịch",
+        "detail": "Nếu đã lỡ cung cấp thông tin, hãy kiểm tra ngay các giao dịch gần đây và liên hệ ngân hàng để khóa thẻ/tài khoản khẩn cấp."
+      },
+      {
+        "id": "ai_option_3",
+        "label": "Đổi mật khẩu",
+        "detail": "Nếu đã truy cập link, hãy đổi mật khẩu ngân hàng trực tuyến và các dịch vụ liên quan khác ngay lập tức."
+      }
+    ],
+    "risk": "danger",
+    "source": "gemini",
+    "summary": "Đây là một vụ lừa đảo giả mạo ngân hàng Vietcombank nhằm chiếm đoạt thông tin tài khoản và mã OTP.",
+    "uncertainty": "Cần xác minh xem người dùng đã truy cập vào đường link giả mạo và cung cấp thông tin gì chưa.",
+    "verdict_label": "Nguy hiểm",
+    "zone_title": "Nguy hiểm",
+    "id": "check-1782457946321",
+    "time": "2026-06-26T07:12:26.321Z",
+    "inputText": "Vietconbank thông báo tài khoản của bác bị khóa. Vui lòng xác minh ngay tại vietconbank-login.com và nhập mã OTP để mở khóa.",
+    "share_id": "check-1782457946321",
+    "share_url": "/analysis/check-1782457946321",
+    "psychology": "Bác ơi, tin nhắn này đang dùng chiêu tạo áp lực để bác vội vàng làm theo mà không suy nghĩ kỹ đó ạ. Để bình tĩnh kiểm tra, bác hãy bỏ qua đường link lạ và tự mình gọi điện thoại đến tổng đài chính thức của ngân hàng để hỏi nhé."
+  },
+  "check-1782458983436": {
+    "checked_text": "Bây giờ tôi muốn xem mày và bây giờ tôi sẽ scan mày và ngay lập tức tao sẽ xưng mày một tỷ đồng",
+    "danger_score_percent": 95,
+    "evidence": [
+      {
+        "explanation": "",
+        "quote": "Bây giờ tôi muốn xem mày và bây giờ tôi sẽ scan mày và ngay lập tức tao sẽ xưng mày một tỷ đồng",
+        "why": "Ngôn ngữ đe dọa, yêu cầu tiền bạc đột ngột và không có lý do chính đáng. Áp lực thời gian làm người nhận khó bình tĩnh kiểm tra nguồn chính thức trước khi hành động. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra. Nếu còn phân vân, bác nên hỏi người thân hoặc liên hệ trực tiếp tổ chức thật bằng số điện thoại chính thức."
+      },
+      {
+        "explanation": "",
+        "quote": "scan mày",
+        "why": "Thuật ngữ công nghệ được sử dụng sai ngữ cảnh, có thể nhằm gây hoang mang hoặc tạo cảm giác nguy hiểm. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra. Nếu còn phân vân, bác nên hỏi người thân hoặc liên hệ trực tiếp tổ chức thật bằng số điện thoại chính thức. Việc kiểm tra chậm lại vài phút thường an toàn hơn nhiều so với làm theo một yêu cầu gấp trong tin nhắn."
+      },
+      {
+        "explanation": "",
+        "quote": "xưng mày một tỷ đồng",
+        "why": "Yêu cầu một khoản tiền lớn một cách bất thường và không có chi tiết giao dịch. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra. Nếu còn phân vân, bác nên hỏi người thân hoặc liên hệ trực tiếp tổ chức thật bằng số điện thoại chính thức. Việc kiểm tra chậm lại vài phút thường an toàn hơn nhiều so với làm theo một yêu cầu gấp trong tin nhắn."
+      }
+    ],
+    "explanation": "Tin nhắn sử dụng ngôn ngữ đe dọa ('scan mày', 'xưng mày') và yêu cầu một khoản tiền lớn ('một tỷ đồng') một cách đột ngột. Không có ngữ cảnh rõ ràng, người gửi không được xác minh và nội dung mang tính chất ép buộc, đây là những dấu hiệu cảnh báo cao của lừa đảo.",
+    "html": "\n<div id=\"resultCard\" style=\"--risk-color:#ef4444;padding:18px\" data-score=\"95\">\n  <section class=\"result-head\"><span class=\"pill danger\" id=\"scorePill\">Nguy hiểm · 95% rủi ro</span><h2>Phân tích kỹ thuật</h2><p class=\"hint\">Tin nhắn có dấu hiệu đe dọa, yêu cầu tiền bạc với giọng điệu bất thường và không rõ ràng, có thể là lừa đảo.</p><p>Tin nhắn sử dụng ngôn ngữ đe dọa (&#x27;scan mày&#x27;, &#x27;xưng mày&#x27;) và yêu cầu một khoản tiền lớn (&#x27;một tỷ đồng&#x27;) một cách đột ngột. Không có ngữ cảnh rõ ràng, người gửi không được xác minh và nội dung mang tính chất ép buộc, đây là những dấu hiệu cảnh báo cao của lừa đảo.</p></section>\n  <div class=\"result-main\"><div id=\"scoreRing\" class=\"ring\" style=\"--score:95%\"><strong id=\"scoreText\">95%</strong><small>rủi ro</small></div><div><h2 id=\"zoneTitle\">Nguy hiểm</h2><p class=\"hint\">Cần xác định danh tính người gửi và mục đích thực sự của tin nhắn này.</p></div></div>\n  <div class=\"grid\"><div class=\"box\"><h3>Dấu hiệu phát hiện</h3><div class=\"evidence\"><div><strong>Bây giờ tôi muốn xem mày và bây giờ tôi sẽ scan mày và ngay lập tức tao sẽ xưng mày một tỷ đồng</strong><p>Ngôn ngữ đe dọa, yêu cầu tiền bạc đột ngột và không có lý do chính đáng. Áp lực thời gian làm người nhận khó bình tĩnh kiểm tra nguồn chính thức trước khi hành động. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra. Nếu còn phân vân, bác nên hỏi người thân hoặc liên hệ trực tiếp tổ chức thật bằng số điện thoại chính thức.</p></div><div><strong>scan mày</strong><p>Thuật ngữ công nghệ được sử dụng sai ngữ cảnh, có thể nhằm gây hoang mang hoặc tạo cảm giác nguy hiểm. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra. Nếu còn phân vân, bác nên hỏi người thân hoặc liên hệ trực tiếp tổ chức thật bằng số điện thoại chính thức. Việc kiểm tra chậm lại vài phút thường an toàn hơn nhiều so với làm theo một yêu cầu gấp trong tin nhắn.</p></div><div><strong>xưng mày một tỷ đồng</strong><p>Yêu cầu một khoản tiền lớn một cách bất thường và không có chi tiết giao dịch. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra. Nếu còn phân vân, bác nên hỏi người thân hoặc liên hệ trực tiếp tổ chức thật bằng số điện thoại chính thức. Việc kiểm tra chậm lại vài phút thường an toàn hơn nhiều so với làm theo một yêu cầu gấp trong tin nhắn.</p></div></div></div><div class=\"box\"><h3>Nên làm gì tiếp?</h3><div class=\"checks\"><button class='action-btn' data-action='0'><span>Không trả lời</span><span>→</span></button><button class='action-btn' data-action='1'><span>Chặn người gửi</span><span>→</span></button><button class='action-btn' data-action='2'><span>Báo cáo</span><span>→</span></button></div></div></div>\n  <div class=\"box original-text\"><h3>Tin gốc đã tô vàng</h3><p>Bây giờ tôi muốn xem mày và bây giờ tôi sẽ <mark>scan mày</mark> và <mark>ngay</mark> lập tức tao sẽ <mark>xưng mày một tỷ đồng</mark></p></div>\n  \n        <section class=\"support-card\" aria-label=\"Cô tâm lý nhắc nhẹ\">\n          <div class=\"support-icon\" aria-hidden=\"true\">♡</div>\n          <div>\n            <h3>Cô tâm lý nhắc nhẹ</h3>\n            <p>Bác ơi, tin nhắn này có vẻ đang dùng chiêu &#x27;tạo áp lực&#x27; để bác hành động vội vàng đó ạ. Bác cứ bình tĩnh, đừng trả lời vội, hãy tự mình tìm đến kênh liên lạc chính thức của tổ chức liên quan để kiểm tra thông tin nhé.</p>\n          </div>\n        </section>\n</div>",
+    "next_actions": [
+      {
+        "id": "step_1",
+        "label": "Không trả lời",
+        "prompt": "Tuyệt đối không hồi đáp tin nhắn này để tránh bị kẻ xấu khai thác thêm thông tin."
+      },
+      {
+        "id": "step_2",
+        "label": "Chặn người gửi",
+        "prompt": "Chặn ngay số điện thoại hoặc tài khoản đã gửi tin nhắn để ngăn chặn liên lạc trong tương lai."
+      },
+      {
+        "id": "step_3",
+        "label": "Báo cáo",
+        "prompt": "Nếu có thể, báo cáo tin nhắn này cho nhà mạng hoặc cơ quan chức năng để họ có biện pháp xử lý."
+      }
+    ],
+    "rescue_options": [
+      {
+        "id": "ai_option_1",
+        "label": "Liên hệ ngân hàng",
+        "detail": "Nếu bạn nghi ngờ có liên quan đến tài khoản ngân hàng, hãy liên hệ trực tiếp với ngân hàng qua số hotline chính thức."
+      },
+      {
+        "id": "ai_option_2",
+        "label": "Báo công an",
+        "detail": "Nếu cảm thấy bị đe dọa nghiêm trọng hoặc có dấu hiệu lừa đảo chiếm đoạt tài sản, hãy trình báo cơ quan công an."
+      }
+    ],
+    "risk": "danger",
+    "source": "gemini",
+    "summary": "Tin nhắn có dấu hiệu đe dọa, yêu cầu tiền bạc với giọng điệu bất thường và không rõ ràng, có thể là lừa đảo.",
+    "uncertainty": "Cần xác định danh tính người gửi và mục đích thực sự của tin nhắn này.",
+    "verdict_label": "Nguy hiểm",
+    "zone_title": "Nguy hiểm",
+    "id": "check-1782458983436",
+    "time": "2026-06-26T07:29:43.436Z",
+    "inputText": "Bây giờ tôi muốn xem mày và bây giờ tôi sẽ scan mày và ngay lập tức tao sẽ xưng mày một tỷ đồng",
+    "share_id": "check-1782458983436",
+    "share_url": "/analysis/check-1782458983436",
+    "psychology": "Bác ơi, tin nhắn này có vẻ đang dùng chiêu 'tạo áp lực' để bác hành động vội vàng đó ạ. Bác cứ bình tĩnh, đừng trả lời vội, hãy tự mình tìm đến kênh liên lạc chính thức của tổ chức liên quan để kiểm tra thông tin nhé."
+  },
+  "check-1782460970506": {
+    "checked_text": "Vietconbank thông báo tài khoản của bác bị khóa. Vui lòng xác minh ngay tại vietconbank-login.com và nhập mã OTP để mở khóa.",
+    "danger_score_percent": 95,
+    "evidence": [
+      {
+        "explanation": "",
+        "quote": "vietconbank-login.com",
+        "why": "Tên miền vietconbank-login.com gần giống vietcombank nhưng không phải miền chính thức; có thể là tên miền giả mạo hoặc sai chính tả. Đường dẫn lạ có thể dẫn đến trang giả mạo để lấy mật khẩu, mã OTP hoặc thông tin thẻ. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra. Nếu còn phân vân, bác nên hỏi người thân hoặc liên hệ trực tiếp tổ chức thật bằng số điện thoại chính thức."
+      },
+      {
+        "explanation": "",
+        "quote": "Vietconbank thông báo tài khoản của bác bị khóa.",
+        "why": "Mạo danh ngân hàng Vietcombank để tạo sự hoang mang và thúc giục người dùng hành động. Lời đe dọa hậu quả khiến bác dễ làm theo hướng dẫn mà chưa kịp hỏi người thân hoặc tổ chức thật. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra. Nếu còn phân vân, bác nên hỏi người thân hoặc liên hệ trực tiếp tổ chức thật bằng số điện thoại chính thức."
+      },
+      {
+        "explanation": "",
+        "quote": "Vui lòng xác minh ngay tại vietconbank-login.com",
+        "why": "Tên miền 'vietconbank-login.com' là giả mạo, có lỗi chính tả ('vietconbank' thay vì 'vietcombank') và thêm phần 'login' để gây nhầm lẫn với trang đăng nhập chính thức. Đường dẫn lạ có thể dẫn đến trang giả mạo để lấy mật khẩu, mã OTP hoặc thông tin thẻ. Áp lực thời gian làm người nhận khó bình tĩnh kiểm tra nguồn chính thức trước khi hành động. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra."
+      },
+      {
+        "explanation": "",
+        "quote": "nhập mã OTP để mở khóa.",
+        "why": "Yêu cầu cung cấp mã OTP là hành vi lừa đảo điển hình, nhằm chiếm đoạt mã xác thực giao dịch và chiếm quyền kiểm soát tài khoản. Đây là nhóm thông tin nhạy cảm, người lạ hoặc nhân viên thật không nên yêu cầu bác gửi qua tin nhắn. Lời đe dọa hậu quả khiến bác dễ làm theo hướng dẫn mà chưa kịp hỏi người thân hoặc tổ chức thật. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra."
+      }
+    ],
+    "explanation": "Tin nhắn sử dụng tên miền giả mạo 'vietconbank-login.com' thay vì tên miền chính thức của Vietcombank. Yêu cầu nhập mã OTP để mở khóa tài khoản là một dấu hiệu lừa đảo phổ biến, nhằm chiếm đoạt mã xác thực và truy cập trái phép vào tài khoản ngân hàng. Mạo danh ngân hàng và yêu cầu cung cấp thông tin nhạy cảm là hành vi rất đáng ngờ.",
+    "html": "\n<div id=\"resultCard\" style=\"--risk-color:#ef4444;padding:18px\" data-score=\"95\">\n  <section class=\"result-head\"><span class=\"pill danger\" id=\"scorePill\">Nguy hiểm · 95% rủi ro</span><h2>Phân tích kỹ thuật</h2><p class=\"hint\">Đây là một vụ lừa đảo giả mạo ngân hàng Vietcombank nhằm chiếm đoạt thông tin tài khoản và mã OTP.</p><p>Tin nhắn sử dụng tên miền giả mạo &#x27;vietconbank-login.com&#x27; thay vì tên miền chính thức của Vietcombank. Yêu cầu nhập mã OTP để mở khóa tài khoản là một dấu hiệu lừa đảo phổ biến, nhằm chiếm đoạt mã xác thực và truy cập trái phép vào tài khoản ngân hàng. Mạo danh ngân hàng và yêu cầu cung cấp thông tin nhạy cảm là hành vi rất đáng ngờ.</p></section>\n  <div class=\"result-main\"><div id=\"scoreRing\" class=\"ring\" style=\"--score:95%\"><strong id=\"scoreText\">95%</strong><small>rủi ro</small></div><div><h2 id=\"zoneTitle\">Nguy hiểm</h2><p class=\"hint\">Cần xác minh xem người dùng có thực sự nhận được thông báo khóa tài khoản từ ngân hàng hay không, hoặc đây chỉ là tin nhắn lừa đảo được gửi hàng loạt.</p></div></div>\n  <div class=\"grid\"><div class=\"box\"><h3>Dấu hiệu phát hiện</h3><div class=\"evidence\"><div><strong>vietconbank-login.com</strong><p>Tên miền vietconbank-login.com gần giống vietcombank nhưng không phải miền chính thức; có thể là tên miền giả mạo hoặc sai chính tả. Đường dẫn lạ có thể dẫn đến trang giả mạo để lấy mật khẩu, mã OTP hoặc thông tin thẻ. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra. Nếu còn phân vân, bác nên hỏi người thân hoặc liên hệ trực tiếp tổ chức thật bằng số điện thoại chính thức.</p></div><div><strong>Vietconbank thông báo tài khoản của bác bị khóa.</strong><p>Mạo danh ngân hàng Vietcombank để tạo sự hoang mang và thúc giục người dùng hành động. Lời đe dọa hậu quả khiến bác dễ làm theo hướng dẫn mà chưa kịp hỏi người thân hoặc tổ chức thật. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra. Nếu còn phân vân, bác nên hỏi người thân hoặc liên hệ trực tiếp tổ chức thật bằng số điện thoại chính thức.</p></div><div><strong>Vui lòng xác minh ngay tại vietconbank-login.com</strong><p>Tên miền &#x27;vietconbank-login.com&#x27; là giả mạo, có lỗi chính tả (&#x27;vietconbank&#x27; thay vì &#x27;vietcombank&#x27;) và thêm phần &#x27;login&#x27; để gây nhầm lẫn với trang đăng nhập chính thức. Đường dẫn lạ có thể dẫn đến trang giả mạo để lấy mật khẩu, mã OTP hoặc thông tin thẻ. Áp lực thời gian làm người nhận khó bình tĩnh kiểm tra nguồn chính thức trước khi hành động. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra.</p></div><div><strong>nhập mã OTP để mở khóa.</strong><p>Yêu cầu cung cấp mã OTP là hành vi lừa đảo điển hình, nhằm chiếm đoạt mã xác thực giao dịch và chiếm quyền kiểm soát tài khoản. Đây là nhóm thông tin nhạy cảm, người lạ hoặc nhân viên thật không nên yêu cầu bác gửi qua tin nhắn. Lời đe dọa hậu quả khiến bác dễ làm theo hướng dẫn mà chưa kịp hỏi người thân hoặc tổ chức thật. Bác nên dừng lại, không làm theo yêu cầu trong tin, rồi tự mở kênh chính thức để kiểm tra.</p></div></div></div><div class=\"box\"><h3>Nên làm gì tiếp?</h3><div class=\"checks\"><button class='action-btn' data-action='0'><span>Không truy cập link</span><span>→</span></button><button class='action-btn' data-action='1'><span>Liên hệ ngân hàng</span><span>→</span></button><button class='action-btn' data-action='2'><span>Xóa tin nhắn</span><span>→</span></button></div></div></div>\n  <div class=\"box original-text\"><h3>Tin gốc đã tô vàng</h3><p><mark>Vietconbank thông báo tài khoản của bác bị khóa.</mark> <mark>Vui lòng xác minh ngay tại vietconbank-login.com</mark> và <mark>nhập mã OTP để mở khóa.</mark></p></div>\n  \n        <section class=\"support-card\" aria-label=\"Cô tâm lý nhắc nhẹ\">\n          <div class=\"support-icon\" aria-hidden=\"true\">♡</div>\n          <div>\n            <h3>Cô tâm lý nhắc nhẹ</h3>\n            <p>Bác ơi, cô hiểu bác đang lo lắng khi nhận tin nhắn này. Kẻ xấu thường dùng chiêu hù dọa tài khoản bị khóa để bác vội vàng làm theo. Bác cứ bình tĩnh, đừng bấm vào link mà hãy gọi trực tiếp tổng đài chính thức của ngân hàng để kiểm tra nhé.</p>\n          </div>\n        </section>\n</div>",
+    "next_actions": [
+      {
+        "id": "step_1",
+        "label": "Không truy cập link",
+        "prompt": "Tuyệt đối không nhấp vào đường link được cung cấp trong tin nhắn."
+      },
+      {
+        "id": "step_2",
+        "label": "Liên hệ ngân hàng",
+        "prompt": "Gọi điện thoại trực tiếp đến tổng đài chính thức của Vietcombank để xác minh thông tin tài khoản."
+      },
+      {
+        "id": "step_3",
+        "label": "Xóa tin nhắn",
+        "prompt": "Xóa tin nhắn lừa đảo để tránh bị nhầm lẫn hoặc truy cập lại."
+      }
+    ],
+    "rescue_options": [
+      {
+        "id": "ai_option_1",
+        "label": "Báo cáo lừa đảo",
+        "detail": "Báo cáo tin nhắn/link này cho nhà mạng hoặc cơ quan chức năng để ngăn chặn."
+      },
+      {
+        "id": "ai_option_2",
+        "label": "Kiểm tra lại thông tin",
+        "detail": "Kiểm tra lại các giao dịch gần đây và thông báo từ ngân hàng qua các kênh chính thức."
+      },
+      {
+        "id": "ai_option_3",
+        "label": "Thay đổi mật khẩu",
+        "detail": "Nếu đã lỡ cung cấp thông tin, hãy thay đổi mật khẩu ngân hàng ngay lập tức và liên hệ ngân hàng để khóa thẻ/tài khoản."
+      }
+    ],
+    "risk": "danger",
+    "source": "gemini",
+    "summary": "Đây là một vụ lừa đảo giả mạo ngân hàng Vietcombank nhằm chiếm đoạt thông tin tài khoản và mã OTP.",
+    "uncertainty": "Cần xác minh xem người dùng có thực sự nhận được thông báo khóa tài khoản từ ngân hàng hay không, hoặc đây chỉ là tin nhắn lừa đảo được gửi hàng loạt.",
+    "verdict_label": "Nguy hiểm",
+    "zone_title": "Nguy hiểm",
+    "id": "check-1782460970506",
+    "time": "2026-06-26T08:02:50.506Z",
+    "inputText": "Vietconbank thông báo tài khoản của bác bị khóa. Vui lòng xác minh ngay tại vietconbank-login.com và nhập mã OTP để mở khóa.",
+    "share_id": "check-1782460970506",
+    "share_url": "/analysis/check-1782460970506",
+    "psychology": "Bác ơi, cô hiểu bác đang lo lắng khi nhận tin nhắn này. Kẻ xấu thường dùng chiêu hù dọa tài khoản bị khóa để bác vội vàng làm theo. Bác cứ bình tĩnh, đừng bấm vào link mà hãy gọi trực tiếp tổng đài chính thức của ngân hàng để kiểm tra nhé."
+  }
+}
