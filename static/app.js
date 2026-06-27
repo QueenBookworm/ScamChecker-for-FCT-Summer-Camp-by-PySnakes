@@ -7,7 +7,8 @@
 const HISTORY_KEY = "scamcheck_history_simple_v1";
 const AI_CHARACTER_LIMIT = 7000;
 const HISTORY_PAGE_SIZE = 6;
-const TRAINING_FIRST_BATCH_SIZE = 15;
+// Mỗi lượt luyện tập có 10 câu để học sinh làm nhanh rồi chuyển sang lượt tiếp theo.
+const TRAINING_FIRST_BATCH_SIZE = 10;
 
 let mode = "image";
 let selectedImage = null;
