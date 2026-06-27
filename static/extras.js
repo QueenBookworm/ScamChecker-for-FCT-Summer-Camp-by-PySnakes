@@ -34,7 +34,7 @@ function resultToolsHtml() {
 
 
 function rescueOptionsHtml() {
-  if (!currentResult || currentResult.danger_score_percent < 40) {
+  if (!currentResult || !["suspicious", "danger"].includes(currentResult.risk)) {
     return "";
   }
 
@@ -520,7 +520,7 @@ async function downloadResultCard() {
     const response = await fetch("/api/result-pdf", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ result: currentResult })
+      body: JSON.stringify({ result: cleanResultForDisplay(currentResult) })
     });
 
     if (!response.ok) {
@@ -676,11 +676,11 @@ function setupTraining() {
 
 // ===== Training Batch Section =====
 function startTrainingBatch(startIndex) {
-  // Starts the first 15-question batch or the remaining practice batch.
+  // Bắt đầu một lượt luyện tập 10 câu từ vị trí được chọn.
+  $("training").classList.remove("training-finished");
   trainingBatchStart = Math.max(0, startIndex);
-  const batchSize = trainingBatchStart === 0
-    ? TRAINING_FIRST_BATCH_SIZE
-    : Math.max(1, trainingAllData.length - trainingBatchStart);
+  const remainingQuestions = trainingAllData.length - trainingBatchStart;
+  const batchSize = Math.max(1, Math.min(TRAINING_FIRST_BATCH_SIZE, remainingQuestions));
 
   trainingData = trainingAllData.slice(trainingBatchStart, trainingBatchStart + batchSize);
   trainingAnswers = Array(trainingData.length).fill(null);
@@ -694,6 +694,7 @@ function startTrainingBatch(startIndex) {
 // ===== Training Render Section =====
 function drawTraining() {
   clearTimeout(trainingTimer);
+  $("training").classList.remove("training-finished");
 
   if (!trainingData.length) return;
 
@@ -709,7 +710,7 @@ function drawTraining() {
   const item = trainingData[trainingIndex];
   const answer = trainingAnswers[trainingIndex];
   const answeredCount = trainingAnswers.filter(Boolean).length;
-  const batchName = trainingBatchStart === 0 ? "Phần 1" : "Phần 2";
+  const batchName = `Phần ${Math.floor(trainingBatchStart / TRAINING_FIRST_BATCH_SIZE) + 1}`;
 
   $("trainProgress").textContent =
     `${batchName} · Câu ${trainingIndex + 1}/${trainingData.length} · Đã làm ${answeredCount}/${trainingData.length} · Điểm ${trainingSubmitted ? trainingScore : "--"}`;
@@ -836,6 +837,7 @@ async function submitTraining() {
 // ===== Training Finish Section =====
 function finishTraining() {
   trainingSubmitted = true;
+  $("training").classList.add("training-finished");
   trainingScore = calculateTrainingScore();
   const answeredCount = trainingAnswers.filter(Boolean).length;
   const unansweredCount = trainingData.length - answeredCount;
@@ -843,7 +845,9 @@ function finishTraining() {
   const percent = Math.round((trainingScore / trainingData.length) * 100);
   const nextStart = trainingBatchStart + trainingData.length;
   const hasMoreQuestions = nextStart < trainingAllData.length;
-
+  const nextButtonText = hasMoreQuestions
+    ? `Luyện ${Math.min(TRAINING_FIRST_BATCH_SIZE, trainingAllData.length - nextStart)} câu tiếp theo`
+    : "Về 10 câu đầu";
   const tip = trainingScore >= Math.ceil(trainingData.length * 0.8)
     ? "Rất tốt. Bác đã nhận ra hầu hết dấu hiệu nguy hiểm."
     : trainingScore >= Math.ceil(trainingData.length * 0.55)
@@ -863,9 +867,10 @@ function finishTraining() {
         <span><b>${wrongCount}</b><small>Câu sai</small></span>
         <span><b>${unansweredCount}</b><small>Chưa làm</small></span>
       </div>
-      <button id="trainContinue" class="training-submit" type="button">
-        ${hasMoreQuestions ? `Tiếp tục luyện ${trainingAllData.length - nextStart} câu còn lại` : "Luyện lại từ đầu"}
-      </button>
+      <div class="training-dashboard-actions">
+        <button id="trainRedo" class="training-submit training-secondary" type="button">Làm lại phần này</button>
+        <button id="trainNextBatch" class="training-submit" type="button">${nextButtonText}</button>
+      </div>
     </div>
   `;
 
@@ -884,9 +889,16 @@ function finishTraining() {
   $("trainSubmit").disabled = true;
   $("trainPrev").disabled = trainingIndex === 0;
 
-  const continueButton = $("trainContinue");
-  if (continueButton) {
-    continueButton.onclick = () => startTrainingBatch(hasMoreQuestions ? nextStart : 0);
+  const redoButton = $("trainRedo");
+  if (redoButton) {
+    // Làm lại đúng 10 câu vừa nộp để người học sửa lỗi ngay.
+    redoButton.onclick = () => startTrainingBatch(trainingBatchStart);
+  }
+
+  const nextBatchButton = $("trainNextBatch");
+  if (nextBatchButton) {
+    // Chuyển sang 10 câu tiếp theo; nếu hết câu thì quay về lượt đầu.
+    nextBatchButton.onclick = () => startTrainingBatch(hasMoreQuestions ? nextStart : 0);
   }
 
   renderTrainingMap();
