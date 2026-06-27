@@ -21,6 +21,55 @@ function safe(text) {
 }
 
 
+function cleanDisplayText(text) {
+  const parser = document.createElement("textarea");
+
+  parser.innerHTML = String(text || "");
+
+  return parser.value
+    .replace(/`n/g, "\n")
+    .replace(/\\n/g, "\n")
+    .replace(/^```(?:json|html|javascript|js|python|text)?\s*/i, "")
+    .replace(/\s*```$/g, "")
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<\/(?:p|div|li|h[1-6])\s*>/gi, "\n")
+    .replace(/<\/?[^>]+>/g, "")
+    .replace(/[ \t]*\n[ \t]*/g, "\n")
+    .replace(/^\s*(?:answer|summary|explanation|uncertainty|why|prompt)\s*:\s*/i, "")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
+
+function cleanResultForDisplay(item) {
+  const result = { ...(item || {}) };
+
+  ["summary", "explanation", "uncertainty", "psychology", "checked_text", "inputText"].forEach(key => {
+    if (result[key]) result[key] = cleanDisplayText(result[key]);
+  });
+
+  if (Array.isArray(result.evidence)) {
+    result.evidence = result.evidence.map(row => ({
+      ...row,
+      quote: cleanDisplayText(row?.quote),
+      why: cleanDisplayText(row?.why || row?.explanation),
+      explanation: cleanDisplayText(row?.explanation)
+    }));
+  }
+
+  if (Array.isArray(result.next_actions)) {
+    result.next_actions = result.next_actions.map(action => ({
+      ...action,
+      label: cleanDisplayText(action?.label),
+      prompt: cleanDisplayText(action?.prompt || action?.detail),
+      detail: cleanDisplayText(action?.detail || action?.prompt)
+    }));
+  }
+
+  return result;
+}
+
+
 // ===== POST Request Section =====
 async function post(url, body) {
   let response;
@@ -87,6 +136,7 @@ function dataUrl(file) {
 
 // ===== Result Normalizer Section =====
 function normalizeResult(item) {
+  item = cleanResultForDisplay(item);
   const rawScore = Number(
     item.danger_score_percent ?? item.score ?? item.riskpercentage
   );
