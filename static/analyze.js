@@ -183,7 +183,7 @@ async function showResult(item) {
   showPage("analysis", false);
   updateAnalysisPath(currentResult);
 
-  if (!currentResult.html) {
+  if (!currentResult.html || resultHtmlNeedsRebuild(currentResult.html)) {
     $("resultBox").innerHTML = "<p>Đang mở kết quả đã lưu...</p>";
 
     try {
@@ -214,10 +214,15 @@ async function showResult(item) {
 }
 
 
+function resultHtmlNeedsRebuild(html) {
+  return /```|&lt;\/?(?:b|br|code|pre)&gt;|<\/?(?:code|pre|script|style)\b/i.test(String(html || ""));
+}
+
+
 // ===== Delayed Follow-up Section =====
 async function loadAnalysisFollowup(body) {
   // Loads optional Cô tâm lý content after the main detective result is already visible.
-  if (!currentResult || currentResult.danger_score_percent < 40) return;
+  if (!currentResult || !["suspicious", "danger"].includes(currentResult.risk)) return;
 
   showFollowupPlaceholder();
 
