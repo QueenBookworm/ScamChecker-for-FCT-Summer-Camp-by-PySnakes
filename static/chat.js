@@ -172,6 +172,8 @@ async function setChatFile(file) {
 
   $("chatFileName").textContent = file ? `Đã chọn: ${file.name}` : "";
 
+  document.querySelector(".chat-file")?.classList.toggle("has-file", Boolean(file));
+
   if (!file) {
     updateChatCharacterCount();
     return;
@@ -208,9 +210,7 @@ async function sendChat() {
 
   addChatMessage("user", question || "Đã gửi thêm tệp/ảnh để AI xem.");
 
-  const fallbackAnswer = selectedActionLabel
-    ? `Bước: ${selectedActionLabel}`
-    : "AI chưa trả lời được, nhưng bác có thể xem lại bước đã chọn.";
+  const fallbackAnswer = "AI chưa trả lời được rõ ràng. Bác mô tả thêm điều bác đang cần, ScamCheck sẽ bám theo nội dung đó để hướng dẫn tiếp.";
 
   $("chatSend").disabled = true;
   $("chatSend").textContent = "...";
@@ -227,9 +227,7 @@ async function sendChat() {
       messages: chatMessages
     });
 
-    const finalAnswer = selectedActionLabel
-      ? `${fallbackAnswer}\n\n${data.answer || ""}`.trim()
-      : (data.answer || fallbackAnswer);
+    const finalAnswer = data.answer || fallbackAnswer;
 
     addChatMessage("ai", finalAnswer, data.next_steps);
 
@@ -265,11 +263,14 @@ function updateChatCharacterCount() {
 
 // ===== Chat Message Render Section =====
 function addChatMessage(role, text, steps = []) {
-  chatMessages.push({ role, text, steps });
+  const cleanText = cleanDisplayText(text);
+  const cleanSteps = Array.isArray(steps) ? steps.map(cleanDisplayText).filter(Boolean) : [];
+
+  chatMessages.push({ role, text: cleanText, steps: cleanSteps });
   chatMessages = chatMessages.slice(-30);
   saveChatHistory();
 
-  appendChatMessage({ role, text, steps });
+  appendChatMessage({ role, text: cleanText, steps: cleanSteps });
 }
 
 
@@ -299,17 +300,68 @@ function renderChatHistory() {
 
 
 function appendChatMessage(message) {
-  const steps = Array.isArray(message.steps) ? message.steps : [];
+  const steps = Array.isArray(message.steps) ? message.steps.map(cleanDisplayText).filter(Boolean) : [];
   const stepList = steps.length
-    ? `<ul>${steps.map(step => `<li>${safe(step)}</li>`).join("")}</ul>`
+    ? `<ul>${steps.map(step => `<li>${formatChatRichText(step)}</li>`).join("")}</ul>`
     : "";
 
   $("chatLog").insertAdjacentHTML(
     "beforeend",
-    `<div class="chat-msg ${message.role}">${safe(message.text)}${stepList}</div>`
+    `<div class="chat-msg ${message.role}">${formatChatRichText(message.text)}${stepList}</div>`
   );
 
   $("chatLog").scrollTop = $("chatLog").scrollHeight;
+}
+
+
+function formatChatRichText(text) {
+  const raw = cleanDisplayText(text);
+  const tokenRegex = /\bhttps?:\/\/[^\s<>"')]+|\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b|\b(?:1900\d{6}|1800\d{6}|113|156|5656)\b/gi;
+  let html = "";
+  let cursor = 0;
+  let match;
+
+  while ((match = tokenRegex.exec(raw)) !== null) {
+    html += highlightChatPhrases(raw.slice(cursor, match.index));
+    html += formatChatToken(match[0]);
+    cursor = match.index + match[0].length;
+  }
+
+  html += highlightChatPhrases(raw.slice(cursor));
+  return html;
+}
+
+
+function formatChatToken(token) {
+  if (/^https?:\/\//i.test(token)) {
+    const cleanUrl = token.replace(/[.,;:!?]+$/, "");
+    const trailing = token.slice(cleanUrl.length);
+    return `<a class="chat-link bank-link" href="${safeAttribute(cleanUrl)}" target="_blank" rel="noopener noreferrer"><strong><em>${safe(cleanUrl)}</em></strong></a>${safe(trailing)}`;
+  }
+
+  if (/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(token)) {
+    return `<a class="chat-link report-link" href="mailto:${safeAttribute(token)}"><strong>${safe(token)}</strong></a>`;
+  }
+
+  return `<a class="chat-phone" href="tel:${safeAttribute(token)}"><strong>${safe(token)}</strong></a>`;
+}
+
+
+function highlightChatPhrases(text) {
+  return safe(text)
+    .replace(
+      /\b(Vietcombank|VPBank|BIDV|VietinBank|Agribank|Techcombank|MB Bank|MBBank|ACB|Sacombank|TPBank)\b/g,
+      `<mark class="chat-bank-name"><strong>$1</strong></mark>`
+    )
+    .replace(
+      /(kênh chính thức|website chính thức|ứng dụng chính thức|Hotline|Báo cáo\/hỗ trợ|Báo cáo|hỗ trợ|email)/gi,
+      `<mark class="chat-support-phrase"><strong><em>$1</em></strong></mark>`
+    );
+}
+
+
+function safeAttribute(value) {
+  return safe(value).replace(/"/g, "&quot;");
 }
 
 
