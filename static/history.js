@@ -149,19 +149,61 @@ function ensureConfirmModal() {
 
 // ===== Clear History Section =====
 async function clearHistory() {
-  showPermanentHistoryNotice();
+  if (!history.length) return;
+
+  const confirmed = await confirmDialog({
+    title: "Xóa tất cả lịch sử?",
+    message: "Tất cả kết quả đã lưu trên máy này và máy chủ sẽ bị xóa.",
+    confirmText: "Xóa hết",
+    danger: true
+  });
+
+  if (!confirmed) return;
+
+  try {
+    await fetch("/api/history", { method: "DELETE" });
+  } catch {
+    // Local deletion still works if the server is offline.
+  }
+
+  history = [];
+  historyPage = 1;
+  saveHistory();
+  drawHistory();
 }
 
 
 async function deleteHistoryItem(id) {
-  showPermanentHistoryNotice();
-}
+  // Tìm đúng bản ghi trước khi xóa để cả id nội bộ và link chia sẻ đều hoạt động.
+  const item = history.find(savedItem => {
+    return savedItem.id === id || savedItem.share_id === id;
+  });
 
+  const confirmed = await confirmDialog({
+    title: "Xóa kết quả này?",
+    message: "Kết quả này sẽ bị xóa khỏi lịch sử trên máy này và máy chủ.",
+    confirmText: "Xóa",
+    danger: true
+  });
 
-function showPermanentHistoryNotice() {
-  if (typeof showToast === "function" && $("toolToast")) {
-    showToast("Lịch sử đang được lưu vĩnh viễn nên không xóa trong ứng dụng.");
+  if (!confirmed) return;
+
+  const deleteId = item?.share_id || item?.id || id;
+
+  try {
+    await fetch(`/api/history/${encodeURIComponent(deleteId)}`, { method: "DELETE" });
+  } catch {
+    // Local deletion still works if the server is offline.
   }
+
+  history = history.filter(savedItem => {
+    return savedItem.id !== id
+      && savedItem.share_id !== id
+      && savedItem.id !== deleteId
+      && savedItem.share_id !== deleteId;
+  });
+  saveHistory();
+  drawHistory();
 }
 
 
@@ -169,12 +211,12 @@ function showPermanentHistoryNotice() {
 function drawHistory() {
   const clearButton = $("clearHistory");
   if (clearButton) {
-    clearButton.hidden = true;
+    clearButton.hidden = !history.length;
   }
 
   const hint = document.querySelector("#history .hint");
   if (hint) {
-    hint.textContent = "Lịch sử được lưu vĩnh viễn trên máy chủ của app. Bấm vào một kết quả để mở lại hoặc chia sẻ link riêng.";
+    hint.textContent = "Bấm vào một kết quả để mở lại, hoặc dùng nút thùng rác để xóa khỏi lịch sử.";
   }
 
   const pages = totalHistoryPages();
@@ -211,6 +253,9 @@ function historyItemHtml(item) {
         <strong class="history-title">${safe(item.summary)}</strong>
         <p>${safe(item.inputText || item.explanation)}</p>
       </button>
+      <button class="history-delete" data-history-delete="${safe(item.id)}" type="button" aria-label="Xóa kết quả này">
+        ${trashIcon()}
+      </button>
     </article>
   `;
 }
@@ -225,6 +270,13 @@ function bindHistoryButtons() {
       if (item) {
         showResult(item);
       }
+    };
+  });
+
+  document.querySelectorAll("[data-history-delete]").forEach(button => {
+    button.onclick = event => {
+      event.stopPropagation();
+      deleteHistoryItem(button.dataset.historyDelete);
     };
   });
 
@@ -303,4 +355,3 @@ function trashIcon() {
     </svg>
   `;
 }
-
